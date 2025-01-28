@@ -10,21 +10,20 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@expo/metro-runtime": "~4.0.1",
+    "@react-navigation/native": "^7.0.14",
+    "@react-navigation/stack": "^7.1.1",
     "expo": "~52.0.26",
+    "expo-linear-gradient": "^14.0.2",
     "expo-status-bar": "~2.0.1",
+    "i18next": "^24.2.1",
+    "i18next-browser-languagedetector": "^8.0.2",
+    "nativewind": "^4.1.23",
     "react": "18.3.1",
-    "react-native": "0.76.6",
-    "react-native-calendars": "^1.841.0",
-    "react-native-paper": "^5.13.1",
-    "tailwind-rn": "^4.2.0",
-    "tailwindcss-react-native": "^1.7.10"
+    "react-native": "0.76.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@eslint/js": "^9.18.0",
-    "eslint": "^9.18.0",
-    "eslint-plugin-react": "^7.37.4",
-    "globals": "^15.14.0"
+    "@babel/core": "^7.20.0"
   },
   "private": true
 }
