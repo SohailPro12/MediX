@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet,Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const Test5 = ({ navigation }) => {
+const ForgotScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
         <View style={styles.headerContainer}>
             <Image
-                source={require('../assets/serrure.png')} // Add your illustration file here
+                source={require('../../assets/serrure.png')} 
                 style={styles.headerImage}
             />
         </View>
@@ -26,26 +26,21 @@ const Test5 = ({ navigation }) => {
         >
           {/* Zone supérieure : Champ email */}
           <View style={styles.inputContainer}>
-            <Text style={styles.orText}>Reset Password</Text>
+            <Text style={styles.orText}>Email</Text>
             <TextInput
               style={styles.input}
-              placeholder="New Password"
-              placeholderTextColor="#888"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Retype Password"
+              placeholder="Enter your Email"
               placeholderTextColor="#888"
             />
           </View>
 
           {/* Zone inférieure : Boutons */}
           <View style={styles.cardContainer}>
-            <TouchableOpacity style={styles.resetpassButton}>
-              <Text style={styles.resetpassText}>Change</Text>
+            <TouchableOpacity style={styles.resetpassButton} onPress={() => navigation.navigate("CodeScreen")}>
+              <Text style={styles.resetpassText}>Reset Password</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate("Test1")}>
+            <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
               <Text style={styles.login}>Back to Login</Text>
             </TouchableOpacity>
           </View>
@@ -62,11 +57,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   headerContainer: {
-    marginVertical: -110,
+    marginVertical: -150,
     alignItems:'center',
   },
   textcontainer:{
-    marginVertical:110,
+    marginVertical:150,
     alignItems:'center',
   },
   ttext:{
@@ -139,4 +134,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Test5;
+export default ForgotScreen;

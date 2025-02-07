@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet,Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const Test4 = ({ navigation }) => {
+const ResetScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
         <View style={styles.headerContainer}>
             <Image
-                source={require('../assets/serrure.png')} // Add your illustration file here
+                source={require('../../assets/serrure.png')} 
                 style={styles.headerImage}
             />
         </View>
@@ -26,21 +26,26 @@ const Test4 = ({ navigation }) => {
         >
           {/* Zone supérieure : Champ email */}
           <View style={styles.inputContainer}>
-            <Text style={styles.orText}>Check your Email</Text>
+            <Text style={styles.orText}>Reset Password</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter code"
+              placeholder="New Password"
+              placeholderTextColor="#888"
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Retype Password"
               placeholderTextColor="#888"
             />
           </View>
 
           {/* Zone inférieure : Boutons */}
           <View style={styles.cardContainer}>
-            <TouchableOpacity style={styles.verifyButton} onPress={() => navigation.navigate("Test5")}>
-              <Text style={styles.verifyText}>Verify</Text>
+            <TouchableOpacity style={styles.resetpassButton}>
+              <Text style={styles.resetpassText}>Change</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate("Test1")}>
+            <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
               <Text style={styles.login}>Back to Login</Text>
             </TouchableOpacity>
           </View>
@@ -57,11 +62,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
   },
   headerContainer: {
-    marginVertical: -150,
+    marginVertical: -110,
     alignItems:'center',
   },
   textcontainer:{
-    marginVertical:150,
+    marginVertical:110,
     alignItems:'center',
   },
   ttext:{
@@ -108,7 +113,7 @@ const styles = StyleSheet.create({
     marginBottom:30,
     marginVertical:10,
   },
-  verifyButton: {
+  resetpassButton: {
     backgroundColor: '#A4DDED',
     borderRadius: 25,
     width: '100%', // Largeur pleine
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     marginBottom: 40, // Espace entre les boutons
   },
-  verifyText: {
+  resetpassText: {
     color: '#2b524a',
     fontSize: 16,
     fontWeight: 'bold',
@@ -134,4 +139,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Test4;
+export default ResetScreen;

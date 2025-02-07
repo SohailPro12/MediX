@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const Test1 = ({ navigation }) => {
+const LoginScreen = ({ navigation }) => {
   return (
   <LinearGradient
     colors={['#5de0e6', '#004aad']}
@@ -14,7 +14,7 @@ const Test1 = ({ navigation }) => {
           {/* Header Illustration */}
         <View style={styles.headerContainer}>
             <Image
-                source={require('../assets/illustration.png')} // Add your illustration file here
+                source={require('../../assets/illustration.png')} 
                 style={styles.headerImage}
             />
         </View>
@@ -38,7 +38,7 @@ const Test1 = ({ navigation }) => {
             <TouchableOpacity style={styles.loginButton}>
             <Text style={styles.loginButtonText}>Login</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate("Test3")}>
+            <TouchableOpacity onPress={() => navigation.navigate("ForgotScreen")}>
             <Text style={styles.forgotPassword}>Forgot Password?</Text>
             </TouchableOpacity>
             {/* Buttons */}
@@ -115,4 +115,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Test1;
+export default LoginScreen;

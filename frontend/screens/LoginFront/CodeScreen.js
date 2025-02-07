@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet,Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const Test3 = ({ navigation }) => {
+const CodeScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
         <View style={styles.headerContainer}>
             <Image
-                source={require('../assets/serrure.png')} // Add your illustration file here
+                source={require('../../assets/serrure.png')} 
                 style={styles.headerImage}
             />
         </View>
@@ -26,21 +26,21 @@ const Test3 = ({ navigation }) => {
         >
           {/* Zone supérieure : Champ email */}
           <View style={styles.inputContainer}>
-            <Text style={styles.orText}>Email</Text>
+            <Text style={styles.orText}>Check your Email</Text>
             <TextInput
               style={styles.input}
-              placeholder="Enter your Email"
+              placeholder="Enter code"
               placeholderTextColor="#888"
             />
           </View>
 
           {/* Zone inférieure : Boutons */}
           <View style={styles.cardContainer}>
-            <TouchableOpacity style={styles.resetpassButton} onPress={() => navigation.navigate("Test4")}>
-              <Text style={styles.resetpassText}>Reset Password</Text>
+            <TouchableOpacity style={styles.verifyButton} onPress={() => navigation.navigate("ResetScreen")}>
+              <Text style={styles.verifyText}>Verify</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate("Test1")}>
+            <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
               <Text style={styles.login}>Back to Login</Text>
             </TouchableOpacity>
           </View>
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
     marginBottom:30,
     marginVertical:10,
   },
-  resetpassButton: {
+  verifyButton: {
     backgroundColor: '#A4DDED',
     borderRadius: 25,
     width: '100%', // Largeur pleine
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     marginBottom: 40, // Espace entre les boutons
   },
-  resetpassText: {
+  verifyText: {
     color: '#2b524a',
     fontSize: 16,
     fontWeight: 'bold',
@@ -134,4 +134,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Test3;
+export default CodeScreen;
