@@ -1,14 +1,16 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import AdminCalendar from './components/AdminCalendar';
-import DeleteAccountButton from './components/Supprimercompte';
+import { View, StyleSheet, SafeAreaView } from 'react-native';
 import HomeScreen from './screens/HomeScreen';
+import DoctorProfile from './screens/DoctorProfile.js';
 
 const App = () => {
   return (
-    <View style={styles.container}>
-     <HomeScreen/>
-    </View>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <HomeScreen />
+        <DoctorProfile />
+      </View>
+    </SafeAreaView>
   );
 };
 
