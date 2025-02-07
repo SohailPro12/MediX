@@ -7,9 +7,7 @@ const App = () => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.container}>
-        <HomeScreen />
-        <DoctorProfile />
-      </View>
+        <HomeScreen />      </View>
     </SafeAreaView>
   );
 };
@@ -22,4 +20,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default App;
