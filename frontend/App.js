@@ -1,23 +1,12 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
 
+import {SafeAreaView } from 'react-native';
+import DoctorProfile from './screens/DoctorProfile.js';
 export default function App() {
   return (
-    <View>
-    <View style={styles.container}>
-      <Text>hello world!</Text>
-        
-      <StatusBar style="auto" />
-    </View>
-     </View>
+    <SafeAreaView style={{ flex: 1 }}>
+    <DoctorProfile />
+  </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+
