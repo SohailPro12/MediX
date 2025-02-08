@@ -1,9 +1,17 @@
 {
-    "home": "الصفحة الرئيسية",
-    "search": "بحث...",
-    "doctors": "الأطباء",
-    "patients": "المرضى",
-    "appointments": "المواعيد",
-    "calendar": "التقويم"
-  }
-  
+  "home": "الصفحة الرئيسية",
+  "search": "بحث...",
+  "doctors": "الأطباء",
+  "patients": "المرضى",
+  "appointments": "المواعيد",
+  "calendar": "التقويم",
+
+    "Calendrier des rendez-vous": "تقويم المواعيد",
+    "Aucun rendez-vous": "لا توجد مواعيد",
+    "Confirmer la suppression": "تأكيد الحذف",
+    "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.": "هل أنت متأكد من أنك تريد حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.",
+    "Annuler": "إلغاء",
+    "Supprimer": "حذف",
+    "Supprimer le compte": "حذف الحساب"
+
+}

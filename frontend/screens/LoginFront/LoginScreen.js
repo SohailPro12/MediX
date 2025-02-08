@@ -1,52 +1,97 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
+  const [mail, setMail] = useState('');
+  const [password, setPassword] = useState('');
+  const navigation = useNavigation();
+
+ const handleLogin = async () => {
+  try {
+    const response = await fetch('https://ed22-41-250-194-187.ngrok-free.app/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ mail, password }),
+    });
+
+    const rawResponse = await response.text();
+    console.log('Réponse brute:', rawResponse); // Log raw response
+
+    if (response.ok) {
+      try {
+        const result = JSON.parse(rawResponse); // Attempt to parse JSON
+        console.log('Données envoyées:', { mail, password });
+        navigation.navigate('HomeScreen');
+      } catch (parseError) {
+        console.error('Erreur de parsing:', parseError);
+        Alert.alert('Erreur', 'Réponse non valide du serveur.');
+      }
+    } else {
+      try {
+        const errorResult = JSON.parse(rawResponse); // Attempt to parse JSON
+        console.log('Erreur:', errorResult);
+        Alert.alert('Erreur', errorResult.message);
+      } catch (parseError) {
+        console.error('Erreur de parsing:', parseError);
+        Alert.alert('Erreur', 'Réponse non valide du serveur.');
+      }
+    }
+  } catch (error) {
+    console.error('Erreur du serveur:', error);
+    Alert.alert('Erreur', 'Erreur du serveur.');
+  }
+};
+
+  
   return (
-  <LinearGradient
-    colors={['#5de0e6', '#004aad']}
-    //colors={['#8c52ff', '#5ce1e6']}
-    start={{ x: 0, y: 0 }} // Départ en haut
-    end={{ x: 1, y: 0 }}
-    style={styles.container}
-  >
-          {/* Header Illustration */}
-        <View style={styles.headerContainer}>
-            <Image
-                source={require('../../assets/illustration.png')} 
-                style={styles.headerImage}
-            />
-        </View>
-        <Text style={styles.title}>MediX</Text>
-        <Text style={styles.subtitle}>App</Text>
-        <View style={styles.inputContainer}>
-            <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#888"
-            />
-            <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#888"
-            secureTextEntry
-            />
+    <LinearGradient
+      colors={['#5de0e6', '#004aad']}
+      // colors={['#8c52ff', '#5ce1e6']}
+      start={{ x: 0, y: 0 }} // Départ en haut
+      end={{ x: 1, y: 0 }}
+      style={styles.container}
+    >
+      {/* Header Illustration */}
+      <View style={styles.headerContainer}>
+        <Image
+          source={require('../../assets/illustration.png')} 
+          style={styles.headerImage}
+        />
       </View>
-        <View style={styles.box}>
-            {/* Forgot Password */}
-            <TouchableOpacity style={styles.loginButton}>
-            <Text style={styles.loginButtonText}>Login</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate("ForgotScreen")}>
-            <Text style={styles.forgotPassword}>Forgot Password?</Text>
-            </TouchableOpacity>
-            {/* Buttons */}
-
-
-
-        </View>
-  </LinearGradient>
+      <Text style={styles.title}>MediX</Text>
+      <Text style={styles.subtitle}>App</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={mail}
+          onChangeText={setMail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+      </View>
+      <View style={styles.box}>
+        {/* Forgot Password */}
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Login</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("ForgotScreen")}>
+          <Text style={styles.forgotPassword}>Forgot Password?</Text>
+        </TouchableOpacity>
+        {/* Buttons */}
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -61,23 +106,27 @@ const styles = StyleSheet.create({
     paddingVertical: 20, 
     backgroundColor: 'white',
     borderRadius: 40,
-    marginVertical:-20,
+    marginVertical: -20,
   },
   headerContainer: {
     marginBottom: 0,
+  },
+  headerImage: {
+    width: 200,
+    height: 200,
   },
   title: {
     fontSize: 42,
     fontWeight: 'bold',
     color: '#FFB200',
-    paddingTop:1,
-    paddingVertical:1,
+    paddingTop: 1,
+    paddingVertical: 1,
   },
   subtitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#FFB200',
-    paddingBottom:8,
+    paddingBottom: 8,
   },
   inputContainer: {
     width: '100%',
@@ -89,15 +138,15 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 20,
     marginVertical: 1,
-    marginHorizontal:25,
-    marginBottom:20,
+    marginHorizontal: 25,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: '#ddd',
   },
   forgotPassword: {
     color: '#1E90FF',
     marginBottom: 30,
-    textAlign:'center',
+    textAlign: 'center',
   },
   loginButton: {
     backgroundColor: '#1E90FF',

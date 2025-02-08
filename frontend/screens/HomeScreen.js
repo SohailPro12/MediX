@@ -10,10 +10,11 @@ import {
   Modal,
   TouchableWithoutFeedback,
 } from 'react-native';
-import { Calendar } from 'react-native-calendars';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import '../i18n';
+import AdminCalendar from '../components/AdminCalendar';
+import Supprimercompte from '../components/Supprimercompte';
 
 const HomeScreen = () => {
   const { t, i18n } = useTranslation();
@@ -99,13 +100,11 @@ const HomeScreen = () => {
         </View>
 
         {/* Calendar */}
-        <Text style={styles.calendarTitle}>{t('calendar')}</Text>
-        <Calendar
-          style={styles.calendar}
-          onDayPress={(day) => console.log('Selected date:', day.dateString)}
-        />
+        <AdminCalendar />
+        <Supprimercompte/>
       </View>
     </SafeAreaView>
+    
   );
 };
 

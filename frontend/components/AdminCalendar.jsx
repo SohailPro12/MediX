@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Agenda } from 'react-native-calendars';
+import { useTranslation } from 'react-i18next'; 
+import '../i18n';
 
 const AdminCalendar = () => {
+  const { t, i18n } = useTranslation(); 
   const [items, setItems] = useState({
     '2025-01-21': [
       { name: 'Dr. Ahmed: John D', time: '09:00 - 10:00' },
@@ -18,7 +21,7 @@ const AdminCalendar = () => {
   const renderEmptyDate = () => {
     return (
       <View style={styles.emptyDate}>
-        <Text style={styles.emptyDateText}>Aucun rendez-vous</Text>
+        <Text style={styles.emptyDateText}>{t('Aucun rendez-vous')}</Text> 
       </View>
     );
   };
@@ -34,7 +37,7 @@ const AdminCalendar = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Calendrier des rendez-vous</Text>
+      <Text style={styles.title}>{t('Calendrier des rendez-vous')}</Text>
       <Agenda
         items={items}
         renderItem={renderItem}
