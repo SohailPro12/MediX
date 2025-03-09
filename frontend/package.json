@@ -26,9 +26,9 @@
     "react-i18next": "^15.4.0",
     "react-native": "0.76.6",
     "react-native-calendars": "^1.1308.1",
-    "react-native-modal": "^14.0.0-rc.0",
     "react-native-paper": "^5.13.1",
-    "react-native-web": "~0.19.13"
+    "react-native-web": "~0.19.13",
+    "expo-splash-screen": "~0.29.22"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
