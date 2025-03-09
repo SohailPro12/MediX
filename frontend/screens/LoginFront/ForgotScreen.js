@@ -1,22 +1,41 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet,Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { handleSendEmail } from './authentification/HandleSendMail';  
 
-const ForgotScreen = ({ navigation }) => {
+const ForgotScreen = ({ navigation, route }) => {
+  const role = route?.params?.role || ''; // Gestion d'un rôle par défaut si non défini
+  const [mail, setMail] = useState('');
+  const [errorMessage, setErrorMessage] = useState(''); // État pour le message d'erreur
+  const [successMessage, setSuccessMessage] = useState(''); // État pour le message de succès
+
+  const handleResetPassword = async () => {
+    console.log('Mail:', mail);
+    console.log('Role:', role);
+    const result = await handleSendEmail(mail,role);
+    if (result.success) {
+      setSuccessMessage(result.message);
+      setErrorMessage('');
+      setTimeout(() => {
+        navigation.goBack(); // Retour à la page précédente après un délai
+      }, 2000); // Attendre 2 secondes pour que l'utilisateur voie le message de succès
+    } else {
+      setErrorMessage(result.message);
+      setSuccessMessage('');
+    }
+  };
+
   return (
     <View style={styles.container}>
-        <View style={styles.headerContainer}>
-            <Image
-                source={require('../../assets/serrure.png')} 
-                style={styles.headerImage}
-            />
-        </View>
-        <View style={styles.textcontainer}>
-            <Text style={styles.ttext}>Forgot</Text>
-            <Text style={styles.t2text}>Password? {"\n"}</Text>
-            <Text style={styles.t3text}>{"\n"}No worries, we'll send you</Text>
-            <Text style={styles.t3text}>reset instructions</Text>
-        </View>
+      <View style={styles.headerContainer}>
+        <Image source={require('../../assets/serrure.png')} style={styles.headerImage} />
+      </View>
+      <View style={styles.textcontainer}>
+        <Text style={styles.ttext}>Forgot</Text>
+        <Text style={styles.t2text}>Password? {"\n"}</Text>
+        <Text style={styles.t3text}>{"\n"}No worries, we'll send you</Text>
+        <Text style={styles.t3text}>reset instructions</Text>
+      </View>
       <View style={styles.box}>
         <LinearGradient
           colors={['#5de0e6', '#004aad']}
@@ -24,19 +43,28 @@ const ForgotScreen = ({ navigation }) => {
           end={{ x: 1, y: 0 }}   // Fin à droite
           style={styles.lin}
         >
-          {/* Zone supérieure : Champ email */}
           <View style={styles.inputContainer}>
             <Text style={styles.orText}>Email</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter your Email"
               placeholderTextColor="#888"
+              onChangeText={(text) => setMail(text)} // Liaison de l'entrée utilisateur
+  value={mail}
             />
+
           </View>
 
-          {/* Zone inférieure : Boutons */}
+          {/* Affichage du message d'erreur ou de succès */}
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
+          {successMessage ? (
+            <Text style={styles.successText}>{successMessage}</Text>
+          ) : null}
+
           <View style={styles.cardContainer}>
-            <TouchableOpacity style={styles.resetpassButton} onPress={() => navigation.navigate("CodeScreen")}>
+            <TouchableOpacity style={styles.resetpassButton} onPress={handleResetPassword}>
               <Text style={styles.resetpassText}>Reset Password</Text>
             </TouchableOpacity>
 
@@ -131,6 +159,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
     marginHorizontal:20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  successText: {
+    color: 'green',
+    fontSize: 16,
+    marginBottom: 10,
   },
 });
 

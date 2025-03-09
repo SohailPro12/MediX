@@ -7,6 +7,8 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "scheme": "medix",
+    "platforms": ["android", "ios"],
     "splash": {
       "image": "./assets/splash.jpg",
       "resizeMode": "cover",
@@ -16,6 +18,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.myapp.android",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

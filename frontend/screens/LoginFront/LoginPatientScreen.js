@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform, Touchable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-web';
+import { handleLogin }  from './authentification/HandleLogin.js';
+
 
 
 
 const LoginPatientScreen = ({ navigation }) => {
+    const [mail, setMail] = useState('');
+    const [password, setPassword] = useState('');
   return (
     <>
       {/* Header Illustration */}
@@ -23,23 +27,26 @@ const LoginPatientScreen = ({ navigation }) => {
       </View>
       <Text style={styles.head}>Welcome Dear User</Text>
       <View style={styles.inputContainer}>
-        <TextInput
-        style={styles.input}
-        placeholder='Email'
-        placeholderTextColor='#888'
+         <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#888"
+          value={mail}
+          onChangeText={setMail}
         />
         <TextInput
-        style={styles.input}
-        placeholder='Password'
-        placeholderTextColor='#888'
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#888"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
         />
       </View>
-      <TouchableOpacity style={styles.Button}>
-        <Text style={styles.textButton}>
-          Login
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.Forgot}onPress={() => navigation.navigate("ForgotScreen")}>
+      <TouchableOpacity style={styles.Button} onPress={() => handleLogin(navigation ,mail, password,"patient")}>
+             <Text style={styles.textButton}>Se connecter</Text>
+            </TouchableOpacity>
+      <TouchableOpacity style={styles.Forgot} onPress={() =>navigation.navigate("ForgotScreen", { role: "patient" })}>
         <Text style={styles.textForgot}>
           Forgot Password ?
         </Text>

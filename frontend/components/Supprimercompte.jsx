@@ -1,9 +1,12 @@
 import React from 'react';
 import { View, Text, Button, Alert, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import '../i18n';
+import { handleDeleteAccount } from 'C:/Users/ANAS/Desktop/MediX/frontend/screens/LoginFront/authentification/deleteAdmin.js';
 
 const DeleteAccountButton = () => {
+  const navigation = useNavigation();
   const { t, i18n } = useTranslation(); 
 
   const confirmDelete = () => {
@@ -16,13 +19,9 @@ const DeleteAccountButton = () => {
           onPress: () => console.log("Annuler"),
           style: "cancel"
         },
-        { text: t("Supprimer"), onPress: () => handleDeleteAccount() } 
+        { text: t("Supprimer"), onPress: () => handleDeleteAccount(navigation) } // Correction ici
       ]
     );
-  };
-
-  const handleDeleteAccount = () => {
-    console.log("Compte supprimé");
   };
 
   return (
