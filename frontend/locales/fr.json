@@ -12,6 +12,19 @@
     "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible",
     "Annuler": "Annuler",
     "Supprimer": "Supprimer",
-    "Supprimer le compte": "Supprimer le compte"
-  
+    "Supprimer le compte": "Supprimer le compte",
+    
+
+   "Cardiologist": "Cardiologue",
+   "Dermatologist": "Dermatologue",
+    "Endocrinologist": "Endocrinologue",
+    "Gastroenterologist": "Gastro-entérologue",
+    "General Practitioner": "Médecin généraliste",
+    "Hematologist": "Hématologue",
+    "Internist": "Interniste",
+    "Nephrologist": "Néphrologue",
+    "Neurologist": "Neurologue",
+    "Oncologist": "Oncologue",
+    "Ophthalmologist": "Ophtalmologue",
+    "Orthopedist": "Orthopédiste"
 }

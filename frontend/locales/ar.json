@@ -12,6 +12,24 @@
     "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.": "هل أنت متأكد من أنك تريد حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.",
     "Annuler": "إلغاء",
     "Supprimer": "حذف",
-    "Supprimer le compte": "حذف الحساب"
+    "Supprimer le compte": "حذف الحساب",
+    "General": "عام",
+    "Liste des médecins": "قائمة الأطباء",
+    "Ajouter un médecin": "إضافة طبيب",
+    "Supprimer un médecin": "حذف الطبيب",
+    "Problèmes techniques": "مشاكل تقنية",
 
+    "Cardiologist": "طبيب قلب",
+    "Dermatologist": "طبيب جلدية",
+    "Endocrinologist": "طبيب غدد",
+    "Gastroenterologist": "طبيب جهاز هضمي",
+    "General Practitioner": "طبيب عام",
+    "Hematologist": "طبيب دم",
+    "Internist": "طبيب باطني",
+    "Nephrologist": "طبيب كلى",
+    "Neurologist": "طبيب أعصاب",
+    "Oncologist": "طبيب أورام",
+    "Ophthalmologist": "طبيب عيون",
+    "Orthopedist": "طبيب عظام"
+   
 }
