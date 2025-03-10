@@ -2,51 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { handleLogin }  from './authentification/HandleLogin.js';
 
 const LoginScreen = () => {
   const [mail, setMail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
 
- const handleLogin = async () => {
-  try {
-    const response = await fetch('https://ed22-41-250-194-187.ngrok-free.app/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ mail, password }),
-    });
-
-    const rawResponse = await response.text();
-    console.log('Réponse brute:', rawResponse); // Log raw response
-
-    if (response.ok) {
-      try {
-        const result = JSON.parse(rawResponse); // Attempt to parse JSON
-        console.log('Données envoyées:', { mail, password });
-        navigation.navigate('HomeScreen');
-      } catch (parseError) {
-        console.error('Erreur de parsing:', parseError);
-        Alert.alert('Erreur', 'Réponse non valide du serveur.');
-      }
-    } else {
-      try {
-        const errorResult = JSON.parse(rawResponse); // Attempt to parse JSON
-        console.log('Erreur:', errorResult);
-        Alert.alert('Erreur', errorResult.message);
-      } catch (parseError) {
-        console.error('Erreur de parsing:', parseError);
-        Alert.alert('Erreur', 'Réponse non valide du serveur.');
-      }
-    }
-  } catch (error) {
-    console.error('Erreur du serveur:', error);
-    Alert.alert('Erreur', 'Erreur du serveur.');
-  }
-};
-
-  
   return (
     <LinearGradient
       colors={['#5de0e6', '#004aad']}
@@ -83,7 +45,7 @@ const LoginScreen = () => {
       </View>
       <View style={styles.box}>
         {/* Forgot Password */}
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <TouchableOpacity style={styles.loginButton} onPress={() =>handleLogin(navigation, mail, password)}>
           <Text style={styles.loginButtonText}>Login</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigation.navigate("ForgotScreen")}>

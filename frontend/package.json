@@ -5,18 +5,21 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
     "@expo/metro-runtime": "~4.0.1",
-    "@react-navigation/native": "^7.0.14",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-navigation/native": "^7.0.15",
     "@react-navigation/stack": "^7.1.1",
+    "axios": "^1.8.2",
     "eslint": "^9.19.0",
     "expo": "~52.0.26",
     "expo-image-picker": "~16.0.4",
     "expo-linear-gradient": "^14.0.2",
+    "expo-splash-screen": "^0.29.22",
     "expo-status-bar": "~2.0.1",
     "i18next": "^24.2.1",
     "i18next-browser-languagedetector": "^8.0.2",
@@ -28,7 +31,7 @@
     "react-native-calendars": "^1.1308.1",
     "react-native-paper": "^5.13.1",
     "react-native-web": "~0.19.13",
-    "expo-splash-screen": "~0.29.22"
+    "expo-linking": "~7.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

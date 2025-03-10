@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { handleSSOLogin }  from './authentification/HandleSSO';
 
 
 const CodeSSOScreen = ({ navigation }) => {
+  const [sso, setSso] = useState('');
+
+
   return (
     <LinearGradient
       colors={['#5de0e6', '#004aad']}
@@ -37,9 +41,11 @@ const CodeSSOScreen = ({ navigation }) => {
           style={styles.input}
           placeholder="SSO"
           placeholderTextColor="#888"
+          value={sso}
+          onChangeText={setSso} 
         />        
       </View>
-      <TouchableOpacity style={styles.validerButton} onPress={() => navigation.navigate("RoleScreen")}>
+      <TouchableOpacity style={styles.validerButton} onPress={() =>handleSSOLogin(sso, navigation)}>
           <Text style={styles.validerButtonText}>Valid</Text>
         </TouchableOpacity>
       </View>
