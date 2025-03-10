@@ -11,6 +11,15 @@ import LoginDoctorScreen from "../screens/LoginFront/LoginDoctorScreen";
 import LoginAdminScreen from "../screens/LoginFront/LoginAdminScreen";
 import LoginPatientScreen from "../screens/LoginFront/LoginPatientScreen";
 import { NavigationContainer } from '@react-navigation/native';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../i18n';
+import AdminGeneralScreen from "../screens/AdminGeneralScreen";
+import ProblemesScreen from "../screens/ProblemScreen";
+import ProblemDetailsScreen from "../screens/ProblemDetailScreen";
+import AddDoctor from "../screens/AddDoctor";
+import DoctorList from "../screens/DoctorList";
+import DoctorProfile from "../screens/DoctorProfile";
+
 
 
 const Stack = createStackNavigator();

@@ -19,9 +19,8 @@ const CodeSSOScreen = ({ navigation }) => {
     >
       {/* Header Illustration */}
       <View style={styles.language}>
-        <TouchableOpacity style={styles.languageButton}>
-          <Text style={styles.languageButtonText}>English </Text>
-        </TouchableOpacity>
+       {/* dropdown of lanugages*/}
+
       </View>
       <View style={styles.headerContainer}>
         <Image

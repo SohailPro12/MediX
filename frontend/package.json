@@ -19,6 +19,7 @@
     "expo": "~52.0.26",
     "expo-image-picker": "~16.0.4",
     "expo-linear-gradient": "^14.0.2",
+    "expo-linking": "~7.0.5",
     "expo-splash-screen": "^0.29.22",
     "expo-status-bar": "~2.0.1",
     "i18next": "^24.2.1",
@@ -29,9 +30,9 @@
     "react-i18next": "^15.4.0",
     "react-native": "0.76.6",
     "react-native-calendars": "^1.1308.1",
+    "react-native-modal": "^14.0.0-rc.0",
     "react-native-paper": "^5.13.1",
-    "react-native-web": "~0.19.13",
-    "expo-linking": "~7.0.5"
+    "react-native-web": "~0.19.13"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
