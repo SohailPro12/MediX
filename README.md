@@ -1,1 +1,1 @@
-MedX Project
+MediX Project
