@@ -61,10 +61,11 @@ const styles = StyleSheet.create({
   buttonNText: {
     color: "black",
   },
+
   buttonO: {
     flex: 1,
     marginHorizontal: 5,
-    backgroundColor: "#8fe3dd",
+    backgroundColor: "red",
   },
   pressedButton: {
     opacity: 0.5,

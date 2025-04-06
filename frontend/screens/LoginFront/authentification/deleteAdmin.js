@@ -5,7 +5,7 @@ export const handleDeleteAccount = async (navigation) => {
     try {
       const token = await AsyncStorage.getItem("token");
   
-      const response = await fetch("https://a52a-41-250-106-197.ngrok-free.app/api/auth/delete-account", {
+      const response = await fetch("https://dc19-41-248-230-93.ngrok-free.app/api/auth/delete-account", {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`, 

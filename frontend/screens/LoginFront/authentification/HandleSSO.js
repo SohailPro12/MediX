@@ -10,7 +10,7 @@ export const handleSSOLogin = async (sso, navigation, setLoading) => {
       ? { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
       : { "Content-Type": "application/json" };
 
-    const response = await fetch("https://293f-41-250-106-197.ngrok-free.app/api/auth/SSO", {
+    const response = await fetch("https://abf0-41-142-227-217.ngrok-free.app/api/auth/SSO", {
       method: "POST",
       headers,
       body: JSON.stringify({ sso }),

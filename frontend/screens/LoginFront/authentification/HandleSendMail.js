@@ -21,7 +21,7 @@ const ssoCode = await AsyncStorage.getItem('ssoCode');
   try {
     console.log('Envoi de l\'email à :', recipient, 'avec rôle:', role, 'et SSO:', ssoCode);
 
-    const response = await axios.post('https://293f-41-250-106-197.ngrok-free.app/api/auth/forgot-password', {
+    const response = await axios.post('https://dc19-41-248-230-93.ngrok-free.app/api/auth/forgot-password', {
       mail: recipient,
       role: role || 'default', 
       sso: ssoCode,

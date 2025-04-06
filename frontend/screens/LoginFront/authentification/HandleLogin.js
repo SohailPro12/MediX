@@ -10,7 +10,7 @@ export const handleLogin = async (navigation, mail, password, role ) => {
       return;
     }
 
-    const response = await fetch('https://293f-41-250-106-197.ngrok-free.app/api/auth/login', {
+    const response = await fetch('https://abf0-41-142-227-217.ngrok-free.app/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ export const handleLogin = async (navigation, mail, password, role ) => {
 
 
         if (result.role === 'admin') {
-          navigation.navigate('HomeScreen');  
+          navigation.navigate('DoctorList');  
         } else if (result.role === 'medecin') {
           navigation.navigate('HomeScreen');  
         } else if (result.role === 'patient') {

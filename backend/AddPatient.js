@@ -11,12 +11,12 @@ const addPatient = async () => {
   try {
     const pat = new Patient({
       code_SSO: '1',
-      cin: 'A123456',
-      nom: 'hasnaoui',
-      prenom: 'sara',
+      cin: 'C1234567',
+      nom: 'pat',
+      prenom: 'patient',
       age: 30,
       sexe: 'femme',
-      mail: 'sara@gmail.com',
+      mail: 'patient@patient.com',
       password: 'patient',
       telephone: '0535567890',
       adresse: 'Fes',

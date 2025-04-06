@@ -11,7 +11,7 @@ const adminSchema = new mongoose.Schema({
   mail: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   telephone: { type: String, required: true },
-  image: { type: Buffer }
+  image: { type: String },
 }, { collection: 'admin' , timestamps: true });
 
 

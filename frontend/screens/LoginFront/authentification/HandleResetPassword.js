@@ -7,7 +7,7 @@ const resetPasswordHandler = async (token, newPassword, retypePassword, setMessa
   }
 
   try {
-    const response = await axios.post('https://293f-41-250-106-197.ngrok-free.app/api/auth/reset-password', {
+    const response = await axios.post('https://dc19-41-248-230-93.ngrok-free.app/api/auth/reset-password', {
       token,
       newPassword,
     });

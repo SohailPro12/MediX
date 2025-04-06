@@ -1,23 +1,44 @@
-import React from "react";
-import { StyleSheet, View, Text, FlatList, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, FlatList, TouchableOpacity,ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import DoctorCard from "../components/DoctorCard.js"; 
 import SearchBar from "../components/SearchBar.js"; 
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from 'react-i18next';
-// Importer l'image locale
-const doctorImage = require("../assets/doctor.jpg");
+import axios from 'axios'; // Assure-toi d'importer axios pour faire les requêtes HTTP
 
-const doctors = [
-  { id: "1", name: "Dr. Ahmed", specialty: "Cardiologist", image: doctorImage },
-  { id: "2", name: "Dr. Sarah", specialty: "Dermatologist", image: doctorImage },
-  { id: "3", name: "Dr. John", specialty: "Neurologist", image: doctorImage },
-];
+// Importer l'image locale
 
 const DoctorList = () => {
+  const [doctors, setDoctors] = useState([]);  // Déclaration de l'état pour stocker la liste des médecins
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
   const { t } = useTranslation();
 
+  const handleDoctorDeleted = (id) => {
+    setDoctors((prevDoctors) => prevDoctors.filter((doc) => doc._id !== id));
+  };
+
+
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const response = await axios.get('https://abf0-41-142-227-217.ngrok-free.app/admin/Medecins');
+        const doctorsList = response.data.Doctors; 
+        setDoctors(doctorsList);  // Met à jour l'état avec la liste des médecins
+    
+      } catch (err) {
+        setError('Erreur lors du chargement des Médecins');
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchDoctors();  // Appel de la fonction pour récupérer les médecins
+  }, []);
+  
   return (
     <View style={styles.container}>
       {/* Header avec bouton de retour */}
@@ -31,17 +52,25 @@ const DoctorList = () => {
       {/* Barre de recherche */}
       <SearchBar />
 
-      {/* Liste des docteurs */}
-      <FlatList
-        data={doctors}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <DoctorCard name={item.name} specialty={item.specialty} image={item.image} />
-        )}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={<Text style={styles.emptyMessage}>{t('noDoctorsFound')}</Text>}
-      />
+    {loading ? (
+        <ActivityIndicator size="large" color="#75E1E5" style={styles.loader} />
+      ) : error ? (
+        <Text style={styles.errorText}>{t('errorFetchingDoctors')}</Text>
+      ) : (
+        // Liste des médecins
+        <FlatList
+          data={doctors}
+          keyExtractor={(item) => item._id} // Assure-toi d'utiliser un identifiant unique comme l'ID
+          renderItem={({ item }) => (    
 
+            <DoctorCard id={item._id} name={item.nom} prenom={item.prenom} specialty={item.specialite} photo={item.Photo} onDelete={handleDoctorDeleted} />
+          )}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={<Text style={styles.emptyMessage}>{t('noDoctorsFound')}</Text>}
+        />
+      )}
+
+      {/* Bouton pour ajouter un nouveau médecin */}
       <TouchableOpacity
         style={styles.addButton}
         onPress={() => navigation.navigate("AddDoctor")}
@@ -56,6 +85,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    marginTop: 27,
     padding: 16,
   },
   header: {
