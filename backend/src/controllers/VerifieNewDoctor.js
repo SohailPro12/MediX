@@ -1,26 +1,26 @@
-const Medecin = require('../models/Medecin');
-jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const Medecin = require("../models/Medecin");
 
-exports.VerifieDoctor = async (req, res) => {
-    const token = req.query.token;
-  
-    if (!token) {
-      return res.status(400).send('Token de vérification manquant');
+exports.verifyDoctor = async (req, res) => {
+  const { token } = req.params;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Décoder le JWT
+    const doctor = await Medecin.findById(decoded.id);
+
+    if (!doctor) {
+      return res.status(404).send("Médecin introuvable");
     }
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const doctor = await Medecin.findById(decoded.id);
-  
-      if (!doctor) {
-        return res.status(400).send('Médecin non trouvé');
-      }
-  
-      doctor.verifie = true;
-      await doctor.save();
-  
-      res.send('Email vérifié avec succès');
-    } catch (error) {
-      res.status(500).send('Erreur serveur');
+
+    if (doctor.verifie) {
+      return res.status(400).send("Le compte a déjà été vérifié");
     }
-  };
-  
+
+    doctor.verifie = true; // Met à jour le statut de vérification
+    await doctor.save();
+
+    res.status(200).send("Votre compte a été vérifié avec succès !");
+  } catch (error) {
+    res.status(400).send("Lien de vérification invalide ou expiré");
+  }
+};

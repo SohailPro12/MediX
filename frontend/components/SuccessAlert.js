@@ -7,7 +7,7 @@ const SuccessAlert = ({ visible, onClose, message }) => {
     <Modal animationType="slide" transparent={true} visible={visible}>
       <View style={styles.modalContainer}>
         <View style={styles.modalContent}>
-          <Ionicons name="checkmark-circle" size={50} color="#6a6e" />
+          <Ionicons name="checkmark-circle" size={50} color="#6aae6e" />
           <Text style={styles.modalText}>{message}</Text>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>OK</Text>

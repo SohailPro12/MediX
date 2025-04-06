@@ -5,40 +5,37 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const connectDB = require("./config/db");
-const authRoutes = require("./routes/Login");
-const AdminRoutes = require("./routes/admin");
 const errorMiddleware = require("./middleware/error");
+
+// Importation des routes
+const authRoutes = require("./routes/login");
+const adminRoutes = require("./routes/admin");
+const uploadRoutes = require("./routes/upload");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
+// 📌 Connexion à MongoDB
+connectDB();
+
+// 📌 Middleware global
 app.use(cors());
 app.use(helmet());
 app.use(morgan("combined"));
-app.use(bodyParser.json());
-app.use(bodyParser.text({ type: "*/*" })); // Debugging
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
+app.use(bodyParser.json({ limit: "50mb" }));
+app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
-
-
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
-app.options("*", cors()); // Gère les requêtes préflight
-
-// Connexion à MongoDB
-connectDB();
-
-// Routes
+// 📌 Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/admin", AdminRoutes);
+app.use("/admin", adminRoutes);
+app.use("/upload", uploadRoutes);
 
-// Middleware de gestion des erreurs
+// 📌 Middleware de gestion des erreurs
 app.use(errorMiddleware);
 
-// Démarrage du serveur
+// ✅ Démarrage du serveur
 app.listen(port, () => {
-  console.log(`🚀 Serveur lancé sur http://localhost:${port}`);
+  console.log(`✅ Serveur en ligne : http://localhost:${port}`);
 });

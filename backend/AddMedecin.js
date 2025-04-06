@@ -11,11 +11,12 @@ const addMedecin = async () => {
   try {
     const med = new medecin({
         code_SSO: '1',
-  nom : 'bou',
-  prenom : 'anass',
-    cin : 'V1234567',
+  nom : 'med',
+  prenom : 'medecin',
+    cin : 'A1234567',
   age : 25,
-  mail: 'as.bouderhem@gmail.com',
+  IdProfessionnel: 123,
+  mail: 'doc@medecin.com',
   password: 'medecin',
   telephone: '0535567890',
   specialite: 'cardiologue',
@@ -25,8 +26,9 @@ const addMedecin = async () => {
     heureDebut: '08:00',
     heureFin: '12:00'
   }],
-  experience: '5 ans',
-  formation: 'bac+7',
+  experience: ['5 ans in cardiology department in hospital ibn rochd', '3 years in private clinic', '2 years in public hospital'], 
+  formation: ['bac+7 in cardiology', 'bac+5 in general medicine'],
+  description: 'I am a cardiologist with 10 years of experience in the field of cardiology  and I am here to help you with your heart problems', 
   adresse: 'Fes',
   role: 'medecin',
     });

@@ -32,14 +32,11 @@ export const handleSendEmail = async (recipient, role) => {
       ssoCode
     );
 
-    const response = await axios.post(
-      `${API_URL}/api/auth/forgot-password`,
-      {
-        mail: recipient,
-        role: role || "default",
-        sso: ssoCode,
-      }
-    );
+    const response = await axios.post(`${API_URL}/api/auth/forgot-password`, {
+      mail: recipient,
+      role: role || "default",
+      sso: ssoCode,
+    });
 
     console.log("Réponse API:", response.data);
 

@@ -1,25 +1,50 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, Image, TouchableOpacity, Alert} from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import DeleteAlert from "./DeleteAlert";
 import { useTranslation } from 'react-i18next'
 
-const DoctorCard = ({ name, specialty, image, onDelete = () => {console.log(
-  "delete doctor"
-)
-} }) => {
+
+
+const DoctorCard = ({ id, name, prenom, specialty, photo, onDelete
+} ) => {
   const navigation = useNavigation();
   const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
 
+  const HandleDelete = async () => {
+    console.log("user",id);
+    try {
+          const response = await fetch(`https://cf0f-160-179-44-156.ngrok-free.app/admin/deleteMedecin/${id}`, {
+            method: "DELETE",
+          });
+      
+          const result = await response.json();
+          console.log("Réponse brute:", result);
+          if (response.ok) {
+            Alert.alert("Succès", result.message);
+            onDelete(id);
+          } else {
+            Alert.alert("Erreur", result.message);
+          }
+        } catch (error) {
+          console.error("Erreur suppression compte:", error);
+          Alert.alert("Erreur", "Impossible de supprimer le compte.");
+        }
+  
+  }
+  
+  const image = photo ? { uri: photo } : require('../assets/doctor.jpg');
+
+
   return (
     <View>
-      <TouchableOpacity onPress={() => navigation.navigate('DoctorProfile', { doctor: { name, specialty, image } })}>
+      <TouchableOpacity onPress={() => navigation.navigate('DoctorProfile', { id })}>
         <View style={styles.card}>
-          <Image source={image} style={styles.image} />
-          <View style={styles.textContainer}>
-            <Text style={styles.name}>{name}</Text>
+        <Image source={image} style={styles.image} />
+        <View style={styles.textContainer}>
+            <Text style={styles.name}>Dr {name} {prenom}</Text>
             <Text style={styles.specialty}>{t(specialty)}</Text>
           </View>
 
@@ -36,7 +61,7 @@ const DoctorCard = ({ name, specialty, image, onDelete = () => {console.log(
         onCancel={() => setModalVisible(false)}
         onConfirm={() => {
           setModalVisible(false);
-          onDelete();
+          HandleDelete();
         }}
       />
     </View>

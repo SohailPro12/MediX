@@ -45,8 +45,7 @@ const LoginDoctorScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.Button} onPress={() => handleLogin(navigation ,mail, password,"medecin")}>
              <Text style={styles.textButton}>Se connecter</Text>
             </TouchableOpacity>
-      <TouchableOpacity style={styles.Forgot} onPress={() =>navigation.navigate("ForgotScreen", { role: "medecin" })
-}>
+      <TouchableOpacity style={styles.Forgot} onPress={() =>navigation.navigate("ForgotScreen", { role: "medecin" })}>
         <Text style={styles.textForgot}>
           Forgot Password ?
         </Text>

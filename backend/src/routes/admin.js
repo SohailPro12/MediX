@@ -1,13 +1,19 @@
-// routes/admin.js
-const express = require('express');
+const express = require("express");
+const { addMedecin } = require("../controllers/AddMedcin");
+const { verifyDoctor } = require("../controllers/VerifieNewDoctor");
+const { getStatistics } = require ("../controllers/Admin_stats");
+const { getMedecins } = require("../controllers/ListeMedecins");
+const { deleteAccountMed } = require("../controllers/deleteMedecin");
+const { getInfoMedecin } = require("../controllers/DoctorProfile");
 const consultationController = require('../controllers/AdminControllers');
 const router = express.Router();
-const authMiddleware = require('../middleware/auth');
 
-const Clinique = require('../models/Clinique');
-const Admin = require('../models/Admin');
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() }); // Store in memory as Buffer
+router.post("/addDoc", addMedecin);
+router.get("/verifyDoc/:token", verifyDoctor);
+router.get("/stats", getStatistics);
+router.get("/Medecins", getMedecins);
+router.delete("/deleteMedecin/:id",deleteAccountMed);
+router.get("/DoctorProfile/:id", getInfoMedecin);
 
 // Debug middleware
 router.use((req, res, next) => {

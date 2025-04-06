@@ -12,12 +12,13 @@ const addAdmin = async () => {
     const admin = new Admin({
         code_SSO: '1',
         role: 'admin',
-        nom : 'boud',
-        prenom : 'anas',
-        cin : 'V123456',
-        mail: 'as.bouderhem@gmail.com',
-        password: '1',
-        telephone: '0535567890'
+        nom : 'admin',
+        prenom : 'admin',
+        cin : 'A1234567',
+        mail: 'admin@admin.com',
+        password: 'admin',
+        telephone: '0535567890',
+        image: 'https://res.cloudinary.com/dci4xpmbe/image/upload/v1742977522/medix/Admins/iguhhbxyxjtimsqjt9mp.png'
     });
 
     await admin.save();

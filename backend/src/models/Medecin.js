@@ -7,22 +7,24 @@ const medecinSchema = new mongoose.Schema({
   cin : { type: String, required: true, unique: true },
   nom : { type: String, required: true },
   prenom : { type: String, required: true },
-  age : { type: Number, required: true },
+  age : { type: Number, required: false },
   mail: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   telephone: { type: String, required: true },
   specialite: { type: String, required: true },
-  sexe: { type: String, required: true },
+  sexe: { type: String, required: false },
   disponibilite: [{
-    jour: { type: String, required: true },
-    heureDebut: { type: String, required: true },
-    heureFin: { type: String, required: true }
+    jour: { type: String, required: false },
+    heureDebut: { type: String, required: false },
+    heureFin: { type: String, required: false }
   }],
-  experience: { type: String, required: true },
-  formation: { type: String, required: true },
-  adresse: { type: String, required: true },
+  IdProfessionnel: {type: Number, required: true},
+  experience: [{ type: String, required: false }],
+  formation: [{ type: String, required: false }],
+  description: { type: String, required: false },
+  adresse: { type: String, required: false },
   role: { type: String, required: true, enum: ["medecin"], default: "medecin" },
-  Photo: { type: Buffer },
+  Photo: { type: String },
   verifie: { type: Boolean, default: false }
 }, { collection: 'medecin', timestamps: true });
 

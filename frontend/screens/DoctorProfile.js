@@ -3,12 +3,48 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Card, Avatar, Divider } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native'; // Ensure you import this
+import axios from 'axios';
+import { useState, useEffect } from 'react';
+import { ActivityIndicator } from 'react-native';
+
 const doctorImage = require("../assets/doctor.jpg");
 
 
-// Your component
-const DoctorProfile = () => {
+const DoctorProfile = ({ route }) => {
   const navigation = useNavigation();
+  const { id } = route.params; // Récupérer l'ID du médecin passé en paramètre de la route
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+
+    const fetchDoctorData = async () => {
+      try {
+        const response = await axios.get(`https://abf0-41-142-227-217.ngrok-free.app/admin/DoctorProfile/${id}`);
+        setDoctor(response.data); 
+        console.log(response.data);
+      } catch (err) {
+        console.log(err);
+        setError('Erreur lors du chargement des données du médecin');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctorData();
+  }, [id]); // Recharger les données lorsque l'ID change
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#75E1E5" style={styles.loader} />;
+  }
+
+  if (error) {
+    return <Text style={styles.errorText}>{error}</Text>;
+  }
+
+  const avatarSource = doctor.Photo ? { uri: doctor.Photo } : require('../assets/doctor.jpg');
+
 
   return (
     <View style={styles.container}>
@@ -23,31 +59,42 @@ const DoctorProfile = () => {
       <Card style={styles.card}>
         <Card.Content>
           <View style={styles.profileHeader}>
-            <Avatar.Image size={100} source={doctorImage} style={styles.avatar} />
-            <View style={styles.info}>
-              <Text style={styles.name}>Dr. Jean Dupont</Text>
-              <Text style={styles.specialty}>Spécialiste en Cardiologie</Text>
+          <Avatar.Image size={100} source= { avatarSource} style={styles.avatar} />
+          <View style={styles.info}>
+              <Text style={styles.name}>Dr. {doctor.nom} {doctor.prenom} </Text>
+              <Text style={styles.specialty}>{doctor.specialite}</Text>
             </View>
           </View>
 
           <Divider style={styles.divider} />
 
           <View style={styles.details}>
-            <Text style={styles.sectionTitle}>À propos</Text>
-            <Text style={styles.aboutText}>
-              Dr. Jean Dupont est un cardiologue expérimenté avec plus de 15 ans d'expérience.
-              Passionné par la santé cardiaque, il s'engage à fournir des soins personnalisés
-              et de qualité à ses patients.
-            </Text>
+        <Text style={styles.sectionTitle}>À propos</Text>
+        
+        {doctor.description ? (
+          <Text style={styles.aboutText}>{doctor.description}</Text>
+        ) : (
+        <Text style={styles.aboutText}>Aucune description disponible</Text>
+        )}
 
-            <Text style={styles.sectionTitle}>Formation</Text>
-            <Text style={styles.aboutText}>- Doctorat en Médecine, Université de Paris</Text>
-            <Text style={styles.aboutText}>- Spécialisation en Cardiologie, Hôpital Européen Georges-Pompidou</Text>
+        <Text style={styles.sectionTitle}>Formation</Text>
+        {doctor.formation && doctor.formation.length > 0 ? (
+          doctor.formation.map((line, index) => (
+            <Text key={index} style={styles.aboutText}>- {line}</Text>
+          ))
+        ) : (
+          <Text style={styles.aboutText}>Aucune formation disponible</Text>
+        )}
 
-            <Text style={styles.sectionTitle}>Expérience</Text>
-            <Text style={styles.aboutText}>- 5 ans en tant que cardiologue à l'Hôpital Saint-Louis</Text>
-            <Text style={styles.aboutText}>- 10 ans d'expérience en recherche sur les maladies cardiovasculaires</Text>
-          </View>
+        <Text style={styles.sectionTitle}>Expérience</Text>
+        {doctor.experience && doctor.experience.length > 0 ? (
+          doctor.experience.map((line, index) => (
+            <Text key={index} style={styles.aboutText}>- {line}</Text>
+          ))
+        ) : (
+          <Text style={styles.aboutText}>Aucune expérience disponible</Text>
+        )}
+      </View>
         </Card.Content>
       </Card>
     </View>
@@ -59,6 +106,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    marginTop: 27,
     padding: 16,
   },
   header: {
@@ -82,7 +130,6 @@ const styles = StyleSheet.create({
   profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
   },
   avatar: {
     marginRight: 16,
@@ -109,12 +156,14 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
+    marginTop: 16,
     marginBottom: 8,
   },
   aboutText: {
     fontSize: 16,
     color: '#555',
     lineHeight: 22,
+    marginBottom: 8,
   },
 });
 
