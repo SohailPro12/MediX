@@ -7,51 +7,47 @@ import { handleSSOLogin }  from './authentification/HandleSSO';
 
 const CodeSSOScreen = ({ navigation }) => {
   const [sso, setSso] = useState('');
-
+  const [loading, setLoading] = useState(false);
 
   return (
     <LinearGradient
       colors={['#5de0e6', '#004aad']}
-      // colors={['#8c52ff', '#5ce1e6']}
-      start={{ x: 0, y: 0 }} // Départ en haut
+      start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.container}
     >
-      {/* Header Illustration */}
       <View style={styles.language}>
-       {/* dropdown of lanugages*/}
-
+        {/* Dropdown of languages */}
       </View>
       <View style={styles.headerContainer}>
-        <Image
-          source={require('../../assets/illustration.png')} 
-          style={styles.headerImage}
-        />
+        <Image source={require('../../assets/illustration.png')} style={styles.headerImage} />
       </View>
       <View style={styles.text}>
         <Text style={styles.title}>MediX</Text>
         <Text style={styles.subtitle}>App</Text>
       </View>
-      
       <View style={styles.box}>
-      <Text style={styles.order}>Enter the SSO code of your clinique</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="SSO"
-          placeholderTextColor="#888"
-          value={sso}
-          onChangeText={setSso} 
-        />        
-      </View>
-      <TouchableOpacity style={styles.validerButton} onPress={() =>handleSSOLogin(sso, navigation)}>
-          <Text style={styles.validerButtonText}>Valid</Text>
+        <Text style={styles.order}>Enter the SSO code of your clinique</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholder="SSO"
+            placeholderTextColor="#888"
+            value={sso}
+            onChangeText={setSso}
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.validerButton}
+          onPress={() => handleSSOLogin(sso, navigation, setLoading)}
+          disabled={loading}
+        >
+          <Text style={styles.validerButtonText}>{loading ? 'Loading...' : 'Valid'}</Text>
         </TouchableOpacity>
       </View>
     </LinearGradient>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1, // pour prendre tour l'espace disponible

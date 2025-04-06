@@ -1,119 +1,149 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Agenda } from 'react-native-calendars';
-import { useTranslation } from 'react-i18next'; 
-import '../i18n';
+// components/AdminCalendar.jsx
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+} from "react-native";
+import CalendarPicker from "react-native-calendar-picker";
+import moment from "moment";
+import { API_URL } from "../config";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AdminCalendar = () => {
-  const { t, i18n } = useTranslation(); 
-  const [items, setItems] = useState({
-    '2025-01-21': [
-      { name: 'Dr. Ahmed: John D', time: '09:00 - 10:00' },
-      { name: 'Dr. Smith: John Doe', time: '09:00 - 10:00' },
-      { name: 'Dr. Jane: Mary Johnson', time: '11:00 - 12:00' },
-    ],
-    '2025-01-22': [
-      { name: 'Dr. Taylor: Bob Green', time: '09:30 - 10:30' },
-      { name: 'Dr. Wilson: Clara Black', time: '13:00 - 14:00' },
-    ],
-  });
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [consultations, setConsultations] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const renderEmptyDate = () => {
-    return (
-      <View style={styles.emptyDate}>
-        <Text style={styles.emptyDateText}>{t('Aucun rendez-vous')}</Text> 
-      </View>
-    );
+  // components/AdminCalendar.jsx
+  const fetchConsultations = async (date) => {
+    try {
+      const formattedDate = moment(date).format("YYYY-MM-DD");
+      const token = await AsyncStorage.getItem('authToken');
+      console.log("Token:", token); // Debugging line to check the token
+      console.log("Fetching consultations for:", formattedDate);
+      const response = await fetch(
+        `${API_URL}/api/admin/consultations/date/${formattedDate}`, // Updated to /api/admin
+        {
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json' // Ensure server returns JSON
+          }
+        }
+      );
+      const rawResponse = await response.text();
+      console.log('Raw response:', rawResponse);
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `HTTP error! status: ${response.status}, body: ${errorText}`
+        );
+      }
+
+      const data = JSON.parse(rawResponse);
+      console.log("Received data:", data);
+      setConsultations(data);
+      setModalVisible(true);
+    } catch (error) {
+      console.error("Error fetching consultations:", error);
+      setConsultations([]);
+      setModalVisible(true);
+    }
   };
 
-  const renderItem = (item) => {
-    return (
-      <View style={styles.item}>
-        <Text style={styles.itemText}>{item.name}</Text>
-        <Text style={styles.itemTime}>{item.time}</Text>
-      </View>
-    );
+  const onDateChange = (date) => {
+    setSelectedDate(date);
+    fetchConsultations(date);
   };
+
+  const renderConsultation = ({ item }) => (
+    <View style={styles.consultationItem}>
+      <Text>Patient ID: {item.PatientId}</Text>
+      <Text>Doctor ID: {item.MedecinId}</Text>
+      <Text>Time: {moment(item.date).format("HH:mm")}</Text>
+      <Text>Location: {item.lieu}</Text>
+      <Text>Notes: {item.observation || "None"}</Text>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t('Calendrier des rendez-vous')}</Text>
-      <Agenda
-        items={items}
-        renderItem={renderItem}
-        renderEmptyDate={renderEmptyDate}
-        theme={{
-          agendaDayTextColor: '#5D5FEF',
-          agendaDayNumColor: '#2E86C1',
-          agendaTodayColor: '#27AE60',
-          agendaKnobColor: '#A569BD',
-          dotColor: '#3498DB',
-          selectedDotColor: '#F1C40F',
-          todayTextColor: '#C0392B',
-          backgroundColor: '#ECF0F1',
-          calendarBackground: '#FFF',
-          selectedDayBackgroundColor: '#1ABC9C',
-          selectedDayTextColor: '#FFF',
-          dayTextColor: '#34495E',
-          textDisabledColor: '#BDC3C7',
-          monthTextColor: '#8E44AD',
-          textMonthFontWeight: 'bold',
-          textDayFontSize: 16,
-          textMonthFontSize: 18,
-          textDayHeaderFontSize: 14,
-        }}
-        style={{ marginTop: 20 }}
+      <CalendarPicker
+        onDateChange={onDateChange}
+        width={350}
+        todayBackgroundColor="#f2e6ff"
+        selectedDayColor="#7300e6"
+        selectedDayTextColor="#FFFFFF"
       />
+
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {selectedDate
+                ? `Consultations for ${moment(selectedDate).format(
+                    "MMMM D, YYYY"
+                  )}`
+                : "Consultations"}
+            </Text>
+
+            {consultations.length > 0 ? (
+              <FlatList
+                data={consultations}
+                renderItem={renderConsultation}
+                keyExtractor={(item) => item._id}
+              />
+            ) : (
+              <Text>No consultations scheduled</Text>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: 20,
+  },
+  modalOverlay: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    width: "90%",
+    maxHeight: "80%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+  },
+  consultationItem: {
     padding: 10,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginVertical: 10,
-    color: '#2C3E50',
-  },
-  item: {
-    backgroundColor: '#E8DAEF',
-    padding: 15,
-    marginHorizontal: 10,
-    marginVertical: 5,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  itemText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#2C3E50',
-  },
-  itemTime: {
-    fontSize: 14,
-    color: '#7F8C8D',
-  },
-  emptyDate: {
-    backgroundColor: '#D5DBDB',
-    padding: 15,
-    marginHorizontal: 10,
-    marginVertical: 5,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyDateText: {
-    color: '#7F8C8D',
-    fontSize: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
   },
 });
 

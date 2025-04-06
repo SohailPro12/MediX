@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/Login");
+const AdminRoutes = require("./routes/admin");
 const errorMiddleware = require("./middleware/error");
 
 const app = express();
@@ -18,11 +19,21 @@ app.use(morgan("combined"));
 app.use(bodyParser.json());
 app.use(bodyParser.text({ type: "*/*" })); // Debugging
 
+
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+app.options("*", cors()); // Gère les requêtes préflight
+
 // Connexion à MongoDB
 connectDB();
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", AdminRoutes);
 
 // Middleware de gestion des erreurs
 app.use(errorMiddleware);

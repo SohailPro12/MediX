@@ -1,3 +1,4 @@
+// controllers/LoginAuthentification.js
 const Admin = require("../models/Admin");
 const Medecin = require("../models/Medecin");
 const Patient = require("../models/Patient");
@@ -50,7 +51,8 @@ exports.login = async (req, res) => {
     }
 
     const token = generateToken(user);
-    res.json({ message: "Connexion réussie", token, role });
+    console.log("Generated token:", token); // Debug token
+    res.json({ message: "Connexion réussie", token, role, userId: user._id });
   } catch (error) {
     console.error("Erreur lors de la connexion:", error);
     res.status(500).json({ message: "Erreur serveur" });

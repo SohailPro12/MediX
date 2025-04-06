@@ -1,38 +1,44 @@
+// authentification/HandleSSO.js
 import { Alert } from "react-native";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../../config";
 
 export const handleSSOLogin = async (sso, navigation, setLoading) => {
   try {
+    if (setLoading) setLoading(true);
 
-    // Vérifiez si un token existe pour les connexions futures
-    const token = await AsyncStorage.getItem('authToken');
-    const headers = token
-      ? { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" }
-      : { "Content-Type": "application/json" };
-
-    const response = await fetch("https://293f-41-250-106-197.ngrok-free.app/api/auth/SSO", {
+    const response = await fetch(`${API_URL}/api/auth/SSO`, {
       method: "POST",
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ sso }),
     });
 
-    const result = await response.json();
-    console.log("Réponse serveur:", result);
+    console.log("Statut HTTP:", response.status);
+    const textResponse = await response.text();
+    console.log("Réponse brute du serveur:", textResponse);
+
+    let result;
+    try {
+      result = JSON.parse(textResponse);
+    } catch (error) {
+      console.error("Erreur de parsing JSON:", error);
+      Alert.alert("Erreur", "Le serveur a renvoyé une réponse invalide.");
+      return;
+    }
 
     if (response.ok) {
-      if (result.token) {
-        await AsyncStorage.setItem('authToken', result.token);
-      }
-      await AsyncStorage.setItem('ssoCode', sso); // Sauvegarde du SSO
+      await AsyncStorage.setItem("ssoCode", sso);
       Alert.alert("Succès", "Connexion SSO réussie !");
-      navigation.navigate("RoleScreen");
+      navigation.navigate("RoleScreen"); // Assuming RoleScreen leads to LoginAdminScreen
     } else {
-      // Nettoyer le token en cas d'échec
-      await AsyncStorage.removeItem('authToken');
       Alert.alert("Erreur", result.message || "Échec de l'authentification SSO.");
     }
   } catch (error) {
     console.error("Erreur de connexion SSO:", error);
     Alert.alert("Erreur", "Impossible de se connecter via SSO.");
-  } 
+  } finally {
+    if (setLoading) setLoading(false);
+  }
 };
