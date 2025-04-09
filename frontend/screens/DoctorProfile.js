@@ -6,8 +6,7 @@ import { useNavigation } from '@react-navigation/native'; // Ensure you import t
 import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { ActivityIndicator } from 'react-native';
-
-const doctorImage = require("../assets/doctor.jpg");
+import {API_URL} from '../config';
 
 
 const DoctorProfile = ({ route }) => {
@@ -21,7 +20,7 @@ const DoctorProfile = ({ route }) => {
 
     const fetchDoctorData = async () => {
       try {
-        const response = await axios.get(`https://abf0-41-142-227-217.ngrok-free.app/admin/DoctorProfile/${id}`);
+        const response = await axios.get(`${API_URL}/api/admin/DoctorProfile/${id}`);
         setDoctor(response.data); 
         console.log(response.data);
       } catch (err) {

@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from 'expo-image-picker';
 import SuccessAlert from "../components/SuccessAlert";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import {API_URL} from '../config';
 const AddDoctor = () => {
   const navigation = useNavigation();
   const [nom, setNom] = useState("");
@@ -64,22 +64,22 @@ const AddDoctor = () => {
         console.log("SSO Code récupéré:", codeSSO);
 
         // Envoi des données à l'API
-        const response = await fetch('https://abf0-41-142-227-217.ngrok-free.app/admin/addDoc', {
+        const response = await fetch(`${API_URL}/api/admin/addDoc`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                nom: nom.trim(),
-                prenom: prenom.trim(),
-                cin: cin?.trim(),
-                specialty: specialty.trim(),
-                licenseNumber: licenseNumber?.trim(),
-                mail: mail.trim(),
-                phone: phone?.trim(),
-                password: password.trim(),
-                codeSSO,
-                photo ,
+          nom: nom.trim(),
+          prenom: prenom.trim(),
+          cin: cin?.trim(),
+          specialty: specialty.trim(),
+          licenseNumber: licenseNumber?.trim(),
+          mail: mail.trim(),
+          phone: phone?.trim(),
+          password: password.trim(),
+          codeSSO,
+          photo,
             }),
         });
 
@@ -133,7 +133,7 @@ const AddDoctor = () => {
       });
   
       try {
-        const response = await fetch("https://abf0-41-142-227-217.ngrok-free.app/upload", {
+        const response = await fetch(`${API_URL}/api/upload/doctors`, {
           method: "POST",
           body: formData,
           headers: {

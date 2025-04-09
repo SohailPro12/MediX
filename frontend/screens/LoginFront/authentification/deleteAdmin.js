@@ -22,7 +22,7 @@ export const handleDeleteAccount = async (navigation) => {
     if (response.ok) {
       Alert.alert("Succès", result.message);
       await AsyncStorage.removeItem("token"); // Supprime le token localement
-      navigation.replace("LoginScreen"); // Redirige vers la connexion
+      navigation.replace("CodeSSOScreen"); // Redirige vers la connexion
     } else {
       Alert.alert("Erreur", result.message);
     }

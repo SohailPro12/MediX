@@ -1,4 +1,3 @@
-// screens/AdminGeneralScreen.jsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -6,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 const AdminGeneralScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -15,27 +15,23 @@ const AdminGeneralScreen = ({ navigation }) => {
   const fetchAdminProfile = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
+      if (!token) throw new Error('No authentication token found');
 
-      const response = await fetch('https://29ab-105-74-8-44.ngrok-free.app/api/admin/profile', {
+      const response = await fetch(`${API_URL}/api/admin/profile`, {
         method: 'GET',
         headers: {
-          'ngrok-skip-browser-warning': 'true',
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Accept': 'application/json',
         }
       });
 
       if (!response.ok) {
-        const rawResponse = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}, body: ${rawResponse}`);
+        const errorBody = await response.text();
+        throw new Error(`HTTP ${response.status} - ${errorBody}`);
       }
 
       const data = await response.json();
-      console.log('Admin profile data:', data);
       setAdminData(data);
     } catch (error) {
       console.error('Error fetching admin profile:', error);
@@ -51,66 +47,43 @@ const AdminGeneralScreen = ({ navigation }) => {
       Alert.alert('Erreur', 'Permission d\'accès à la galerie refusée');
       return;
     }
-  
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
-  
+
     if (!result.canceled) {
       const token = await AsyncStorage.getItem('authToken');
-      console.log('Token:', token);
-  
+      const uri = result.assets[0].uri;
+
       const formData = new FormData();
-      let uri = result.assets[0].uri;
-      let type = result.assets[0].type || 'image/jpeg';
-      let name = 'profile.jpg';
-  
-      if (uri.startsWith('data:image')) {
-        console.log('Detected base64 URI, converting to Blob...');
-        const base64Data = uri.split(',')[1];
-        const byteCharacters = atob(base64Data); // Decode base64 to binary string
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: type || 'image/png' });
-  
-        formData.append('image', blob, name);
-      } else {
-        formData.append('image', {
-          uri: uri,
-          type: type,
-          name: name,
-        });
-      }
-  
-      console.log('Uploading image with URI:', uri);
-  
+      formData.append("image", {
+        uri,
+        type: "image/jpeg",
+        name: "admin_profile.jpg",
+      });
+
       try {
         const response = await axios.post(
-          'https://29ab-105-74-8-44.ngrok-free.app/api/admin/profile/picture',
+          `${API_URL}/api/upload/Admins`,
           formData,
           {
             headers: {
-              'ngrok-skip-browser-warning': 'true',
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'multipart/form-data',
-              'Accept': 'application/json',
             },
           }
         );
-  
-        Alert.alert('Succès', response.data.message);
-        fetchAdminProfile();
+
+        Alert.alert('Succès', response.data.message || "Image mise à jour");
+        fetchAdminProfile(); // refresh profile
       } catch (error) {
         console.error('Error uploading picture:', error);
-        console.log('Error response:', error.response?.data);
-        const errorMsg = error.response?.data?.error || error.response?.data?.message || error.message;
-        Alert.alert('Erreur', `Échec de la mise à jour de l\'image: ${errorMsg}`);
+        const errorMsg = error.response?.data?.error || error.message;
+        Alert.alert('Erreur', `Échec de l'upload : ${errorMsg}`);
       }
     }
   };
@@ -122,7 +95,7 @@ const AdminGeneralScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <Text>Loading...</Text>
+        <Text>Chargement...</Text>
       </View>
     );
   }
@@ -133,25 +106,31 @@ const AdminGeneralScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>{t("General")}</Text>
+        <Text style={styles.title}>{t("Général")}</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.profile}>
-          <TouchableOpacity onPress={uploadProfilePicture}>
-            {adminData?.image ? (
-              <Image
-                source={{ uri: adminData.image.startsWith('http') ? adminData.image : `data:image/jpeg;base64,${adminData.image}` }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Icon name="person-circle-outline" size={80} color="#888" />
+          <View style={styles.avatarWrapper}>
+            <TouchableOpacity onPress={uploadProfilePicture}>
+              {adminData?.image ? (
+                <Image
+                  source={{ uri: adminData.image }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Icon name="person-circle-outline" size={80} color="#888" />
+                </View>
+              )}
+              <View style={styles.plusIcon}>
+                <Icon name="add-circle" size={24} color="#007bff" />
               </View>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.infoContainer}>
-            <Text style={styles.name}>{`${adminData?.prenom || 'Admin'} ${adminData?.nom || 'Name'}`}</Text>
+            <Text style={styles.name}>{`${adminData?.prenom || 'Admin'} ${adminData?.nom || ''}`}</Text>
             <Text style={styles.info}>Email: {adminData?.mail || 'N/A'}</Text>
             <Text style={styles.info}>Téléphone: {adminData?.telephone || 'N/A'}</Text>
           </View>
@@ -178,12 +157,8 @@ const AdminGeneralScreen = ({ navigation }) => {
   );
 };
 
-// Styles remain unchanged
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f4f4f4',
-  },
+  container: { flex: 1, backgroundColor: '#f4f4f4' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -192,28 +167,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginLeft: 16,
-    color: '#333',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  profile: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginBottom: 32,
+  title: { fontSize: 18, fontWeight: 'bold', marginLeft: 16, color: '#333' },
+  content: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 16 },
+  profile: { alignItems: 'center', marginBottom: 32 },
+  avatarWrapper: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+    marginBottom: 10,
   },
   avatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 8,
     borderWidth: 2,
     borderColor: '#ddd',
   },
@@ -224,28 +190,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
     borderWidth: 2,
     borderColor: '#ddd',
   },
-  infoContainer: {
-    alignItems: 'center',
+  plusIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: -5,
+    backgroundColor: '#fff',
+    borderRadius: 12,
   },
-  name: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
-  },
-  info: {
-    fontSize: 14,
-    color: '#888',
-    marginBottom: 2,
-  },
-  buttonsContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
+  infoContainer: { alignItems: 'center' },
+  name: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 4 },
+  info: { fontSize: 14, color: '#888', marginBottom: 2 },
+  buttonsContainer: { width: '100%', alignItems: 'center' },
   menuItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -257,12 +215,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: '#fff',
     borderRadius: 8,
+    marginBottom: 5,
   },
-  menuText: {
-    fontSize: 16,
-    color: '#333',
-    flex: 1,
-  },
+  menuText: { fontSize: 16, color: '#333', flex: 1 },
 });
 
 export default AdminGeneralScreen;

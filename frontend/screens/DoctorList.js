@@ -6,8 +6,7 @@ import SearchBar from "../components/SearchBar.js";
 import { useNavigation } from "@react-navigation/native";
 import { useTranslation } from 'react-i18next';
 import axios from 'axios'; // Assure-toi d'importer axios pour faire les requêtes HTTP
-
-// Importer l'image locale
+import {API_URL} from '../config'; // Assure-toi d'importer l'URL de l'API depuis le fichier de configuration
 
 const DoctorList = () => {
   const [doctors, setDoctors] = useState([]);  // Déclaration de l'état pour stocker la liste des médecins
@@ -25,7 +24,7 @@ const DoctorList = () => {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const response = await axios.get('https://abf0-41-142-227-217.ngrok-free.app/admin/Medecins');
+        const response = await axios.get(`${API_URL}/api/admin/Medecins`);
         const doctorsList = response.data.Doctors; 
         setDoctors(doctorsList);  // Met à jour l'état avec la liste des médecins
     

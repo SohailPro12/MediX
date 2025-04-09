@@ -11,6 +11,7 @@ const errorMiddleware = require("./middleware/error");
 const authRoutes = require("./routes/login");
 const adminRoutes = require("./routes/admin");
 const uploadRoutes = require("./routes/upload");
+const problemRoutes = require('./routes/problemRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,8 +30,10 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
 // 📌 Routes
 app.use("/api/auth", authRoutes);
-app.use("/admin", adminRoutes);
-app.use("/upload", uploadRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/upload", uploadRoutes);
+app.use('/api/problems', problemRoutes);
+app
 
 // 📌 Middleware de gestion des erreurs
 app.use(errorMiddleware);

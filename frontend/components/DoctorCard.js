@@ -4,7 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/AntDesign';
 import DeleteAlert from "./DeleteAlert";
 import { useTranslation } from 'react-i18next'
-
+import {API_URL} from '../config'; // Assure-toi d'importer l'URL de l'API depuis le fichier de configuration
 
 
 const DoctorCard = ({ id, name, prenom, specialty, photo, onDelete
@@ -16,7 +16,7 @@ const DoctorCard = ({ id, name, prenom, specialty, photo, onDelete
   const HandleDelete = async () => {
     console.log("user",id);
     try {
-          const response = await fetch(`https://cf0f-160-179-44-156.ngrok-free.app/admin/deleteMedecin/${id}`, {
+          const response = await fetch(`${API_URL}/api/admin/deleteMedecin/${id}`, {
             method: "DELETE",
           });
       
