@@ -1,9 +1,36 @@
 {
-    "home": "Home",
-    "search": "Search...",
-    "doctors": "Doctors",
-    "patients": "Patients",
-    "appointments": "Appointments Today",
-    "calendar": "Calendar"
-  }
+  "home": "Home",
+  "search": "Search...",
+  "doctors": "Doctors",
+  "patients": "Patients",
+  "appointments": "Appointments Today",
+  "calendar": "Calendar",
+    "Calendrier des rendez-vous": "calendar of appointments",
+    "Aucun rendez-vous": "No appointments",
+    "Confirmer la suppression": "Confirm deletion",
+    "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible": "Are you sure you want to delete your account? This action is irreversible",
+    "Annuler": "Cancel",
+    "Supprimer": "Delete",
+    "Supprimer le compte": "Delete account",
+    "General": "General",
+    "Liste des médecins": "List of doctors",
+    "Ajouter un médecin": "Add a doctor",
+    "Supprimer un médecin": "Delete a doctor",
+    "Problèmes techniques": "Technical problems",
+
+
+    "cardioloque": "Cardiologist",
+    "dermatologue": "Dermatologist",
+    "endocrinologue": "Endocrinologist",
+    "gastro-entérologue": "Gastroenterologist",
+    "médecin généraliste": "General Practitioner",
+    "hématologue": "Hematologist",
+    "interniste": "Internist",
+    "néphrologue": "Nephrologist",
+    "neurologue": "Neurologist",
+    "oncologue": "Oncologist",
+    "ophtalmologue": "Ophthalmologist",
+    "orthopédiste": "Orthopedist"
+
   
+}
