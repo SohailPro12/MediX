@@ -45,7 +45,8 @@
     "react-native-paper": "^5.13.1",
     "react-native-picker": "^4.3.7",
     "react-native-vector-icons": "^10.2.0",
-    "react-native-web": "~0.19.13"
+    "react-native-web": "~0.19.13",
+    "recyclerlistview": "^4.2.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
