@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { handleSSOLogin }  from './authentification/HandleSSO';
 
