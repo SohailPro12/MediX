@@ -36,7 +36,7 @@ export const handleLogin = async (navigation, mail, password, role) => {
         if (result.role === "admin") {
           navigation.navigate("HomeScreen");
         } else if (result.role === "medecin") {
-          navigation.navigate("HomeScreen");
+          navigation.navigate("DashboardDoctor");
         } else if (result.role === "patient") {
           navigation.navigate("HomeScreen");
         } else {
