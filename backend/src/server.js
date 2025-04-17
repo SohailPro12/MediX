@@ -12,6 +12,7 @@ const authRoutes = require("./routes/login");
 const adminRoutes = require("./routes/admin");
 const uploadRoutes = require("./routes/upload");
 const problemRoutes = require('./routes/problemRoutes');
+const doctorRoutes = require("./routes/doctor");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -33,7 +34,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/upload", uploadRoutes);
 app.use('/api/problems', problemRoutes);
-app
+app.use("/api/doctor", doctorRoutes);
 
 // 📌 Middleware de gestion des erreurs
 app.use(errorMiddleware);
