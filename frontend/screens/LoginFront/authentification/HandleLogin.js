@@ -6,6 +6,7 @@ import { API_URL } from "../../../config";
 export const handleLogin = async (navigation, mail, password, role) => {
   try {
     const ssoCode = await AsyncStorage.getItem("ssoCode");
+    print("Code SSO récupéré:", ssoCode); // Log the SSO code for debugging
     if (!ssoCode) {
       Alert.alert(
         "Erreur",

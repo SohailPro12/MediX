@@ -74,23 +74,25 @@ const ProblemesScreen = ({ navigation }) => {
       </View>
 
       <FlatList
-        data={problems}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.content}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.userItem, item.solved && { backgroundColor: '#e0ffe0' }]}
-            onPress={() => navigation.navigate('ProblemDetailsScreen', { user: item })}
-          >
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>{item.name}</Text>
-              <Text style={styles.userRole}>{item.role}</Text>
-            </View>
-            <Text style={styles.userMessage}>{item.message}</Text>
-            {item.solved && <Text style={styles.solvedLabel}>✔ Résolu</Text>}
-          </TouchableOpacity>
-        )}
-      />
+  data={problems}
+  keyExtractor={(item, index) => item._id || index.toString()}
+  contentContainerStyle={styles.content}
+  renderItem={({ item, index }) => (
+    <TouchableOpacity
+      key={item._id || index}
+      style={[styles.userItem, item.solved && { backgroundColor: '#e0ffe0' }]}
+      onPress={() => navigation.navigate('ProblemDetailsScreen', { user: item })}
+    >
+      <View style={styles.userInfo}>
+        <Text style={styles.userName}>{item.name}</Text>
+        <Text style={styles.userRole}>{item.role}</Text>
+      </View>
+      <Text style={styles.userMessage}>{item.message}</Text>
+      {item.solved && <Text style={styles.solvedLabel}>✔ Résolu</Text>}
+    </TouchableOpacity>
+  )}
+/>
+
     </SafeAreaView>
   );
 };

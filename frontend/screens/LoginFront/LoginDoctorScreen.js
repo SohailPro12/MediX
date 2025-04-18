@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform, Touchable } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Button } from 'react-native-web';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image} from 'react-native';
+
 import { handleLogin }  from './authentification/HandleLogin.js';
 
 
@@ -42,7 +41,9 @@ const LoginDoctorScreen = ({ navigation }) => {
           onChangeText={setPassword}
         />
       </View>
-      <TouchableOpacity style={styles.Button} onPress={() => handleLogin(navigation ,mail, password,"medecin")}>
+     
+
+      <TouchableOpacity style={styles.Button} onPress={() =>{  handleLogin(navigation ,mail, password,"medecin")}}>
              <Text style={styles.textButton}>Se connecter</Text>
             </TouchableOpacity>
       <TouchableOpacity style={styles.Forgot} onPress={() =>navigation.navigate("ForgotScreen", { role: "medecin" })}>

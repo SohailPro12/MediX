@@ -33,17 +33,25 @@ const HomeScreen = ({ navigation }) => {
           params: { dateSortOrder: 'desc' },
         });
 
-        // Check if there are any problems from the last 7 days
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        const recentProblems = response.data.filter((problem) => new Date(problem.createdAt) > sevenDaysAgo);
+        if (response.headers['content-type']?.includes('application/json')) {
+          console.log('Data reçu de /api/problems:', response.data);
 
-        setNewProblems(recentProblems.length > 0);
+          const sevenDaysAgo = new Date();
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+          const recentProblems = Array.isArray(response.data) 
+            ? response.data.filter((problem) => new Date(problem.createdAt) > sevenDaysAgo) 
+            : [];
+
+          setNewProblems(recentProblems.length > 0);
+        } else {
+          console.error('Unexpected response format:', response.data);
+        }
       } catch (err) {
         console.error('Erreur lors de la récupération des problèmes:', err);
       }
     };
-
+    
     fetchStats();
     checkNewProblems();
   }, []);

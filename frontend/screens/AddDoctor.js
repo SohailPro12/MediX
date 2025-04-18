@@ -138,6 +138,7 @@ const AddDoctor = () => {
           body: formData,
           headers: {
             "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${await AsyncStorage.getItem("authToken")}`,
           },
         });
   
