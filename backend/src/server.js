@@ -10,7 +10,7 @@ const errorMiddleware = require("./middleware/error");
 // Importation des routes
 const authRoutes = require("./routes/login");
 const adminRoutes = require("./routes/admin");
-const uploadRoutes = require("./routes/upload");
+/* const uploadRoutes = require("./routes/upload"); */
 const problemRoutes = require('./routes/problemRoutes');
 const doctorRoutes = require("./routes/doctor");
 
@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 // 📌 Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/upload", uploadRoutes);
+/* app.use("/api/upload", uploadRoutes); */
 app.use('/api/problems', problemRoutes);
 app.use("/api/doctor", doctorRoutes);
 

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { handleLogin } from './authentification/HandleLogin.js';
 import { Ionicons } from '@expo/vector-icons'; // Ensure you have this library installed
 
