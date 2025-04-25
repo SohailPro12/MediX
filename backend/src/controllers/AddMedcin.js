@@ -1,26 +1,19 @@
-const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Medecin = require("../models/Medecin");
 const sendEmail = require("../utils/sendEmail");
+const cloudinary = require("../config/cloudinary");
+const fs = require("fs");
 
 exports.addMedecin = async (req, res) => {
-  console.log("Données reçues:", req.body);
-  const data = req.body;
-  let photoBase64 = null;
-
   try {
-    // Vérifier si le médecin existe déjà
-    const existingDoctor = await Medecin.findOne({ mail: data.mail });
-    if (existingDoctor) {
-      return res.status(400).json({ message: "Un compte avec cet email existe déjà" });
+    const data = req.body;
+
+    // 1. check existing doctor
+    if (await Medecin.findOne({ mail: data.mail })) {
+      return res.status(400).json({ message: "Email déjà utilisé." });
     }
-    
 
-    console.log("Ajout du médecin:", data.nom);
-
-   
-
-    // Création du médecin
+    // 2. create new doctor instance (not saved yet)
     const newDoctor = new Medecin({
       code_SSO: data.codeSSO,
       nom: data.nom,
@@ -31,35 +24,44 @@ exports.addMedecin = async (req, res) => {
       specialite: data.specialty,
       IdProfessionnel: data.licenseNumber,
       password: data.password,
-      Photo: data.photo,
-      verifie: false,
+      verifie: false
     });
 
-    // Génération du token JWT sécurisé
-    const token = jwt.sign({ id: newDoctor._id, role: 'medecin' }, process.env.JWT_SECRET, { expiresIn: "15m" });
-    console.log(token);
+    // 3. if image file provided, upload to Cloudinary
+    if (req.file) {
+      const folder = `medix/Doctors/${newDoctor.code_SSO}`;
+      const pubId = `${newDoctor.nom}-${Date.now()}`;
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder,
+        public_id: pubId,
+        overwrite: true
+      });
+      // assign secure URL and cleanup
+      newDoctor.Photo = result.secure_url;
+      fs.unlinkSync(req.file.path);
+    }
 
-    // Lien de vérification
-    const deepLink = `medix://add_Medecin/${token}`;
-
-    // Contenu de l'email
-    const emailContent = `
-      <p>Bonjour ${data.nom},</p>
-      <p>Veuillez cliquer sur le lien suivant pour vérifier votre adresse email :</p>
-      <a href="${deepLink}">Vérifier l'email</a>
-      <p>${deepLink}</p>
-      <p>Si vous n'avez pas fait cette demande, ignorez cet email.</p>
-    `;
-
-    // Envoi de l'email
-    await sendEmail(data.mail, "Création du compte", emailContent);
-
-    // Sauvegarde du médecin
+    // 4. save doctor
     await newDoctor.save();
-    
-    res.status(201).json({ message: "Compte médecin créé avec succès. Veuillez vérifier votre email." });
+
+    // 5. generate JWT and send verification email
+    const token = jwt.sign({ id: newDoctor._id, role: 'medecin' }, process.env.JWT_SECRET, { expiresIn: '15m' });
+    const deepLink = `medix://add_Medecin/${token}`;
+    const emailContent = `
+      <p>Bonjour ${newDoctor.nom},</p>
+      <p>Veuillez vérifier votre email en cliquant <a href="${deepLink}">ici</a>.</p>
+      <p>${deepLink}</p>
+      <p>Si ce n'est pas vous, ignorez.</p>
+    `;
+    await sendEmail(newDoctor.mail, "Création du compte", emailContent);
+
+    return res.status(201).json({
+      message: "Compte médecin créé avec succès. Email de vérification envoyé.",
+      doctorId: newDoctor._id,
+      doctorSSO: newDoctor.code_SSO
+    });
   } catch (error) {
-    console.error("Erreur lors de l'ajout du médecin:", error);
-    res.status(500).json({ error: "Erreur interne du serveur. Veuillez réessayer plus tard." });
+    console.error(error);
+    return res.status(500).json({ error: "Erreur serveur." });
   }
 };

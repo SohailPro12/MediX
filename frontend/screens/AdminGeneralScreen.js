@@ -47,28 +47,28 @@ const AdminGeneralScreen = ({ navigation }) => {
       Alert.alert('Erreur', 'Permission d\'accès à la galerie refusée');
       return;
     }
-
+  
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
-
+  
     if (!result.canceled) {
       const token = await AsyncStorage.getItem('authToken');
       const uri = result.assets[0].uri;
-
+  
       const formData = new FormData();
       formData.append("image", {
         uri,
         type: "image/jpeg",
         name: "admin_profile.jpg",
       });
-
+  
       try {
         const response = await axios.post(
-          `${API_URL}/api/upload/Admins`,
+          `${API_URL}/api/admin/uploadimage/admin`,  // Updated the endpoint
           formData,
           {
             headers: {
@@ -77,7 +77,7 @@ const AdminGeneralScreen = ({ navigation }) => {
             },
           }
         );
-
+  
         Alert.alert('Succès', response.data.message || "Image mise à jour");
         fetchAdminProfile(); // refresh profile
       } catch (error) {
@@ -87,6 +87,7 @@ const AdminGeneralScreen = ({ navigation }) => {
       }
     }
   };
+  
 
   useEffect(() => {
     fetchAdminProfile();
