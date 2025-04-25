@@ -1,46 +1,43 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Medecin = require("../models/Medecin");
-const sendEmail = require("../utils/sendEmail");
+const Medecin = require("../../models/Patient");
+const sendEmail = require("../../utils/sendEmail");
+const Patient = require("../../models/Patient");
 
-exports.addMedecin = async (req, res) => {
+exports.addPatient = async (req, res) => {
   console.log("Données reçues:", req.body);
   const data = req.body;
-  let photoBase64 = null;
 
   try {
     // Vérifier si le médecin existe déjà
-    const existingDoctor = await Medecin.findOne({ mail: data.mail });
-    if (existingDoctor) {
+    const existingPatient = await Patient.findOne({ mail: data.mail });
+    if (existingPatient) {
       return res.status(400).json({ message: "Un compte avec cet email existe déjà" });
     }
     
 
-    console.log("Ajout du médecin:", data.nom);
+    console.log("Ajout du Patient:", data.nom);
 
    
 
     // Création du médecin
-    const newDoctor = new Medecin({
+    const newPatient = new Patient({
       code_SSO: data.codeSSO,
       nom: data.nom,
       prenom: data.prenom,
       cin: data.cin,
       mail: data.mail,
-      telephone: data.phone,
-      specialite: data.specialty,
-      IdProfessionnel: data.licenseNumber,
+      telephone: data.telephone,
       password: data.password,
-      Photo: data.photo,
       verifie: false,
     });
 
     // Génération du token JWT sécurisé
-    const token = jwt.sign({ id: newDoctor._id, role: 'medecin' }, process.env.JWT_SECRET, { expiresIn: "15m" });
+    const token = jwt.sign({ id: newPatient._id, role: 'patient' }, process.env.JWT_SECRET, { expiresIn: "15m" });
     console.log(token);
 
     // Lien de vérification
-    const deepLink = `medix://add_Medecin/${token}`;
+    const deepLink = `medix://add_Patient/${token}`;
 
     // Contenu de l'email
     const emailContent = `
@@ -55,11 +52,11 @@ exports.addMedecin = async (req, res) => {
     await sendEmail(data.mail, "Création du compte", emailContent);
 
     // Sauvegarde du médecin
-    await newDoctor.save();
+    await newPatient.save();
     
-    res.status(201).json({ message: "Compte médecin créé avec succès. Veuillez vérifier votre email." });
+    res.status(201).json({ message: "Compte Patient créé avec succès. Veuillez vérifier votre email." });
   } catch (error) {
-    console.error("Erreur lors de l'ajout du médecin:", error);
+    console.error("Erreur lors de l'ajout du Patient:", error);
     res.status(500).json({ error: "Erreur interne du serveur. Veuillez réessayer plus tard." });
   }
 };

@@ -1,4 +1,3 @@
-// PatientItem.js
 import React, { useState } from 'react';
 import { Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Card } from 'react-native-paper';
@@ -12,13 +11,16 @@ const PatientItem = ({ patient}) => {
     <Card style={styles.card}>
       <Card.Title 
         title={`${patient.nom} ${patient.prenom}`} 
-        subtitle={`N° Dossier: ${patient.numero}`} 
+        subtitle={`N° Dossier: ${patient.dossierMedicalId}`} 
         left={(props) => <Icon {...props} name="account-circle" size={40} color="#4A90E2" />} 
       />
       <Card.Content>
-        <Text style={styles.info}><Icon name="calendar" size={20} color="#4A90E2" /> {patient.date_naissance}</Text>
+        <Text style={styles.info}><Icon name="id-card" size={20} color="#4A90E2" /> {patient.cin}</Text>
         <Text style={styles.info}><Icon name="phone" size={20} color="#4A90E2" /> {patient.telephone}</Text>
-        <Text style={styles.info}><Icon name="email" size={20} color="#4A90E2" /> {patient.email}</Text>
+        <Text style={styles.info}><Icon name="email" size={20} color="#4A90E2" /> {patient.mail}</Text>
+        <Text style={styles.info}><Icon name="map-marker" size={20} color="#4A90E2" /> {patient.adresse}</Text>
+
+
       </Card.Content>
       <Card.Actions>
         

@@ -6,6 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import SuccessAlert from "../components/SuccessAlert";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {API_URL} from '../config';
+
 const AddDoctor = () => {
   const navigation = useNavigation();
   const [nom, setNom] = useState("");
@@ -20,6 +21,7 @@ const AddDoctor = () => {
   const [photo, setPhoto] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false); // Nouvel état
+
   
 
   const handleAddDoctor = async () => {

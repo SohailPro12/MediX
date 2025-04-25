@@ -1,92 +1,208 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button,StyleSheet, TouchableOpacity,KeyboardAvoidingView,ScrollView,Platform,TouchableWithoutFeedback,Keyboard } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, TextInput, StyleSheet, TouchableOpacity,
+  KeyboardAvoidingView, ScrollView, Platform, TouchableWithoutFeedback, Keyboard, ActivityIndicator
+} from 'react-native';
 import { Divider, Card, Avatar } from 'react-native-paper';
-
-// Assure-toi que tu importes tes styles
+import { useMedecin } from '../context/MedecinContext';
 import Header from '../../components/DoctorComponents/Header';
-import doctorImage from '../../assets/doctor.png'; 
+import { API_URL } from '../../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+const EditDoctorProfile = () => {
+  const { medecin, setMedecin } = useMedecin();
 
-const EditDoctorProfile= () => {
-  // Variables d'état pour les champs modifiables
-  const [about, setAbout] = useState('Dr. Jean Dupont est un cardiologue expérimenté avec plus de 15 ans d\'expérience...');
-  const [formation, setFormation] = useState('- Doctorat en Médecine, Université de Paris\n- Spécialisation en Cardiologie, Hôpital Européen Georges-Pompidou');
-  const [experience, setExperience] = useState('- 5 ans en tant que cardiologue à l\'Hôpital Saint-Louis\n- 10 ans d\'expérience en recherche sur les maladies cardiovasculaires');
+  const [about, setAbout] = useState('');
+  const [formation, setFormation] = useState([]);
+  const [experience, setExperience] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const [isEditing, setIsEditing] = useState(false); // Gérer si l'on est en mode édition ou non
+  useEffect(() => {
+    if (medecin) {
+      setAbout(medecin.description || '');
+      setFormation(medecin.formation || []);
+      setExperience(medecin.experience || []);
+    }
+  }, [medecin]);
 
-  const handleSave = () => {
-    // Ici tu peux envoyer les données au backend si nécessaire
-    setIsEditing(false); // Désactiver le mode édition après sauvegarde
+  const reloadDoctorProfile = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (!token) throw new Error('Aucun token trouvé');
+
+      const response = await fetch(`${API_URL}/api/doctor/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        }
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setMedecin(data);
+        setAbout(data.description || '');
+        setFormation(data.formation || []);
+        setExperience(data.experience || []);
+      } else {
+        throw new Error(data.message || 'Erreur inconnue');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération du profil:', error);
+    }
   };
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    const updatedDoctorData = {
+      description: about,
+      formation,
+      experience
+    };
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await fetch(`${API_URL}/api/doctor/EditProfile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedDoctorData)
+      });
+
+      if (!response.ok) throw new Error('Erreur lors de la mise à jour');
+
+      await reloadDoctorProfile();
+      setIsEditing(false);
+      alert('Profil mis à jour avec succès');
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du profil:", error);
+      alert('Échec de la mise à jour du profil');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!medecin || isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#75E1E5" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <Header name="Votre Profi" screen='SettingsDScreen'/>
+      <Header name="Votre Profil" screen='SettingsDScreen' />
       <Card style={styles.cardF}>
         <Card.Content>
           <View style={styles.profileHeader}>
-              <Avatar.Image size={100} source={doctorImage} style={styles.avatar} />
-              <View style={styles.info}>
-                  <Text style={styles.name}>Dr. Jean Dupont</Text>
-                  <Text style={styles.specialty}>Spécialiste en Cardiologie</Text>
-                  <TouchableOpacity
-                      style={styles.saveChanges}
-                      onPress={isEditing ? handleSave : () => setIsEditing(true)}>
-                      <Text style={styles.textChanges}>{isEditing ? "Enregistrer" : "Modifier"} </Text>
-                  </TouchableOpacity>
-              </View>
-          </View>      
-          {/* <Divider style={styles.divider} /> */}
+            <Avatar.Image
+              size={100}
+              source={medecin.Photo ? { uri: medecin.Photo } : require('../../assets/doctor.png')}
+            />
+            <View style={styles.info}>
+              <Text style={styles.name}>Dr. {medecin.nom} {medecin.prenom}</Text>
+              <Text style={styles.specialty}>Spécialiste en {medecin.specialite}</Text>
+              <TouchableOpacity
+                style={styles.saveChanges}
+                onPress={isEditing ? handleSave : () => setIsEditing(true)}>
+                <Text style={styles.textChanges}>{isEditing ? "Enregistrer" : "Modifier"}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </Card.Content>
       </Card>
-    <KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <Card style={styles.card}>
-              <Card.Content>
-                <ScrollView  contentContainerStyle={styles.scrollInnerCard}>
-                  <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-                    <View style={styles.details}>
-                        <Text style={styles.sectionTitle}>À propos</Text>
-                        {isEditing ? (
-                            <TextInput
-                            multiline
-                            value={about}
-                            onChangeText={setAbout}
-                            style={styles.textInput}
-                            />
-                        ) : (
-                            <Text style={styles.aboutText}>{about}</Text>
-                        )}
 
-                        <Text style={styles.sectionTitle}>Formation</Text>
-                        {isEditing ? (
-                            <TextInput
-                            multiline
-                            value={formation}
-                            onChangeText={setFormation}
-                            style={styles.textInput}
-                            />
-                        ) : (
-                            <Text style={styles.aboutText}>{formation}</Text>
-                        )}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <Card style={styles.card}>
+          <Card.Content>
+            <ScrollView contentContainerStyle={styles.scrollInnerCard}>
+              <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View style={styles.details}>
+                  <Text style={styles.sectionTitle}>À propos</Text>
+                  {isEditing ? (
+                    <TextInput
+                      multiline
+                      value={about}
+                      onChangeText={setAbout}
+                      style={styles.textInput}
+                    />
+                  ) : (
+                    <Text style={styles.aboutText}>{medecin.description}</Text>
+                  )}
 
-                        <Text style={styles.sectionTitle}>Expérience</Text>
-                        {isEditing ? (
-                            <TextInput
-                            multiline
-                            value={experience}
-                            onChangeText={setExperience}
-                            style={styles.textInput}
-                            />
-                        ) : (
-                            <Text style={styles.aboutText}>{experience}</Text>
-                        )}
-                    </View>
-                  </TouchableWithoutFeedback>
-                </ScrollView>
-              </Card.Content>
-            </Card>
-    </KeyboardAvoidingView>
+                  <Text style={styles.sectionTitle}>Formation</Text>
+                  {isEditing ? (
+                    <>
+                      {formation.map((form, index) => (
+                        <TextInput
+                          key={index}
+                          multiline
+                          value={form}
+                          onChangeText={(text) => {
+                            const newForm = [...formation];
+                            newForm[index] = text;
+                            setFormation(newForm);
+                          }}
+                          style={styles.textInput}
+                        />
+                      ))}
+                      <TouchableOpacity
+                        onPress={() => setFormation([...formation, ''])}
+                        style={[styles.saveChanges, { marginTop: 10, width: 150 }]}>
+                        <Text style={styles.textChanges}>+ Ajouter une ligne</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    Array.isArray(medecin.formation) ? (
+                      medecin.formation.map((form, index) => (
+                        <Text key={index} style={styles.aboutText}>• {form}</Text>
+                      ))
+                    ) : (
+                      <Text style={styles.aboutText}>{medecin.formation}</Text>
+                    )
+                  )}
+
+                  <Text style={styles.sectionTitle}>Expérience</Text>
+                  {isEditing ? (
+                    <>
+                      {experience.map((exp, index) => (
+                        <TextInput
+                          key={index}
+                          multiline
+                          value={exp}
+                          onChangeText={(text) => {
+                            const newExp = [...experience];
+                            newExp[index] = text;
+                            setExperience(newExp);
+                          }}
+                          style={styles.textInput}
+                        />
+                      ))}
+                      <TouchableOpacity
+                        onPress={() => setExperience([...experience, ''])}
+                        style={[styles.saveChanges, { marginTop: 10, width: 150 }]}>
+                        <Text style={styles.textChanges}>+ Ajouter une ligne</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    Array.isArray(medecin.experience) ? (
+                      medecin.experience.map((exp, index) => (
+                        <Text key={index} style={styles.aboutText}>• {exp}</Text>
+                      ))
+                    ) : (
+                      <Text style={styles.aboutText}>{medecin.experience}</Text>
+                    )
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
+            </ScrollView>
+          </Card.Content>
+        </Card>
+      </KeyboardAvoidingView>
     </View>
   );
 };
@@ -96,16 +212,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     padding: '6%',
-    paddingVertical:'12%',
+    paddingVertical: '12%',
   },
-  cardF:{
-    borderBottomRightRadius:0,
-    borderBottomLeftRadius:0,
+  cardF: {
+    borderBottomRightRadius: 0,
+    borderBottomLeftRadius: 0,
   },
   card: {
-    //borderRadius: 8,
-    borderTopRightRadius:0,
-    borderTopLeftRadius:0,
+    borderTopRightRadius: 0,
+    borderTopLeftRadius: 0,
     elevation: 4,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -115,9 +230,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-  },
-  avatar: {
-    marginRight: 16,
   },
   info: {
     flex: 1,
@@ -130,9 +242,6 @@ const styles = StyleSheet.create({
   specialty: {
     fontSize: 16,
     color: '#777',
-  },
-  divider: {
-    marginVertical: 16,
   },
   details: {
     padding: 8,
@@ -147,25 +256,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     lineHeight: 22,
-    marginBottom:16
+    marginBottom: 16,
   },
-  saveChanges:{
-    backgroundColor:'#75E1E5',
-    marginTop:5,
-    borderRadius:20,
-    alignItems:'center',
-    justifyContent:'center',
-    width:100,
-    height:25,
+  saveChanges: {
+    backgroundColor: '#75E1E5',
+    marginTop: 5,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 100,
+    height: 25,
     elevation: 8,
     shadowColor: '#75E1E5',
-    shadowOpacity:0.9,
+    shadowOpacity: 0.9,
     shadowRadius: 3,
   },
-  textChanges:{
-    color:'white',
-    fontSize:16,
-    
+  textChanges: {
+    color: 'white',
+    fontSize: 16,
   },
   scrollInnerCard: {
     paddingBottom: 0,
@@ -180,7 +288,6 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     padding: 8,
   },
-  
 });
 
 export default EditDoctorProfile;
