@@ -16,7 +16,7 @@ const addMedecin = async () => {
     cin : 'A1234567',
   age : 25,
   IdProfessionnel: 123,
-  mail: 'doc@medecin.com',
+  mail: 'anass@medecin.com',
   password: 'medecin',
   telephone: '0535567890',
   specialite: 'cardiologue',

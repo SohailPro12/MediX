@@ -55,7 +55,7 @@ export const handleLogin = async (navigation, mail, password, role) => {
       } catch (parseError) {
         console.error("Erreur de parsing:", parseError);
         Alert.alert("Erreur", "Réponse non valide du serveur.");
-      }
+      }  
     }
   } catch (error) {
     console.error("Erreur du serveur:", error);

@@ -1,42 +1,69 @@
-import React from 'react';
-import { View, FlatList, TextInput, StyleSheet} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, FlatList, Text, StyleSheet, ActivityIndicator } from 'react-native';
 
 import PatientCard from '../../components/DoctorComponents/CurrentPatientCard';
 import Header from '../../components/DoctorComponents/Header';
 import SearchBar from '../../components/DoctorComponents/SearchBar';
- {/*list des patient pour tester */}
-const patients = [
-    { id: '1', numero: '1', nom: 'Abdou', prenom: 'Abdou', date_naissance: '01/01/1990', telephone: '+21355555', email: 'abdou@mail.com' },
-    { id: '2', numero: '2', nom: 'Dorosu', prenom: 'Doros', date_naissance: '05/06/1985', telephone: '+2187654', email: 'dorosu@mail.com' },
-    { id: '3', numero: '3', nom: 'Ahmed', prenom: 'Didou', date_naissance: '12/09/1992', telephone: '+2187754', email: 'ahmed@mail.com' },
-    { id: '4', numero: '4', nom: 'Fatima', prenom: 'Fati', date_naissance: '20/07/1988', telephone: '+2128754', email: 'fatima@mail.com' },
-  ];
+import { useMedecin } from '../context/MedecinContext';
+import { fetchPatients } from "../../utils/ListePatients"; 
+
 
 const PatientListScreen = () => {
-    return (
-      <View style={styles.container}>
-         <Header name="Les patient Suivi"  screen="DashboardDoctor"/>
-        {/* Barre de recherche */}    
-        <SearchBar searchplacehoder="Rechercher un patient..."/>
-        {/* Liste des patients */}
-        <FlatList
-          data={patients}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <PatientCard patient={item} />}
-        />      
-      </View>
-    );
+  const { medecin } = useMedecin();
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const fetchPatientData = async () => {  
+    try {
+      if (medecin && medecin._id) {
+        const data = await fetchPatients(medecin._id);  
+        setPatients(data);  
+      }
+    } catch (err) {
+      setError(err.message);  
+    } finally {
+      setLoading(false);  
+    }
   };
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      paddingTop: 45,
-      padding:'3%',
-      backgroundColor: '#F1F5F9',
 
-    },
-   
-  });
-  
-  export default PatientListScreen;
+  useEffect(() => {
+    if (medecin && medecin._id) {
+      fetchPatientData();  
+    }
+  }, [medecin]);
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#00BFFF" />;
+  }
+
+  if (error) {
+    return <Text>{error}</Text>;
+  }
+
+  console.log(patients);
+  return (
+    <View style={styles.container}>
+      <Header name="Les patients suivis" screen="DashboardDoctor" />
+      <SearchBar searchplaceholder="Rechercher un patient..." />
+      
+      <FlatList
+        data={patients}
+        keyExtractor={(item) => item._id} 
+        renderItem={({ item }) => <PatientCard patient={item} />}
+      />
+
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingTop: 45,
+    padding: '3%',
+    backgroundColor: '#F1F5F9',
+  },
+});
+
+export default PatientListScreen;
