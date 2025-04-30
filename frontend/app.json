@@ -8,6 +8,7 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "medix",
+    "plugins": ["expo-notifications"],
     "platforms": ["android", "ios", "web"],
     "splash": {
       "image": "./assets/splash.jpg",

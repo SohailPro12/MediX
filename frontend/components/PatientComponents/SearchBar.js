@@ -7,12 +7,11 @@ const SearchBar = () => {
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-       
+        <Ionicons name="search" size={20} color="gray" />
         <TextInput
           style={styles.input}
-          placeholder="Rechercher"  
-        /> 
-        <Ionicons name="search" size={20} color="gray" />
+          placeholder="Rechercher un médecin ou une spécialité..." 
+        />
       </View>
     </View>
   );
@@ -20,14 +19,14 @@ const SearchBar = () => {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 10,
+    padding: 15,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor:"white",
-    borderRadius: 26,
-    paddingHorizontal: 10,
+    backgroundColor: "white",
+    borderRadius: 16,
+    paddingHorizontal: 5,
     paddingVertical: 5,
     marginBottom: 10,
   },
