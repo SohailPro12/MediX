@@ -1,6 +1,9 @@
-const express = require("express");
+/* hada mam7tajinoch daba */
+
+
+/* const express = require("express");
 const multer = require("multer");
-const { uploadImage } = require("../controllers/upload");
+const { uploadImage } = require("../controllers/uploadController");
 const fs = require("fs");
 const authMiddleware = require('../middleware/auth');
 const router = express.Router();
@@ -24,4 +27,4 @@ const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } });
 // 📌 Route d'upload
 router.post("/:type",authMiddleware, upload.single("image"), uploadImage);
 
-module.exports = router;
+module.exports = router; */

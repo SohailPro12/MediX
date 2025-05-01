@@ -9,7 +9,8 @@ const SchemaRendezVous = new mongoose.Schema({
   date: { type: Date, required: true },
   lieu: { type: String, required: true },
   observation: { type: String },
-  code_sso: { type: String } // New field, optional for now
+  status: { type: String, enum: ['pending', 'confirmed'], default: 'pending' },
+  motif: { type: String }
 }, { collection: 'Rendez-vous' });
 
 const RendezVous = mongoose.model('RendezVous', SchemaRendezVous);

@@ -1,4 +1,6 @@
-const cloudinary = require("../config/cloudinary");
+/* hadi makn7tajohach daba */
+
+/* const cloudinary = require("../config/cloudinary");
 const fs = require("fs");
 const Admin = require("../models/Admin");
 
@@ -49,3 +51,4 @@ const uploadImage = async (req, res) => {
 };
 
 module.exports = { uploadImage };
+ */

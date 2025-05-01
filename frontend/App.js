@@ -1,18 +1,20 @@
-
-import React from 'react';
-import DashboardPatient from "./screens/Patient_Interface/DashboardPatient";
-import { NavigationContainer } from '@react-navigation/native';
-import SearchDoctor from './screens/Patient_Interface/SearchDoctor';
-import PrendreRdv from './screens/Patient_Interface/PrendreRdv';
-import Messagerie from './screens/Patient_Interface/Messagerie';
-import Chat from './screens/Patient_Interface/Messagerie'
+import React, { useState } from 'react';
 import AppNavigator from './navigation/AppNavigator';
+import Splash from './screens/LoginFront/SplashScreen';
+import { MedecinProvider } from "./screens/context/MedecinContext";
 
 const App = () => {
-  return(
-    <AppNavigator/>
+  const [isSplashVisible, setIsSplashVisible] = useState(true);
+
+  return (
+    <MedecinProvider>
+      {isSplashVisible ? (
+        <Splash onFinish={() => setIsSplashVisible(false)} />
+      ) : (
+        <AppNavigator />
+      )}
+    </MedecinProvider>
   );
 };
 
 export default App;
-

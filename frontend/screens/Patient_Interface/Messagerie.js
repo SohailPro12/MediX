@@ -1,7 +1,7 @@
 import React  from 'react';
 import { View, Text,FlatList, TouchableOpacity, Image, StyleSheet} from 'react-native';
 import Header from '../../components/PatientComponents/Header';
-import SearchBar from '../../components/DoctorComponents/SearchBar';
+import SearchBar from '../../components/PatientComponents/SearchBarMess';
 import { useNavigation } from "@react-navigation/native";
 import BottomNav from '../../components/PatientComponents/BottomNav';
 const messages = [
