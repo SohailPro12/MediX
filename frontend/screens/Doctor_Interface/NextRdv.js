@@ -1,66 +1,108 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, StyleSheet, ActivityIndicator, RefreshControl, ScrollView } from "react-native";
+import { useNavigation } from '@react-navigation/native';
 import Header from "../../components/DoctorComponents/Header";
 import { useMedecin } from "../context/MedecinContext"; 
-import { fetchAppointments } from "../../utils/MedecinAppointement"
-
+import { fetchAppointments } from "../../utils/MedecinAppointement";
 
 export default function NextRdv() {
+  const navigation = useNavigation();
   const { medecin } = useMedecin(); 
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
 
+  const loadAppointments = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      const data = await fetchAppointments(medecin?._id, "confirmed", true);
+      setAppointments(data);
+      setError(null);
+    } catch (error) {
+      setError("Erreur de récupération des rendez-vous");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [medecin?._id]);
+
+  // Chargement initial
   useEffect(() => {
-    const getRdv = async () => {
-      try {
-        const data = await fetchAppointments(medecin?._id , "confirmed", true);
-        console.log(data);
-        
-        setAppointments(data);
-      } catch (error) {
-        setError("Erreur de récupération");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (medecin) getRdv();
-  }, [medecin]);
+    loadAppointments();
+  }, [loadAppointments]);
 
+  // Actualisation lors du focus
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', loadAppointments);
+    return unsubscribe;
+  }, [navigation, loadAppointments]);
 
-  if (loading) return <ActivityIndicator size="large" color="#00BFFF" />;
+  // Formatage de la date en français
+  const formatFrenchDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR', {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short'
+    });
+  };
+
+  if (loading && !refreshing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#00BFFF" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Header name="Prochains Rendez-vous" screen="DashboardDoctor" />
-      {error ? (
-        <Text style={styles.emptyText}>{error}</Text>
-      ) : appointments.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>Aucun rendez-vous n'existe</Text>
-        </View>
-      ) : (
-        <View style={styles.table}>
-          <View style={styles.tableRowHeader}>
-            <Text style={styles.tableHeader}>Date</Text>
-            <Text style={styles.tableHeader}>Heure</Text>
-            <Text style={styles.tableHeader}>Patient</Text>
+      
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={loadAppointments}
+            colors={["#00BFFF"]}
+            tintColor="#00BFFF"
+          />
+        }
+        contentContainerStyle={styles.scrollContent}
+      >
+        {error ? (
+          <Text style={styles.errorText}>{error}</Text>
+        ) : appointments.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Aucun rendez-vous à venir</Text>
           </View>
-          {appointments.map((item) => (
-            <View key={item._id} style={styles.tableRow}>
-              <Text style={styles.tableCell}>
-                {new Date(item.date).toLocaleDateString()}
-              </Text>
-              <Text style={styles.tableCell}>
-                {new Date(item.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </Text>
-              <Text style={styles.tableCell}>
-                {item.PatientId?.nom} {item.PatientId?.prenom}
-              </Text>
+        ) : (
+          <View style={styles.table}>
+            <View style={styles.tableRowHeader}>
+              <Text style={styles.tableHeader}>Date</Text>
+              <Text style={styles.tableHeader}>Heure</Text>
+              <Text style={styles.tableHeader}>Patient</Text>
             </View>
-          ))}
-        </View>
-      )}
+            {appointments.map((item) => (
+              <View key={item._id} style={styles.tableRow}>
+                <Text style={styles.tableCell}>
+                  {formatFrenchDate(item.date)}
+                </Text>
+                <Text style={styles.tableCell}>
+                  {new Date(item.date).toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
+                </Text>
+                <Text style={styles.tableCell}>
+                  {item.PatientId?.nom} {item.PatientId?.prenom}
+                </Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
     </View>
   );
 }
@@ -70,13 +112,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F9FAFB",
     paddingTop: 50,
-    padding: '3%',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  scrollContent: {
+    paddingHorizontal: '3%',
+    paddingBottom: 20,
   },
   table: {
     backgroundColor: "#ffffff",
     borderRadius: 8,
     paddingVertical: 17,
     elevation: 4,
+    marginTop: 10,
   },
   tableRowHeader: {
     flexDirection: "row",
@@ -84,12 +135,14 @@ const styles = StyleSheet.create({
     borderBottomColor: "#75E1E5",
     paddingBottom: 8,
     marginBottom: 10,
+    paddingHorizontal: 10,
   },
   tableRow: {
     flexDirection: "row",
     paddingVertical: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: "#eee",
+    paddingHorizontal: 10,
   },
   tableHeader: {
     fontWeight: "700",
@@ -111,5 +164,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "#999",
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });

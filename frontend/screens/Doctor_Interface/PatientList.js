@@ -1,74 +1,105 @@
-import { View,  FlatList, StyleSheet} from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, FlatList, StyleSheet, ActivityIndicator, Text } from "react-native";
+import { Button } from "react-native-paper";
+import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/DoctorComponents/Header";
 import PatientCard from "../../components/DoctorComponents/PatientCard";
+import { useMedecin } from "../context/MedecinContext";
+import * as patientAPI from "../../utils/ListePatients";
 
-const patients = [
-  {
-    id: "1",
-    name: "Ayoub Alaoui",
-    role: "Patient",
-    lastVisit: "02/02/2025",
-    image: require("../../assets/doctor.png"),
-    maladies: [
-      {
-        id: "1",
-        nature: "Grippe",
-        date: "Wednesday, Jun 15, 2025",
-        medicaments: [
-          {
-            id: "1",
-            name: "méd1",
-            endDate: "2025-03-27",
-            periods: ["Matin", "Soir"],
-          },
-          {
-            id: "2",
-            name: "méd2",
-            endDate: "2025-04-27",
-            periods: ["Matin"],
-          },
-        ],
-        analyses: [
-          {
-            id: "1",
-            name: "anal1",
-            resultats: "https://www.africau.edu/images/default/sample.pdf",
-          },
-        ],
-        traitement: "Faire du sport...",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Ahmed",
-    role: "Patient",
-    lastVisit: "",
-    image: require("../../assets/doctor.png"), // Remplace par l'URL réelle
-  },
-  {
-    id: "3",
-    name: "karim",
-    role: "Patient",
-    lastVisit: "",
-    image: require("../../assets/doctor.png"), // Remplace par l'URL réelle
-  },
-];
+const PatientList = ({ route }) => {
+  const navigation = useNavigation();
+  const { medecin } = useMedecin();
+  const [allPatients, setAllPatients] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-const PatientList = () => {
+  const fetchAllPatientData = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      setError(null);
+      
+      if (!medecin?._id) return;
+
+      const [appointmentPatients, doctorPatients] = await Promise.all([
+        patientAPI.fetchPatients(medecin._id),
+        patientAPI.fetchPatientMedecin(medecin._id)
+      ]);
+
+      const uniquePatientsMap = new Map();
+      
+      [...appointmentPatients, ...doctorPatients].forEach(patient => {
+        if (patient?._id) {
+          uniquePatientsMap.set(patient._id.toString(), patient);
+        }
+      });
+
+      setAllPatients(Array.from(uniquePatientsMap.values()));
+    } catch (err) {
+      console.error("Erreur de chargement:", err);
+      setError(err.message || "Erreur lors du chargement des patients");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [medecin?._id]);
+
+  useEffect(() => {
+    fetchAllPatientData();
+  }, [fetchAllPatientData]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', fetchAllPatientData);
+    return unsubscribe;
+  }, [navigation, fetchAllPatientData]);
+
+  if (loading && !refreshing) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#75E1E5" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <Button 
+          mode="contained" 
+          onPress={fetchAllPatientData}
+          style={styles.retryButton}
+          labelStyle={styles.buttonLabel}
+        >
+          Réessayer
+        </Button>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Header name='Liste des Patients' screen='SettingsDScreen'/>
+      <Header name="Mes Patients" screen="SettingsDScreen" />
+      
       <FlatList
-        data={patients}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item, index }) => (
-          <View style={index === 0 ? { marginTop: 10 } : {}}>
-            <PatientCard patient={item} isClickable={true}/>
-          </View>
+        data={allPatients}
+        keyExtractor={(item) => item._id.toString()}
+        renderItem={({ item }) => (
+          <PatientCard 
+            patient={item} 
+            isClickable={true}
+          />
         )}
+        contentContainerStyle={styles.listContent}
+        ListEmptyComponent={
+          <View style={styles.centerContainer}>
+            <Text style={styles.emptyText}>Aucun patient trouvé</Text>
+          </View>
+        }
+        refreshing={refreshing}
+        onRefresh={fetchAllPatientData}
       />
-
     </View>
   );
 };
@@ -79,6 +110,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 20,
     paddingVertical:'12%',
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#75E1E5',
+    width: '60%',
+  },
+  buttonLabel: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  listContent: {
+    paddingBottom: 20,
+    paddingTop: 10,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#8E8E93',
   },
 });
 

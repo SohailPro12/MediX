@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text, Image,  StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from '@react-navigation/native';
+import DefaultPatientPhoto from "../../assets/image.png"; // Assurez-vous que le chemin est correct
 const PatientCard = ({ patient,isClickable=true }) => {
     const navigation=useNavigation();
     const handleClick=()=>{
@@ -11,15 +12,18 @@ const PatientCard = ({ patient,isClickable=true }) => {
 
     return (
       <View style={styles.card}>
-        <Image source={patient.image} style={styles.image} />
-        
+<Image 
+      source={patient?.photo ? { uri: patient.photo } : DefaultPatientPhoto}
+      style={styles.image}
+      defaultSource={DefaultPatientPhoto} // Pour iOS (optionnel)
+    />        
         <View style={styles.info}>
             <TouchableOpacity onPress={handleClick} disabled={!isClickable}>
-            <Text style={styles.name}>{patient.name}</Text>
+            <Text style={styles.name}>{patient.nom} {patient.prenom}</Text>
             </TouchableOpacity>
-          <Text style={styles.role}>{patient.role}</Text>
+          <Text style={styles.role}>{patient.telephone}</Text>
           <Text style={styles.lastVisit}>
-            {patient.lastVisit ? `Dernière visite: ${patient.lastVisit}` : "Première visite"}
+            {patient.lastConfirmedAppointment ? `Dernière visite: ${patient.lastConfirmedAppointment}` : "Première visite"}
           </Text>
         </View>
       </View>
@@ -59,6 +63,7 @@ const PatientCard = ({ patient,isClickable=true }) => {
     role: {
       fontSize: 14,
       color: "#666",
+      marginTop: 6,
     },
     lastVisit: {
       fontSize: 12,
