@@ -1,101 +1,105 @@
-import React, { useState } from 'react';
-import { View, Text, KeyboardAvoidingView, Modal, StyleSheet } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { View, Text, KeyboardAvoidingView, Modal, StyleSheet, Alert } from 'react-native';
 import { TextInput, Button, Checkbox } from 'react-native-paper';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Header from '../../components/DoctorComponents/Header';
 import { API_URL } from '../../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useMedecin } from '../context/MedecinContext';
+import { useNavigation } from '@react-navigation/native';
 
 const AjouterPa = () => {
-  const [nom, setNom] = useState('');
-  const [prenom, setPrenom] = useState('');
-  const [cin, setCin] = useState('');
-  const [email, setEmail] = useState('');
-  const [telephone, setTelephone] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const navigation = useNavigation();
+  const { medecin } = useMedecin();
+  const [formData, setFormData] = useState({
+    nom: '',
+    prenom: '',
+    cin: '',
+    email: '',
+    telephone: '',
+    password: '',
+    confirmPassword: ''
+  });
   const [checked, setChecked] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false); // Ajout du state pour gérer l'envoi
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successModal, setSuccessModal] = useState(false);
-  const [errorModal, setErrorModal] = useState(false);
+
+  const handleChange = (name, value) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    const { nom, prenom, cin, email, telephone, password, confirmPassword } = formData;
+    
+    if (!nom || !prenom || !email || !telephone || !password || !confirmPassword) {
+      Alert.alert("Erreur", "Veuillez remplir tous les champs obligatoires.");
+      return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      Alert.alert("Erreur", "Veuillez entrer un email valide.");
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Erreur", "Les mots de passe ne correspondent pas.");
+      return false;
+    }
+
+    if (!checked) {
+      Alert.alert("Erreur", "Veuillez confirmer que les données sont correctes.");
+      return false;
+    }
+
+    return true;
+  };
 
   const handleRegister = async () => {
-    setIsSubmitting(true); // Désactivation du bouton pendant l'envoi
+    if (!validateForm()) return;
+    if (!medecin?._id) {
+      Alert.alert("Erreur", "Médecin non identifié");
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      // Vérification des champs vides
-      if (!nom || !prenom || !cin || !email || !telephone || !password || !confirmPassword || !checked) {
-        alert("Veuillez remplir tous les champs obligatoires.");
-        setIsSubmitting(false); // Réactiver le bouton en cas d'erreur
-        return;
-      }
+      const codeSSO = await AsyncStorage.getItem('ssoCode');
+      if (!codeSSO) throw new Error("Code SSO introuvable");
 
-      // Vérification du format de l'email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email.trim())) {
-        alert("Veuillez entrer un email valide.");
-        setIsSubmitting(false); // Réactiver le bouton en cas d'erreur
-        return;
-      }
-
-      // Vérification du mot de passe
-      if (password !== confirmPassword) {
-        alert("Les mots de passe ne correspondent pas.");
-        setIsSubmitting(false); // Réactiver le bouton en cas d'erreur
-        return;
-      }
-
-      // Récupération sécurisée du code SSO
-      let codeSSO = null;
-      try {
-        codeSSO = await AsyncStorage.getItem('ssoCode');
-        if (!codeSSO) {
-          throw new Error("Code SSO introuvable. Veuillez réessayer.");
-        }
-      } catch (error) {
-        alert(error.message);
-        setIsSubmitting(false); // Réactiver le bouton en cas d'erreur
-        return;
-      }
-
-      console.log("SSO Code récupéré:", codeSSO);
-
-      // Envoi des données à l'API
       const response = await fetch(`${API_URL}/api/doctor/AddPatient`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          nom: nom.trim(),
-          prenom: prenom.trim(),
-          cin: cin?.trim(),
-          mail: email.trim(),
-          telephone: telephone.trim(),
-          password: password.trim(),
+          id_medecin: medecin._id,
+          nom: formData.nom.trim(),
+          prenom: formData.prenom.trim(),
+          cin: formData.cin?.trim(),
+          mail: formData.email.trim(),
+          telephone: formData.telephone.trim(),
+          password: formData.password.trim(),
           codeSSO,
         }),
       });
 
-      if (response.status === 400) {
-        alert("Un compte avec cet email existe déjà.");
-        setIsSubmitting(false); // Réactiver le bouton
-        return;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur lors de la création du patient");
       }
 
-      if (response.ok) {
-        setSuccessModal(true);
-      } else {
-        const errorText = await response.text();
-        throw new Error(`Erreur HTTP ${response.status} : ${errorText}`);
-      }
+      setSuccessModal(true);
     } catch (error) {
-      console.error("Erreur dans handleRegister:", error);
-      alert("Une erreur est survenue. Veuillez réessayer plus tard.");
+      console.error("Erreur:", error);
+      Alert.alert("Erreur", error.message || "Une erreur est survenue");
     } finally {
-      setIsSubmitting(false); // Réactiver le bouton après la soumission
+      setIsSubmitting(false);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setSuccessModal(false);
+    navigation.goBack(); 
   };
 
   return (
@@ -103,66 +107,30 @@ const AjouterPa = () => {
       <Header name="Ajouter un Patient" screen="SettingsDScreen" />
       <Text style={styles.text}>Créer un compte pour un nouveau patient</Text>
 
-      <TextInput
-        label="Nom"
-        value={nom}
-        onChangeText={setNom}
-        mode="outlined"
-        theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
-        style={styles.input}
-      />
-      <TextInput
-        label="Prénom"
-        value={prenom}
-        onChangeText={setPrenom}
-        mode="outlined"
-        theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
-        style={styles.input}
-      />
-      <TextInput
-        label="CIN"
-        value={cin}
-        onChangeText={setCin}
-        mode="outlined"
-        theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
-        style={styles.input}
-      />
-      <TextInput
-        label="Adresse mail"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        keyboardType="email-address"
-        theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
-        style={styles.input}
-      />
-      <TextInput
-        label="Téléphone"
-        value={telephone}
-        onChangeText={setTelephone}
-        mode="outlined"
-        keyboardType="phone-pad"
-        theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
-        style={styles.input}
-      />
-      <TextInput
-        label="Mot de passe"
-        value={password}
-        onChangeText={setPassword}
-        mode="outlined"
-        secureTextEntry
-        theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
-        style={styles.input}
-      />
-      <TextInput
-        label="Confirmer mot de passe"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        mode="outlined"
-        secureTextEntry
-        theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
-        style={styles.input}
-      />
+      {Object.entries({
+        nom: 'Nom',
+        prenom: 'Prénom',
+        cin: 'CIN',
+        email: 'Adresse mail',
+        telephone: 'Téléphone',
+        password: 'Mot de passe',
+        confirmPassword: 'Confirmer mot de passe'
+      }).map(([key, label]) => (
+        <TextInput
+          key={key}
+          label={label}
+          value={formData[key]}
+          onChangeText={text => handleChange(key, text)}
+          mode="outlined"
+          secureTextEntry={key.includes('password')}
+          keyboardType={
+            key === 'email' ? 'email-address' : 
+            key === 'telephone' ? 'phone-pad' : 'default'
+          }
+          theme={{ colors: { primary: '#75E1E5', underlineColor: 'transparent' } }}
+          style={styles.input}
+        />
+      ))}
 
       <View style={styles.checkboxContainer}>
         <Checkbox
@@ -177,45 +145,21 @@ const AjouterPa = () => {
         mode="contained"
         onPress={handleRegister}
         style={styles.buttonCr}
-        disabled={isSubmitting} // Désactive le bouton pendant l'envoi
+        loading={isSubmitting}
+        disabled={isSubmitting}
       >
-        {isSubmitting ? 'Envoi...' : 'Créer un compte'}
+        Créer un compte
       </Button>
 
-      {/* Modal de succès */}
-      <Modal visible={successModal} transparent animationType="slide">
+      <Modal visible={successModal} transparent animationType="fade">
         <View style={styles.modalFcontainer}>
           <View style={styles.modalScontainer}>
-            <AntDesign name="checkcircleo" size={90} color="#75E1E5" style={{ marginBottom: 30 }} />
-            <Text style={{ fontSize: 20, marginBottom: 20 }}>Compte créé avec succès</Text>
+            <AntDesign name="checkcircleo" size={90} color="#75E1E5" />
+            <Text style={styles.modalText}>Compte patient créé avec succès</Text>
             <Button
               mode="contained"
-              onPress={() => setSuccessModal(false)}
-              style={{ backgroundColor: '#75E1E5' }}
-            >
-              OK
-            </Button>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal d'erreur */}
-      <Modal visible={errorModal} transparent animationType="slide">
-        <View style={styles.modalFcontainer}>
-          <View style={styles.modalScontainer}>
-            <MaterialIcons
-              name="error-outline"
-              size={90}
-              color="orange"
-              style={{ marginBottom: 30 }}
-            />
-            <Text style={{ fontSize: 20, marginBottom: 20 }}>
-              Erreur, Veuillez remplir tous les champs correctement.
-            </Text>
-            <Button
-              mode="contained"
-              onPress={() => setErrorModal(false)}
-              style={{ backgroundColor: 'orange' }}
+              onPress={handleSuccessClose}
+              style={styles.modalButton}
             >
               OK
             </Button>
@@ -259,13 +203,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalScontainer: {
-    width: 300,
-    height: 300,
-    justifyContent: 'center',
+    width: '80%',
     padding: 20,
     backgroundColor: 'white',
     borderRadius: 10,
     alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 20,
+    marginVertical: 20,
+    textAlign: 'center',
+  },
+  modalButton: {
+    backgroundColor: '#75E1E5',
+    width: '100%',
   },
 });
 

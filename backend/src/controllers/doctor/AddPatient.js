@@ -22,6 +22,7 @@ exports.addPatient = async (req, res) => {
 
     // Création du médecin
     const newPatient = new Patient({
+      id_medecin: data.id_medecin,
       code_SSO: data.codeSSO,
       nom: data.nom,
       prenom: data.prenom,

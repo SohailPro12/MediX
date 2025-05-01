@@ -5,6 +5,7 @@ const Clinique = require('./Clinique');
 
 const PatientSchema = new mongoose.Schema({
   code_SSO: { type: String, ref: 'Clinique',required: true },
+  id_medecin: { type: mongoose.Schema.Types.ObjectId, ref: 'Medecin' },
   cin: { type: String, required: true, unique: true },
   nom: { type: String, required: true },
   prenom: { type: String, required: true },
