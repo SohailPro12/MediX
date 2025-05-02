@@ -5,7 +5,7 @@ const Patient = require("../../models/Patient");
 exports.getPatientsByDoctor = async (req, res) => {
   try {
     const { medecinId } = req.query;
-
+console.log("medecinId:", medecinId); // Debugging line to check the medecinId value
     if (!medecinId) {
       return res.status(400).json({ error: "medecinId est requis" });
     }
@@ -17,6 +17,7 @@ exports.getPatientsByDoctor = async (req, res) => {
 
     const patients = appointments.map((appointment) => appointment.PatientId);
 
+    console.log("patients:", patients); // Debugging line to check the patients array
     // S'assurer qu'on retourne uniquement les patients uniques
     const uniquePatients = [...new Set(patients.map(patient => patient._id.toString()))];
 

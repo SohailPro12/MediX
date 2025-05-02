@@ -104,7 +104,7 @@ useEffect(() => {
           onPress={()=>navigation.navigate("Ordonnance")}
           activeOpacity={0.8}
         >
-          <MenuCard icon="file-document-edit" label="Ordonnasnces" color="#28A745" />
+          <MenuCard icon="file-document-edit" label="Ordonnances" color="#28A745" />
         </TouchableOpacity>
       </View>
 

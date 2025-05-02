@@ -1,74 +1,82 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Modal } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { AntDesign } from '@expo/vector-icons';
+// screens/Doctor/OrdonnanceList.jsx
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+  ScrollView,
+} from 'react-native';
+import { FontAwesome5, AntDesign } from '@expo/vector-icons';
 import Header from '../../components/DoctorComponents/Header';
-import openPdf from "./openPdf";
+import openPdf from './openPdf';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from '../../config';
 
-const ordonnances = [
-  {
-    id: '1',
-    patient: 'Jean Dupuis',
-    maladies: {
-      id: '1',
-      nature: 'Grippe',
-      date: 'Wednesday, Jun 15, 2025',
-      medicaments: [
-        { id: '1', name: 'méd1', endDate: '2025-03-27', periods: ['Matin', 'Soir'] },
-        { id: '2', name: 'méd2', endDate: '2025-04-27', periods: ['Matin'] },
-      ],
-      analyses: [
-        { id: '1', name: 'anal1', resultats: 'https://www.africau.edu/images/default/sample.pdf' },
-      ],
-      traitement: 'Faire du sport...'
-    },
-  },
-  {
-    id: '2',
-    patient: 'Claire Martin',
-    maladies: {
-      id: '2',
-      nature: 'Rhume',
-      date: 'Thursday, Jun 16, 2025',
-      medicaments: [
-        { id: '1', name: 'méd3', endDate: '2025-03-28', periods: ['Soir'] },
-      ],
-      analyses: [],
-      traitement: 'Repos et hydratation.'
-    },
-  },
-];
+export default function OrdonnanceList({ navigation }) {
+  const [ordonnances, setOrdonnances] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-export default function Ordonnance({ navigation }) {
-  const [details, setDetails] = useState(false);
-  const [selectedMaladie, setSelectedMaladie] = useState(null);
+  useEffect(() => {
+    fetchOrdonnances();
+  }, []);
 
-  const openDetails = (maladie) => {
-    setSelectedMaladie(maladie);
-    setDetails(true);
+  const fetchOrdonnances = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const res = await fetch(`${API_URL}/api/doctor/ordonnances`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Échec du chargement');
+      const data = await res.json();
+      setOrdonnances(data);
+    } catch (e) {
+      console.error('Erreur chargement ordonnances:', e);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const openDetails = (item) => {
+    setSelected(item);
+    setModalVisible(true);
+  };
   const closeDetails = () => {
-    setDetails(false);
-    setSelectedMaladie(null);
+    setSelected(null);
+    setModalVisible(false);
   };
 
   const renderOrdonnance = ({ item }) => (
     <View style={styles.card}>
-      <View style={styles.header}>
-        <Text style={styles.patientName}>Patient : {item.patient}</Text>
-        <Text style={styles.date}>Date : {item.maladies.date}</Text>
-        <Text style={styles.cause}>Nature de maladie : {item.maladies.nature}</Text>
-      </View>
-      <TouchableOpacity 
+      <Text style={styles.patientName}>
+        Patient : {item.PatientId.nom} {item.PatientId.prenom}
+      </Text>
+      <Text style={styles.date}>
+        Date : {new Date(item.date).toLocaleDateString()}
+      </Text>
+      <Text style={styles.cause}>Nature : {item.natureMaladie}</Text>
+      <TouchableOpacity
         style={styles.detailsButton}
-        onPress={() => openDetails(item.maladies)}
+        onPress={() => openDetails(item)}
       >
         <FontAwesome5 name="eye" size={16} color="white" />
-        <Text style={styles.detailsText}> Voir détails</Text>
+        <Text style={styles.detailsText}>Voir détails</Text>
       </TouchableOpacity>
     </View>
   );
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#4287f5" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -77,52 +85,92 @@ export default function Ordonnance({ navigation }) {
       <FlatList
         data={ordonnances}
         renderItem={renderOrdonnance}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.list}
       />
 
-      <Modal visible={details} animationType="slide" transparent={true}>
+      <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {selectedMaladie && (
+          <ScrollView style={styles.modalContent}>
+            {selected && (
               <>
-                <Text style={styles.modalTitle}>Nature de la maladie</Text>
-                <Text style={styles.modalText}>{selectedMaladie.nature}</Text>
+                <Text style={styles.modalTitle}>Nature</Text>
+                <Text style={styles.modalText}>{selected.natureMaladie}</Text>
 
-                <Text style={styles.modalTitle}>Date de la visite</Text>
-                <Text style={styles.modalText}>{selectedMaladie.date}</Text>
+                <Text style={styles.modalTitle}>Date</Text>
+                <Text style={styles.modalText}>
+                  {new Date(selected.date).toLocaleString()}
+                </Text>
 
                 <Text style={styles.modalTitle}>Médicaments</Text>
-                {selectedMaladie.medicaments.map((med) => (
-                  <View key={med.id} style={{ marginBottom: '4%' }}>
-                    <Text style={styles.modalText}>Nom: {med.name}</Text>
-                    <Text style={styles.modalText}>Date de fin: {med.endDate}</Text>
-                    <Text style={styles.modalText}>Périodes: {med.periods.join(', ')}</Text>
-                  </View>
-                ))}
-
-                <Text style={styles.modalTitle}>Analyses</Text>
-                {selectedMaladie.analyses.map((ana) => (
-                  <View key={ana.id} style={{ marginBottom: '4%' }}>
-                    <Text style={styles.modalText}>Nom: {ana.name}</Text>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={styles.modalText}>Résultats: {ana.resultats}</Text>
-                      <TouchableOpacity onPress={() => openPdf(ana.resultats)}>
-                        <AntDesign name="filetext1" size={20} color="blue" />
-                      </TouchableOpacity>
-                    </View>
+                {selected.medicaments.map((med, i) => (
+                  <View key={i} style={styles.subBlock}>
+                    <Text style={styles.modalText}>Nom : {med.name}</Text>
+                    <Text style={styles.modalText}>
+                      Fin : {new Date(med.endDate).toLocaleDateString()}
+                    </Text>
+                    <Text style={styles.modalText}>
+                      Périodes : {med.periods.join(', ')}
+                    </Text>
                   </View>
                 ))}
 
                 <Text style={styles.modalTitle}>Traitement</Text>
-                <Text style={styles.modalText}>{selectedMaladie.traitement}</Text>
+                {selected.traitement && (
+                  <View style={styles.subBlock}>
+                    <Text style={styles.modalText}>
+                      Début : {new Date(selected.traitement.dateDebut).toLocaleDateString()}
+                    </Text>
+                    {selected.traitement.dateFin && (
+                      <Text style={styles.modalText}>
+                        Fin : {new Date(selected.traitement.dateFin).toLocaleDateString()}
+                      </Text>
+                    )}
+                    <Text style={styles.modalText}>
+                      Obs. : {selected.traitement.observation}
+                    </Text>
+                    {selected.traitement.medicaments.map((m, j) => (
+                      <Text key={j} style={styles.modalText}>
+                        • {m.nom} ({m.dosage})
+                      </Text>
+                    ))}
+                  </View>
+                )}
 
-                <TouchableOpacity style={styles.detailsButton} onPress={closeDetails}>
+                <Text style={styles.modalTitle}>Analyses</Text>
+                {selected.analyses.map((ana, k) => (
+                  <View key={ana._id} style={styles.subBlock}>
+                    <Text style={styles.modalText}>
+                      Date : {new Date(ana.date).toLocaleDateString()}
+                    </Text>
+                    <Text style={styles.modalText}>
+                      Lab : {ana.laboratoire.nom}
+                    </Text>
+                    <Text style={styles.modalText}>
+                      Obs. : {ana.observation}
+                    </Text>
+                    {ana.pdfs.map((url, u) => (
+                      <TouchableOpacity
+                        key={u}
+                        style={styles.pdfRow}
+                        onPress={() => openPdf(url)}
+                      >
+                        <Text style={styles.modalText}>{url}</Text>
+                        <AntDesign name="filetext1" size={20} color="blue" />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ))}
+
+                <TouchableOpacity
+                  style={[styles.detailsButton, { marginTop: 20 }]}
+                  onPress={closeDetails}
+                >
                   <Text style={styles.detailsText}>Fermer</Text>
                 </TouchableOpacity>
               </>
             )}
-          </View>
+          </ScrollView>
         </View>
       </Modal>
     </View>
@@ -130,77 +178,47 @@ export default function Ordonnance({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f2f2f2',
-    paddingHorizontal: 16,
-    paddingTop: 40,
-  },
-  list: {
-    paddingBottom: 20,
-  },
+  container: { flex: 1, backgroundColor: '#f2f2f2' },
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  list: { padding: 16 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     elevation: 3,
   },
-  header: {
-    flexDirection: 'column',
-  },
-  patientName: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#0876d8',
-    margin: 5,
-  },
-  date: {
-    fontSize: 14,
-    color: '#777',
-    margin: 5,
-  },
-  cause: {
-    fontSize: 14,
-    color: 'black',
-    margin: 5,
-  },
+  patientName: { fontSize: 18, fontWeight: '600', color: '#0876d8' },
+  date: { fontSize: 14, color: '#777', marginTop: 4 },
+  cause: { fontSize: 14, color: '#333', marginTop: 4 },
   detailsButton: {
     flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#75E1E5',
     padding: 10,
     borderRadius: 8,
-    alignSelf:'center',
-    justifyContent:'center',
-    width:'95%',
     marginTop: 10,
+    justifyContent: 'center',
   },
-  detailsText: {
-    color: 'white',
-    fontWeight: '500',
-    marginLeft: 8,
-  },
+  detailsText: { color: 'white', marginLeft: 8 },
+
   modalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
-    alignItems: 'center',
+    padding: 16,
   },
   modalContent: {
     backgroundColor: 'white',
-    padding: 20,
     borderRadius: 10,
-    width: '90%',
+    padding: 20,
     maxHeight: '90%',
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 10,
-  },
-  modalText: {
-    fontSize: 16,
-    marginVertical: 2,
+  modalTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 16 },
+  modalText: { fontSize: 16, marginTop: 4 },
+  subBlock: { marginLeft: 8, marginTop: 8 },
+  pdfRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
   },
 });

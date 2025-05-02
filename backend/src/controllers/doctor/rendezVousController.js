@@ -1,8 +1,6 @@
-// controllers/doctorController.js
 const RendezVous = require("../../models/Rendez-vous");
 
 const mongoose = require("mongoose");
-
 exports.getAppointments = async (req, res) => {
   try {
     const medecinId = req.user.id; // depuis le token JWT
@@ -16,6 +14,7 @@ exports.getAppointments = async (req, res) => {
     const appointments = await RendezVous.find({
       MedecinId: medecinId,
       date: { $gte: startDate, $lte: endDate },
+      status: 'confirmed',
     })
       .populate("PatientId", "nom prenom") // optionnel
       .sort({ date: 1 });
@@ -29,5 +28,25 @@ exports.getAppointments = async (req, res) => {
       .json({
         message: "Erreur serveur lors de la récupération des rendez-vous.",
       });
+  }
+};
+
+// 🔵 NOUVEAU: Récupérer un rendez-vous par ID
+exports.getAppointmentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const rdv = await RendezVous.findById(id)
+      .populate('PatientId', 'nom prenom')  // <--- ⚡ On récupère juste nom et prénom
+      .populate('MedecinId', 'nom prenom');  // (si besoin aussi)
+
+    if (!rdv) {
+      return res.status(404).json({ message: "Rendez-vous introuvable" });
+    }
+
+    res.status(200).json(rdv);
+  } catch (error) {
+    console.error("Erreur récupération rendez-vous:", error);
+    res.status(500).json({ message: "Erreur serveur" });
   }
 };

@@ -4,17 +4,24 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Modal,
   SafeAreaView,
 } from "react-native";
 import Header from "../../components/DoctorComponents/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../config";
+import { useNavigation } from "@react-navigation/native";
 
 const AppointmentCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDays, setWeekDays] = useState([]);
   const [weekNumber, setWeekNumber] = useState("");
   const [appointments, setAppointments] = useState([]);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const navigation = useNavigation();
+
   const timeSlots = ["Matinée", "Midi", "Après-midi", "Soir"];
 
   useEffect(() => {
@@ -41,9 +48,7 @@ const AppointmentCalendar = () => {
   const getWeekNumber = (date) => {
     const start = new Date(date.getFullYear(), 0, 1);
     const diff =
-      date -
-      start +
-      (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
+      date - start + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
     return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
   };
 
@@ -92,18 +97,8 @@ const AppointmentCalendar = () => {
 
   const getMonthYear = () => {
     const months = [
-      "Janvier",
-      "Février",
-      "Mars",
-      "Avril",
-      "Mai",
-      "Juin",
-      "Juillet",
-      "Août",
-      "Septembre",
-      "Octobre",
-      "Novembre",
-      "Décembre",
+      "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
     ];
     return `${months[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
   };
@@ -121,6 +116,16 @@ const AppointmentCalendar = () => {
     );
   };
 
+  const handleAppointmentPress = (appointment) => {
+    setSelectedAppointment(appointment);
+    setModalVisible(true);
+  };
+
+  const goToCreateOrdonnance = () => {
+    setModalVisible(false);
+    navigation.navigate("AddOrdonnanceScreen", { appointmentId: selectedAppointment.id });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -134,17 +139,11 @@ const AppointmentCalendar = () => {
         <Text style={styles.title}>Table Rendez-vous</Text>
 
         <View style={styles.monthSelector}>
-          <TouchableOpacity
-            style={styles.arrow}
-            onPress={() => navigateWeek(-1)}
-          >
+          <TouchableOpacity style={styles.arrow} onPress={() => navigateWeek(-1)}>
             <Text style={styles.arrowText}>{"<"}</Text>
           </TouchableOpacity>
           <Text style={styles.month}>{getMonthYear()}</Text>
-          <TouchableOpacity
-            style={styles.arrow}
-            onPress={() => navigateWeek(1)}
-          >
+          <TouchableOpacity style={styles.arrow} onPress={() => navigateWeek(1)}>
             <Text style={styles.arrowText}>{">"}</Text>
           </TouchableOpacity>
         </View>
@@ -167,29 +166,50 @@ const AppointmentCalendar = () => {
             {[...Array(7).keys()].map((dayIndex) => {
               const appt = getAppointment(dayIndex, timeIndex);
               return (
-                <View key={dayIndex} style={styles.cell}>
+                <TouchableOpacity
+                  key={dayIndex}
+                  style={styles.cell}
+                  onPress={() => appt && handleAppointmentPress(appt)}
+                >
                   {appt && (
                     <View style={styles.appointment}>
                       <Text style={styles.appointmentText}>{appt.title}</Text>
                     </View>
                   )}
-                </View>
+                </TouchableOpacity>
               );
             })}
           </View>
         ))}
       </View>
+
+      {/* Modal pour Ajouter une Ordonnance */}
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20 }}>
+              Action sur le Rendez-vous
+            </Text>
+
+            <TouchableOpacity style={styles.modalButton} onPress={goToCreateOrdonnance}>
+              <Text style={styles.modalButtonText}>Ajouter une Ordonnance</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: 'grey' }]}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.modalButtonText}>Annuler</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 45,
-    padding: "3%",
-  },
+  container: { flex: 1, backgroundColor: "#fff", paddingTop: 45, padding: "3%" },
   calendarContainer: {
     flex: 1,
     margin: 2,
@@ -246,6 +266,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   appointmentText: { color: "white", fontSize: 10, textAlign: "center" },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 25,
+    borderRadius: 10,
+    width: "80%",
+    alignItems: "center",
+  },
+  modalButton: {
+    backgroundColor: "#75E1E5",
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
+    width: "100%",
+    alignItems: "center",
+  },
+  modalButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
 });
 
 export default AppointmentCalendar;
