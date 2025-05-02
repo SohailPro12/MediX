@@ -23,7 +23,7 @@ mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 async function addAppointment() {
   try {
   // Exemple : 23 avril 2025 à 14h30
-const appointmentDate = convertToDateWithTime("07/05/2025", 20, 30);
+const appointmentDate = convertToDateWithTime("2/04/2025", 20, 30);
 console.log(appointmentDate);  
 
     const appointment = new RendezVous({
@@ -32,7 +32,7 @@ console.log(appointmentDate);
       date: appointmentDate,
       lieu: "Mohammedia" ,
       observation: "Rendez-vous pour consultation",
-      status: "confirmed",
+      status: "pending",
       motif: "Consultation générale",
     });
 
