@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+/* const mongoose = require('mongoose');
 const Patient = require('./Patient');
 const Medecin = require('./Medecin');
 
@@ -14,3 +14,4 @@ const SchemaConsultation = new mongoose.Schema({
 
 const Consultation = mongoose.model('Consultation', SchemaConsultation);
 module.exports = Consultation;
+ */

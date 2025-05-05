@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const SchemaOrdonnance = new mongoose.Schema({
   PatientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
   MedecinId: { type: mongoose.Schema.Types.ObjectId, ref: 'Medecin', required: true },
@@ -14,6 +15,11 @@ const SchemaOrdonnance = new mongoose.Schema({
       periods: [{ type: String, enum: ['Matin', 'Midi', 'Après-midi', 'Soir'] }],
     }
   ],
+  RendezVousId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'RendezVous',
+    required: true 
+  },
 }, { collection: 'Ordonnances' });
 
 const Ordonnance = mongoose.model('Ordonnance', SchemaOrdonnance);

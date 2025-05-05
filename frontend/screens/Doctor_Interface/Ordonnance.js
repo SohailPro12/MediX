@@ -9,6 +9,7 @@ import {
   Modal,
   ActivityIndicator,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { FontAwesome5, AntDesign } from '@expo/vector-icons';
 import Header from '../../components/DoctorComponents/Header';
@@ -27,6 +28,7 @@ export default function OrdonnanceList({ navigation }) {
   }, []);
 
   const fetchOrdonnances = async () => {
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem('authToken');
       const res = await fetch(`${API_URL}/api/doctor/ordonnances`, {
@@ -37,6 +39,7 @@ export default function OrdonnanceList({ navigation }) {
       setOrdonnances(data);
     } catch (e) {
       console.error('Erreur chargement ordonnances:', e);
+      Alert.alert('Erreur', 'Impossible de charger les ordonnances.');
     } finally {
       setLoading(false);
     }
@@ -51,6 +54,38 @@ export default function OrdonnanceList({ navigation }) {
     setModalVisible(false);
   };
 
+  const confirmDelete = (id) => {
+    Alert.alert(
+      'Supprimer cette ordonnance ?',
+      'Cette action est irréversible.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        {
+          text: 'Supprimer',
+          style: 'destructive',
+          onPress: () => handleDelete(id),
+        },
+      ]
+    );
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const res = await fetch(`${API_URL}/api/doctor/ordonnances/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Suppression échouée');
+      // on rafraîchit la liste
+      setOrdonnances((prev) => prev.filter((o) => o._id !== id));
+      Alert.alert('Succès', 'Ordonnance supprimée.');
+    } catch (e) {
+      console.error('Erreur suppression ordonnance:', e);
+      Alert.alert('Erreur', 'Impossible de supprimer.');
+    }
+  };
+
   const renderOrdonnance = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.patientName}>
@@ -60,13 +95,36 @@ export default function OrdonnanceList({ navigation }) {
         Date : {new Date(item.date).toLocaleDateString()}
       </Text>
       <Text style={styles.cause}>Nature : {item.natureMaladie}</Text>
-      <TouchableOpacity
-        style={styles.detailsButton}
-        onPress={() => openDetails(item)}
-      >
-        <FontAwesome5 name="eye" size={16} color="white" />
-        <Text style={styles.detailsText}>Voir détails</Text>
-      </TouchableOpacity>
+
+      <View style={styles.actionsRow}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => openDetails(item)}
+        >
+          <FontAwesome5 name="eye" size={16} color="white" />
+          <Text style={styles.detailsText}>Voir</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.editBtn]}
+          onPress={() =>
+            navigation.navigate('AddOrdonnanceScreen', {
+              ordonnanceId: item._id,
+            })
+          }
+        >
+          <AntDesign name="edit" size={16} color="white" />
+          <Text style={styles.detailsText}>Modifier</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.deleteBtn]}
+          onPress={() => confirmDelete(item._id)}
+        >
+          <AntDesign name="delete" size={16} color="white" />
+          <Text style={styles.detailsText}>Supprimer</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
@@ -95,35 +153,30 @@ export default function OrdonnanceList({ navigation }) {
             {selected && (
               <>
                 <Text style={styles.modalTitle}>Nature</Text>
-                <Text style={styles.modalText}>{selected.natureMaladie}</Text>
+                <Text style={styles.modalText}>
+                  {selected.natureMaladie}
+                </Text>
 
                 <Text style={styles.modalTitle}>Date</Text>
                 <Text style={styles.modalText}>
                   {new Date(selected.date).toLocaleString()}
                 </Text>
 
-                <Text style={styles.modalTitle}>Médicaments</Text>
-                {selected.medicaments.map((med, i) => (
-                  <View key={i} style={styles.subBlock}>
-                    <Text style={styles.modalText}>Nom : {med.name}</Text>
-                    <Text style={styles.modalText}>
-                      Fin : {new Date(med.endDate).toLocaleDateString()}
-                    </Text>
-                    <Text style={styles.modalText}>
-                      Périodes : {med.periods.join(', ')}
-                    </Text>
-                  </View>
-                ))}
-
                 <Text style={styles.modalTitle}>Traitement</Text>
                 {selected.traitement && (
                   <View style={styles.subBlock}>
                     <Text style={styles.modalText}>
-                      Début : {new Date(selected.traitement.dateDebut).toLocaleDateString()}
+                      Début :{' '}
+                      {new Date(
+                        selected.traitement.dateDebut
+                      ).toLocaleDateString()}
                     </Text>
                     {selected.traitement.dateFin && (
                       <Text style={styles.modalText}>
-                        Fin : {new Date(selected.traitement.dateFin).toLocaleDateString()}
+                        Fin :{' '}
+                        {new Date(
+                          selected.traitement.dateFin
+                        ).toLocaleDateString()}
                       </Text>
                     )}
                     <Text style={styles.modalText}>
@@ -138,7 +191,7 @@ export default function OrdonnanceList({ navigation }) {
                 )}
 
                 <Text style={styles.modalTitle}>Analyses</Text>
-                {selected.analyses.map((ana, k) => (
+                {selected.analyses.map((ana) => (
                   <View key={ana._id} style={styles.subBlock}>
                     <Text style={styles.modalText}>
                       Date : {new Date(ana.date).toLocaleDateString()}
@@ -191,15 +244,25 @@ const styles = StyleSheet.create({
   patientName: { fontSize: 18, fontWeight: '600', color: '#0876d8' },
   date: { fontSize: 14, color: '#777', marginTop: 4 },
   cause: { fontSize: 14, color: '#333', marginTop: 4 },
-  detailsButton: {
+
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  actionBtn: {
     flexDirection: 'row',
     backgroundColor: '#75E1E5',
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10,
+    padding: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+    flex: 1,
     justifyContent: 'center',
+    marginHorizontal: 4,
   },
-  detailsText: { color: 'white', marginLeft: 8 },
+  editBtn: { backgroundColor: '#4287f5' },
+  deleteBtn: { backgroundColor: '#e74c3c' },
+  detailsText: { color: 'white', marginLeft: 6, fontSize: 14 },
 
   modalContainer: {
     flex: 1,
@@ -220,5 +283,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 4,
+  },
+  detailsButton: {
+    flexDirection: 'row',
+    backgroundColor: '#75E1E5',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 10,
+    justifyContent: 'center',
   },
 });

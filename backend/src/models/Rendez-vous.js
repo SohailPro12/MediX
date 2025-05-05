@@ -1,17 +1,20 @@
-// models/RendezVous.js
 const mongoose = require('mongoose');
-const Patient = require('./Patient');
-const Medecin = require('./Medecin');
 
 const SchemaRendezVous = new mongoose.Schema({
-  PatientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient' },
-  MedecinId: { type: mongoose.Schema.Types.ObjectId, ref: 'Medecin' },
-  date: { type: Date, required: true },
-  lieu: { type: String, required: true },
+  PatientId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
+  MedecinId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Medecin', required: true },
+  date:        { type: Date, required: true, index: true },
+  lieu:        { type: String, required: true },
   observation: { type: String },
-  status: { type: String, enum: ['pending', 'confirmed'], default: 'pending' },
-  motif: { type: String }
-}, { collection: 'Rendez-vous' });
+  status:      { type: String, enum: ['pending', 'confirmed'], default: 'pending', index: true },
+  motif:       { type: String },
+  ordonnance:  { type: mongoose.Schema.Types.ObjectId, ref: 'Ordonnance', default: null }
+}, {
+  collection: 'Rendez-vous',
+  timestamps: true // ajoute createdAt / updatedAt
+});
 
-const RendezVous = mongoose.model('RendezVous', SchemaRendezVous);
-module.exports = RendezVous;
+SchemaRendezVous.index({ date: 1 });
+SchemaRendezVous.index({ status: 1 });
+
+module.exports = mongoose.model('RendezVous', SchemaRendezVous);

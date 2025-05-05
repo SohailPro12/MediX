@@ -1,6 +1,6 @@
-const cloudinary = require("../config/cloudinary");
+const cloudinary = require("../../config/cloudinary");
 const fs = require("fs");
-const Medecin = require("../models/Medecin");
+const Medecin = require("../../models/Medecin");
 
 const uploadDoctorImage = async (req, res) => {
   if (!req.file) {
