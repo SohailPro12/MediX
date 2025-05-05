@@ -1,9 +1,10 @@
-const RendezVous = require("../../models/Rendez-vous");
-const Analyse    = require("../../models/Analyse");
+const Analyse = require("../../models/Analyse");
 const Traitement = require("../../models/Traitement");
 const Ordonnance = require("../../models/Ordonnance");
-const DossierMedical = require("../../models/Dossier_medical");
-const mongoose   = require("mongoose");
+const RendezVous = require("../../models/Rendez-vous");
+
+const DossierMedical= require("../../models/Dossier_medical");
+const mongoose = require("mongoose");
 
 exports.addOrdonnance = async (req, res) => {
   try {
@@ -34,9 +35,9 @@ exports.addOrdonnance = async (req, res) => {
     let createdAnalyses = [];
     if (frontAnalyses.length) {
       const toInsert = frontAnalyses.map(a => ({
-        id:        new mongoose.Types.ObjectId().toString(),
-        PatientId: patientId,
-        date:      a.date,
+        id:          new mongoose.Types.ObjectId().toString(),
+        PatientId:   patientId,
+        date:        a.date,
         laboratoire: a.laboratoire,
         observation: a.observation,
         pdfs:        a.pdfs,
@@ -48,9 +49,9 @@ exports.addOrdonnance = async (req, res) => {
     let createdTraitement = null;
     if (frontTraitement && frontTraitement.dateDebut) {
       createdTraitement = await Traitement.create({
-        PatientId:  patientId,
-        dateDebut:  frontTraitement.dateDebut,
-        dateFin:    frontTraitement.dateFin,
+        PatientId:   patientId,
+        dateDebut:   frontTraitement.dateDebut,
+        dateFin:     frontTraitement.dateFin,
         medicaments: frontTraitement.medicaments,
         observation: frontTraitement.observation,
       });
@@ -80,38 +81,37 @@ exports.addOrdonnance = async (req, res) => {
     let dossier = await DossierMedical.findOne({ PatientId: patientId });
     if (!dossier) {
       dossier = await DossierMedical.create({
-        numero:         Math.random().toString(36).substr(2, 9),
-        PatientId:      patientId,
-        dateCreation:   new Date(),
+        numero:           Math.random().toString(36).substr(2, 9),
+        PatientId:        patientId,
+        dateCreation:     new Date(),
         dateModification: new Date(),
-        analyses:       createdAnalyses.map(a => a._id),
-        traitemant:     createdTraitement ? [createdTraitement._id] : [],
+        analyses:         createdAnalyses.map(a => a._id),
+        traitemant:       createdTraitement ? [createdTraitement._id] : [],
+        ordonnances:      [ordonnance._id],
       });
     } else {
-      // safe‑guard undefined arrays
-      dossier.analyses   = dossier.analyses   || [];
-      dossier.traitemant = dossier.traitemant || [];
+      dossier.analyses    = dossier.analyses    || [];
+      dossier.traitemant  = dossier.traitemant  || [];
+      dossier.ordonnances = dossier.ordonnances || [];
 
       dossier.analyses.push(...createdAnalyses.map(a => a._id));
-      if (createdTraitement) {
-        dossier.traitemant.push(createdTraitement._id);
-      }
+      if (createdTraitement) dossier.traitemant.push(createdTraitement._id);
+      dossier.ordonnances.push(ordonnance._id);
       dossier.dateModification = new Date();
       await dossier.save();
     }
 
     res.status(201).json({
-      message:   "Ordonnance créée, RDV & Dossier mis à jour",
+      message:      "Ordonnance créée, RDV & Dossier mis à jour",
       ordonnanceId: ordonnance._id
     });
 
   } catch (error) {
     console.error("❌ Erreur création ordonnance :", error);
-    res.status(500).json({
-      message: "Erreur interne lors de la création de l'ordonnance"
-    });
+    res.status(500).json({ message: "Erreur interne lors de la création de l'ordonnance" });
   }
 };
+
 
 
 

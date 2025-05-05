@@ -1,4 +1,3 @@
-// screens/Doctor/DossiersM.jsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -33,8 +32,16 @@ export default function DossiersM() {
           `${API_URL}/api/doctor/dossiers/${patient._id}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (!res.ok) throw new Error("Impossible de charger");
-        setOrdonnances(await res.json());
+        if (!res.ok) {
+          if (res.status === 404) {
+            setOrdonnances([]); // aucun dossier
+          } else {
+            throw new Error("Impossible de charger");
+          }
+        }
+        
+        const data = await res.json();
+        setOrdonnances(data.ordonnances || data); // si ton endpoint renvoie un objet avec .ordonnances
       } catch (e) {
         console.error(e);
         Alert.alert("Erreur", e.message);
@@ -44,19 +51,31 @@ export default function DossiersM() {
     })();
   }, [patient._id]);
 
-  const handleDelete = async (id) => {
-    if (!confirm("Supprimer cette ordonnance ?")) return;
-    try {
-      const token = await AsyncStorage.getItem("authToken");
-      await fetch(`${API_URL}/api/doctor/ordonnances/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setOrdonnances(o => o.filter(x => x._id !== id));
-    } catch (e) {
-      console.error(e);
-      Alert.alert("Erreur", "Suppression impossible");
-    }
+  const handleDelete = (id) => {
+    Alert.alert(
+      "Confirmation",
+      "Supprimer cette ordonnance ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const token = await AsyncStorage.getItem("authToken");
+              await fetch(`${API_URL}/api/doctor/ordonnances/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              setOrdonnances((o) => o.filter((x) => x._id !== id));
+            } catch (e) {
+              console.error(e);
+              Alert.alert("Erreur", "Suppression impossible");
+            }
+          },
+        },
+      ]
+    );
   };
 
   if (loading) {
@@ -68,61 +87,66 @@ export default function DossiersM() {
       <Header name="Dossier Médical" screen="PatientList" />
       <PatientCard patient={patient} isClickable={false} />
 
-      <FlatList
-        data={ordonnances}
-        keyExtractor={o => o._id}
-        contentContainerStyle={{ padding: 16 }}
-        ListEmptyComponent={<Text>Aucune ordonnance</Text>}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.date}>
-              RDV: {new Date(item.RendezVousId.date).toLocaleDateString()}
-            </Text>
-            <Text style={styles.nature}>{item.natureMaladie}</Text>
-            <View style={styles.row}>
-              <TouchableOpacity
-                style={styles.btn}
-                onPress={() =>
-                  nav.navigate("AddOrdonnanceScreen", { ordonnanceId: item._id })
-                }
-              >
-                <AntDesign name="edit" size={16} color="white" />
-                <Text style={styles.btnText}>Modifier</Text>
-              </TouchableOpacity>
+        <FlatList
+          data={ordonnances}
+          keyExtractor={(o) => o._id}
+          contentContainerStyle={{ padding: 16 }}
+          ListEmptyComponent={<Text>Aucune ordonnance</Text>}
+          renderItem={({ item }) => {
+            const rdvDate =
+              typeof item.RendezVousId === "object"
+                ? new Date(item.RendezVousId.date).toLocaleDateString()
+                : "Date non disponible";
+console.log(item.RendezVousId.lieu);
+            return (
+              <View style={styles.card}>
+                <Text style={styles.date}>RDV: {rdvDate}</Text>
+                <Text style={styles.nature}>{item.natureMaladie}</Text>
+                <View style={styles.row}>
+                  <TouchableOpacity
+                    style={styles.btn}
+                    onPress={() =>
+                      nav.navigate("AddOrdonnanceScreen", { ordonnanceId: item._id })
+                    }
+                  >
+                    <AntDesign name="edit" size={16} color="white" />
+                    <Text style={styles.btnText}>Modifier</Text>
+                  </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.btn, { backgroundColor: "crimson" }]}
-                onPress={() => handleDelete(item._id)}
-              >
-                <AntDesign name="delete" size={16} color="white" />
-                <Text style={styles.btnText}>Supprimer</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
+                  <TouchableOpacity
+                    style={[styles.btn, { backgroundColor: "crimson" }]}
+                    onPress={() => handleDelete(item._id)}
+                  >
+                    <AntDesign name="delete" size={16} color="white" />
+                    <Text style={styles.btnText}>Supprimer</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            );
+          }}
+        />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  loader: { flex:1, justifyContent:"center" },
-  container: { flex:1, backgroundColor:"#fff" },
+  loader: { flex: 1, justifyContent: "center" },
+  container: { flex: 1, backgroundColor: "#fff" },
   card: {
-    backgroundColor:"#f8f9fa",
-    marginBottom:12,
-    padding:16,
-    borderRadius:8
+    backgroundColor: "#f8f9fa",
+    marginBottom: 12,
+    padding: 16,
+    borderRadius: 8,
   },
-  date: { fontSize:14, color:"#555" },
-  nature: { fontSize:16, fontWeight:"bold", marginVertical:6 },
-  row: { flexDirection:"row", justifyContent:"space-between" },
+  date: { fontSize: 14, color: "#555" },
+  nature: { fontSize: 16, fontWeight: "bold", marginVertical: 6 },
+  row: { flexDirection: "row", justifyContent: "space-between" },
   btn: {
-    flexDirection:"row",
-    alignItems:"center",
-    backgroundColor:"#4287f5",
-    padding:8,
-    borderRadius:6
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4287f5",
+    padding: 8,
+    borderRadius: 6,
   },
-  btnText: { color:"#fff", marginLeft:4 }
+  btnText: { color: "#fff", marginLeft: 4 },
 });

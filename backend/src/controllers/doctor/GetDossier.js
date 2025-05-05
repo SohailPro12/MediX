@@ -1,16 +1,19 @@
-const Ordonnance = require("../../models/Ordonnance");
+
+const DossierMedical= require("../../models/Dossier_medical");
 exports.getPatientDossier = async (req, res) => {
-  try {
-    const { patientId } = req.params;
-    // Find all ordonnances for this patient:
-    const list = await Ordonnance.find({ PatientId: patientId })
-      .populate("analyses")
-      .populate("traitement")
-      .populate("MedecinId", "nom prenom")
-      .populate("RendezVousId", "date");  // pull in the RDV date
-    return res.json(list);
-  } catch (err) {
-    console.error("Erreur getPatientDossier:", err);
-    return res.status(500).json({ message: "Erreur serveur" });
-  }
+  const { patientId } = req.params;
+  const dossier = await DossierMedical.findOne({ PatientId: patientId })
+  .populate('analyses')
+  .populate('traitemant')
+  .populate({
+    path: 'ordonnances',
+    populate: [
+      { path: 'analyses' },
+      { path: 'traitement' },
+      { path: 'RendezVousId' } // 🔴 ajoute cette ligne !
+    ]
+  });
+
+  if (!dossier) return res.status(404).json({ message: 'Dossier introuvable' });
+  res.json(dossier);
 };
