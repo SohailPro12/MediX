@@ -1,44 +1,109 @@
-import React, { useState } from "react";
-import { View, TextInput, TouchableOpacity, FlatList, Text, KeyboardAvoidingView, Platform } from "react-native";
+// screens/Doctor/ReportScreen.jsx
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Text,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Header from "../../components/DoctorComponents/Header";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../config";
 
-const ReportScreen = ({ navigation }) => {
+export default function ReportScreen() {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]); // Stocker les messages localement
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fonction pour ajouter le message localement
-  const sendMessage = () => {
-    if (message.trim() === "") return;
+  // load existing reports by this user
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem("authToken");
+        const res = await fetch(`${API_URL}/api/reporting?solved=false`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setReports(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
-    const newMessage = {
-      text: message,
-      createdAt: new Date().toISOString(), // Date actuelle
-    };
-
-    setMessages([...messages, newMessage]); // Ajoute le message au tableau
-    setMessage(""); // Réinitialise le champ de texte
+  const sendMessage = async () => {
+    if (!message.trim()) return;
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      const res = await fetch(`${API_URL}/api/reporting/report`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ message })
+      });
+      const { problem } = await res.json();
+      if (res.ok) {
+        setReports([problem, ...reports]);
+        setMessage("");
+      } else {
+        console.error("Server error:", problem);
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    }
   };
 
-  return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1, backgroundColor: "white",paddingTop:'12%',padding:20}}>
-      {/* Header */}
-      <Header name='Signaler un Problème' screen='SettingsDScreen'/>
-      
+  if (loading) {
+    return <ActivityIndicator style={{ flex:1,justifyContent:'center' }} size="large" />;
+  }
 
-      {/* Liste des messages */}
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1, backgroundColor: "white", paddingTop:'12%', padding:20 }}
+    >
+      <Header name="Signaler un Problème" screen="SettingsDScreen" />
+
       <FlatList
-        data={messages}
-        keyExtractor={(item, index) => index.toString()}
+        data={reports}
+        keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
-          <View style={{ alignSelf: "flex-end", backgroundColor: "#007AFF", padding: 10, borderRadius: 15, margin: 5, maxWidth: "70%" }}>
-            <Text style={{ color: "white" }}>{item.text}</Text>
+          <View
+            style={{
+              alignSelf: item.solved ? "flex-start" : "flex-end",
+              backgroundColor: item.solved ? "lightgreen" : "#007AFF",
+              padding: 10,
+              borderRadius: 15,
+              margin: 5,
+              maxWidth: "70%"
+            }}
+          >
+            <Text style={{ color: "white" }}>{item.message}</Text>
+            <Text style={{ color: "#eee", fontSize: 10 }}>
+              {new Date(item.createdAt).toLocaleString()}
+            </Text>
           </View>
         )}
       />
 
-      {/* Barre de saisie */}
-      <View style={{ flexDirection: "row", alignItems: "center", paddingTop: 15, borderTopWidth: 1, borderColor: "#ddd" }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingTop: 15,
+          borderTopWidth: 1,
+          borderColor: "#ddd"
+        }}
+      >
         <TextInput
           style={{ flex: 1, padding: 10, backgroundColor: "#f5f5f5", borderRadius: 20 }}
           placeholder="Écrire un message..."
@@ -51,6 +116,4 @@ const ReportScreen = ({ navigation }) => {
       </View>
     </KeyboardAvoidingView>
   );
-};
-
-export default ReportScreen;
+}

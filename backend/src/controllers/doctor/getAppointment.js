@@ -18,8 +18,8 @@ exports.getAppointments = async (req, res) => {
     const appointments = await Appointment.find(query)
       .populate("PatientId", "nom prenom")
       .sort({ date: 1 });
-
-    console.log("appointments", appointments);
+/* 
+    console.log("appointments", appointments); */
 
     res.json(appointments);
   } catch (error) {

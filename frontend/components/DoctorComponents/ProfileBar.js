@@ -57,7 +57,7 @@ export default function ProfileBar({ screen }) {
       {doctor && (
         <TouchableOpacity style={styles.profileInfo} onPress={() => navigation.navigate(screen)}>
           <Image 
-            source={doctor.Photo ? { uri: doctor.image } : require('../../assets/doctor.png')}
+            source={doctor.Photo ? { uri: doctor.Photo } : require('../../assets/doctor.png')}
             style={styles.profileImage}
           />
           <View style={styles.profileText}>
