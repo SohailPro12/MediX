@@ -175,10 +175,38 @@ exports.updateOrdonnance = async (req, res) => {
 exports.deleteOrdonnance = async (req, res) => {
   try {
     const { id } = req.params;
+    const ord = await Ordonnance.findById(id);
+    if (!ord) return res.status(404).json({ message: "Ordonnance non trouvée" });
+
+    // Supprimer traitement s'il existe
+    if (ord.traitement) {
+      await Traitement.findByIdAndDelete(ord.traitement);
+    }
+
+    // Supprimer analyses associées
+    if (ord.analyses?.length) {
+      await Analyse.deleteMany({ _id: { $in: ord.analyses } });
+    }
+
+    // Supprimer l’ordonnance elle-même
     await Ordonnance.findByIdAndDelete(id);
-    return res.json({ message: "Ordonnance supprimée" });
+
+    // Retirer références du dossier médical
+    await DossierMedical.updateOne(
+      { PatientId: ord.PatientId },
+      {
+        $pull: {
+          ordonnances: ord._id,
+          traitemant: ord.traitement,
+          analyses: { $in: ord.analyses }
+        },
+        $set: { dateModification: new Date() }
+      }
+    );
+
+    res.json({ message: "Ordonnance et ses données associées supprimées" });
   } catch (err) {
     console.error("Erreur deleteOrdonnance:", err);
-    return res.status(500).json({ message: "Erreur serveur" });
+    res.status(500).json({ message: "Erreur serveur" });
   }
 };
