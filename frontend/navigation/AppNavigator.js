@@ -43,6 +43,7 @@ import PrescriptionScreen from "../screens/Doctor_Interface/PrescriptionScreen";
 import ReportScreen from "../screens/Doctor_Interface/ReportScreen";
 import EditDoctorProfile from "../screens/Doctor_Interface/EditDoctorProfile";
 import Ordonnance from "../screens/Doctor_Interface/Ordonnance";
+import OrdonnanceList from "../screens/Doctor_Interface/Ordonnance";
 import AddOrdonnanceScreen from "../screens/Doctor_Interface/AddOrdonnanceScreen";
 
 import MessagerieP from "../screens/Patient_Interface/Messagerie";
@@ -125,6 +126,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Ordonnance" component={Ordonnance} />
 
           <Stack.Screen name="AddOrdonnanceScreen" component={AddOrdonnanceScreen} />
+          <Stack.Screen name="OrdonnanceList" component={OrdonnanceList} />
 
           {/*Patient Screen*/}
           <Stack.Screen name="DashboardPatient" component={DashboardPatient} />
