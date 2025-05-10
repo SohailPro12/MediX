@@ -1,84 +1,147 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  FlatList, 
+  Image, 
+  ActivityIndicator,
+  RefreshControl
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { API_URL } from "../../config";
+import { usePatient  } from '../context/PatientContext';
 
-//import { useNavigation } from '@react-navigation/native';
+export default function MyDoctorsList({ navigation }) {
+  const { patient } = usePatient();
+  const patientId = patient?._id;
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
+  const fetchDoctors = async () => {
+    try {
+      setError(null);
+      const response = await fetch(`${API_URL}/api/patient/getDocteurs?patientId=${patientId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Formater les données pour avoir une structure cohérente
+      const formattedDoctors = data.map(doctor => ({
+        id: doctor._id,
+        name: `Dr. ${doctor.prenom} ${doctor.nom}`,
+        specialty: doctor.specialite,
+        cin: doctor.cin,
+        image: doctor.photo ? { uri: doctor.photo } : require('../../assets/doctor.jpg'),
+        about: `Dr. ${doctor.prenom} ${doctor.nom} est spécialisé en ${doctor.specialite}`,
+        formation: "- Diplômé en médecine",
+        experience: `- Spécialiste en ${doctor.specialite}`
+      }));
+      
+      setDoctors(formattedDoctors);
+    } catch (err) {
+      console.error('Erreur:', err);
+      setError(err.message || 'Impossible de charger les médecins');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
-const Doctors = [
-  {
-    id: '1',
-    name: 'Dr. Olivia Turner, M.D.',
-    specialty: 'Dermato-Endocrinology',
-    //LastVist: '2025-04-12',
-    image: require('../../assets/doctor.jpg'),
-    about:"Dr. Olivia Turner, M.D est un cardiologue expérimenté avec plus de 15 ans d\'expérience...",
-    formation:"- Doctorat en Médecine, Université de Paris\n- Spécialisation en Cardiologie, Hôpital Européen Georges-Pompidou",
-    experience:"- 5 ans en tant que cardiologue à l\'Hôpital Saint-Louis\n- 10 ans d\'expérience en recherche sur les maladies cardiovasculaires",
-  },
-  {
-    id: '2',
-    name: 'Dr. Alexander Bennett, Ph.D.',
-    specialty: 'Dermato-Genetics',
-    //LastVist: '2025-06-20',
-    image: require('../../assets/doctor.jpg'),
-    about:"Dr. Alexander Bennett, Ph.D est un cardiologue expérimenté avec plus de 15 ans d\'expérience...",
-    formation:"- Doctorat en Médecine, Université de Paris\n- Spécialisation en Cardiologie, Hôpital Européen Georges-Pompidou",
-    experience:"- 5 ans en tant que cardiologue à l\'Hôpital Saint-Louis\n- 10 ans d\'expérience en recherche sur les maladies cardiovasculaires",
-  },
-  {
-    id: '3',
-    name: 'Dr. Sophia Martinez, Ph.D.',
-    specialty: 'Cosmetic Bioengineering',
-    image: require('../../assets/doctor.jpg'),
-    about:"Dr. Sophia Martinez, Ph.D est un cardiologue expérimenté avec plus de 15 ans d\'expérience...",
-    formation:"- Doctorat en Médecine, Université de Paris\n- Spécialisation en Cardiologie, Hôpital Européen Georges-Pompidou",
-    experience:"- 5 ans en tant que cardiologue à l\'Hôpital Saint-Louis\n- 10 ans d\'expérience en recherche sur les maladies cardiovasculaires",
-  },
-];
+  useEffect(() => {
+    if (patientId) {
+      fetchDoctors();
+    }
+  }, [patientId]);
 
-export default function MyDoctorsList({navigation}) {
-  //const navigation=useNavigation();
-  
-  const renderDoctors=({item})=>{
-    const doctor=item;
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardContent}>
-          <View style={{ flexDirection: 'row' }}>
-            <Image source={item.image} style={styles.avatar} />
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={styles.doctorName}>{item.name}</Text>
-                <Text style={styles.specialty}>{item.specialty}</Text>
-            </View>
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchDoctors();
+  };
+
+  const renderDoctor = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.cardContent}>
+        <View style={{ flexDirection: 'row' }}>
+          <Image source={item.image} style={styles.avatar} />
+          <View style={{ flex: 1, justifyContent: 'center' }}>
+            <Text style={styles.doctorName}>{item.name}</Text>
+            <Text style={styles.specialty}>{item.specialty}</Text>
           </View>
-          <TouchableOpacity style={styles.infobutton}>
-            <Text style={styles.infoText} onPress={()=>navigation.navigate("DoctorInfo",{doctor})}>Info</Text>
-          </TouchableOpacity>
         </View>
+        <TouchableOpacity 
+          style={styles.infobutton}
+          onPress={() => navigation.navigate("DoctorInfo", { doctor: item })}
+        >
+          <Text style={styles.infoText}>Info</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+
+  if (loading && !refreshing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#5771f9" />
+        <Text>Chargement de vos médecins...</Text>
       </View>
     );
   }
-  return(
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity 
+          style={styles.retryButton}
+          onPress={fetchDoctors}
+        >
+          <Text style={styles.retryText}>Réessayer</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={()=> navigation.navigate("DashboardPatient")}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={28} color="#5771f9" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Doctors</Text>
-        <View style={{ width: 30 }} />
-     </View>
-    <FlatList
-      data={Doctors}
-      keyExtractor={(item) => item.id}
-      renderItem={renderDoctors}
-      contentContainerStyle={{ paddingBottom: 100 }}
-    />
+        <Text style={styles.headerTitle}>Mes Médecins</Text>
+        <View style={{ width: 28 }} />
+      </View>
+
+      <FlatList
+        data={doctors}
+        keyExtractor={(item) => item.id}
+        renderItem={renderDoctor}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#5771f9']}
+          />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Vous n'avez pas encore de médecins</Text>
+            <TouchableOpacity onPress={fetchDoctors}>
+              <Text style={styles.refreshText}>Actualiser</Text>
+            </TouchableOpacity>
+          </View>
+        }
+      />
     </View>
-    
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -99,45 +162,90 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   card: {
-    flexDirection: 'row',
     backgroundColor: '#E0E4FF',
-    borderRadius: 20,
+    borderRadius: 15,
     padding: 15,
     marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cardContent: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 50,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     marginRight: 15,
   },
-  cardContent: {
-    flex: 1,
-  },
   doctorName: {
-    fontWeight: 'bold',
+    fontWeight: '600',
     fontSize: 16,
-    marginBottom: 2,
     color: '#333',
+    marginBottom: 4,
   },
   specialty: {
+    fontSize: 14,
     color: '#666',
-    marginBottom: 8,
+    marginBottom: 4,
   },
-  infobutton:{
+  infobutton: {
     backgroundColor: '#5771f9',
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 20,
-    width:100,
-    justifyContent:'center',
-    alignSelf:'center'
+    marginLeft: 'auto',
   },
-  infoText:{
+  infoText: {
+    color: 'white',
     fontWeight: '600',
-    textAlign:'center',
-    color:'white',
   },
-
-})
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#5771f9',
+    padding: 12,
+    borderRadius: 8,
+  },
+  retryText: {
+    color: 'white',
+    fontWeight: '600',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 50,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#888',
+    marginBottom: 20,
+  },
+  refreshText: {
+    color: '#5771f9',
+    textDecorationLine: 'underline',
+  },
+  listContent: {
+    paddingBottom: 20,
+  },
+});

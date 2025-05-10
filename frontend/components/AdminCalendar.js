@@ -1,5 +1,4 @@
-// components/AdminCalendar.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,59 +6,71 @@ import {
   StyleSheet,
   Modal,
   TouchableOpacity,
+  TextInput,
+  Button,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard
 } from "react-native";
-import CalendarPicker from "react-native-calendar-picker";
 import moment from "moment";
 import { API_URL } from "../config";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const AdminCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
+  const [inputDate, setInputDate] = useState("");
   const [consultations, setConsultations] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // components/AdminCalendar.jsx
   const fetchConsultations = async (date) => {
     try {
+      setLoading(true);
       const formattedDate = moment(date).format("YYYY-MM-DD");
       const token = await AsyncStorage.getItem('authToken');
-      console.log("Token:", token); // Debugging line to check the token
-      console.log("Fetching consultations for:", formattedDate);
+      
       const response = await fetch(
-        `${API_URL}/api/admin/consultations/date/${formattedDate}`, // Updated to /api/admin
+        `${API_URL}/api/admin/consultations/date/${formattedDate}`,
         {
           headers: {
             'ngrok-skip-browser-warning': 'true',
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/json' // Ensure server returns JSON
+            'Accept': 'application/json'
           }
         }
       );
+
       const rawResponse = await response.text();
-      console.log('Raw response:', rawResponse);
-      console.log('Response status:', response.status);
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `HTTP error! status: ${response.status}, body: ${errorText}`
-        );
+        throw new Error(`HTTP error! status: ${response.status}, body: ${rawResponse}`);
       }
 
       const data = JSON.parse(rawResponse);
-      console.log("Received data:", data);
       setConsultations(data);
       setModalVisible(true);
     } catch (error) {
       console.error("Error fetching consultations:", error);
       setConsultations([]);
       setModalVisible(true);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const onDateChange = (date) => {
-    setSelectedDate(date);
-    fetchConsultations(date);
+  const handleDateChange = (event, selected) => {
+    setShowDatePicker(Platform.OS === 'ios'); // On iOS, keep picker open
+    if (selected) {
+      setSelectedDate(selected);
+      setInputDate(moment(selected).format("YYYY-MM-DD"));
+      fetchConsultations(selected);
+    }
+  };
+
+  const showDatepicker = () => {
+    setShowDatePicker(true);
   };
 
   const renderConsultation = ({ item }) => (
@@ -73,54 +84,76 @@ const AdminCalendar = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <CalendarPicker
-        onDateChange={onDateChange}
-        width={350}
-        todayBackgroundColor="#f2e6ff"
-        selectedDayColor="#7300e6"
-        selectedDayTextColor="#FFFFFF"
-      />
-
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setModalVisible(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {selectedDate
-                ? `Consultations for ${moment(selectedDate).format(
-                    "MMMM D, YYYY"
-                  )}`
-                : "Consultations"}
-            </Text>
-
-            {consultations.length > 0 ? (
-              <FlatList
-                data={consultations}
-                renderItem={renderConsultation}
-                keyExtractor={(item) => item._id}
-              />
-            ) : (
-              <Text>No consultations scheduled</Text>
-            )}
-          </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        <Text style={styles.label}>Select a date:</Text>
+        
+        <TouchableOpacity onPress={showDatepicker} style={styles.dateInput}>
+          <Text>{inputDate || "Tap to select date"}</Text>
         </TouchableOpacity>
-      </Modal>
-    </View>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate || new Date()}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleDateChange}
+          />
+        )}
+
+        {loading && <Text>Loading...</Text>}
+
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setModalVisible(false)}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>
+                {selectedDate
+                  ? `Consultations for ${moment(selectedDate).format("MMMM D, YYYY")}`
+                  : "Consultations"}
+              </Text>
+
+              {consultations.length > 0 ? (
+                <FlatList
+                  data={consultations}
+                  renderItem={renderConsultation}
+                  keyExtractor={(item) => item._id}
+                />
+              ) : (
+                <Text>No consultations scheduled for this date</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Modal>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    padding: 20,
     marginTop: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  dateInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 4,
+    padding: 12,
+    marginBottom: 16,
   },
   modalOverlay: {
     flex: 1,

@@ -8,11 +8,10 @@ import { useNavigation } from "@react-navigation/native";
 const DashboardPatient = () => {
 
 
- const profileImage = require('../../assets/Patient.jpeg');
  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.container}>
-      <ProfileBar username="Noureddine" profileImage={profileImage} />
+      <ProfileBar />
 
       {/* Cartes de statut */}
       <View style={styles.cardsContainer}>

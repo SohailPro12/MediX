@@ -102,7 +102,7 @@ const Dashboard = () => {
 
           <TouchableOpacity
             style={styles.menuButton}
-            onPress={() => navigation.navigate("OrdonnanceList")}
+            onPress={() => navigation.navigate("Ordonnance")}  //a verifier (OrdonnaceList)
             activeOpacity={0.8}
           >
             <MenuCard icon="file-document-edit" label="Ordonnances" color="#28A745" />

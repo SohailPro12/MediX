@@ -39,7 +39,7 @@ export const handleLogin = async (navigation, mail, password, role) => {
         } else if (result.role === "medecin") {
           navigation.navigate("DashboardDoctor");
         } else if (result.role === "patient") {
-          navigation.navigate("HomeScreen");
+          navigation.navigate("DashboardPatient");
         } else {
           Alert.alert("Erreur", "Rôle non reconnu.");
         }

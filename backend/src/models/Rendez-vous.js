@@ -8,7 +8,8 @@ const SchemaRendezVous = new mongoose.Schema({
   observation: { type: String },
   status:      { type: String, enum: ['pending', 'confirmed'], default: 'pending', index: true },
   motif:       { type: String },
-  ordonnance:  { type: mongoose.Schema.Types.ObjectId, ref: 'Ordonnance', default: null }
+  ordonnance:  { type: mongoose.Schema.Types.ObjectId, ref: 'Ordonnance', default: null },
+  rating : { type: Number, min: 1,max: 5,default: null }
 }, {
   collection: 'Rendez-vous',
   timestamps: true // ajoute createdAt / updatedAt

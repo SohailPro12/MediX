@@ -298,7 +298,7 @@ export default function EditDoctorProfile() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex:1, backgroundColor:'#f5f5f5' },
+  container: { flex:1, backgroundColor:'#f5f5f5', marginTop:50 },
   loading: { flex:1, justifyContent:'center', alignItems:'center' },
   profileCard: { margin:16, borderRadius:10, elevation:4 },
   headerRow: { flexDirection:'row', alignItems:'center', padding:8 },

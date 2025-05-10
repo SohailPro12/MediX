@@ -1,45 +1,32 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  FlatList, 
+  Image, 
+  ActivityIndicator,
+  RefreshControl 
+} from 'react-native';
 import { Ionicons, FontAwesome5, Entypo } from '@expo/vector-icons';
+import { API_URL } from "../../config";
+import { usePatient }  from '../context/PatientContext'; // Import du contexte
 
-
-const appointments = [
-  {
-    id: '1',
-    name: 'Dr. Olivia Turner, M.D.',
-    specialty: 'Dermato-Endocrinology',
-    date: '2025-04-12',
-    time: '09:30',
-    image: require('../../assets/doctor.jpg'),
-  },
-  {
-    id: '2',
-    name: 'Dr. Alexander Bennett, Ph.D.',
-    specialty: 'Dermato-Genetics',
-    date: '2025-06-20',
-    time: '14:30',
-    image: require('../../assets/doctor.jpg'),
-  },
-  {
-    id: '3',
-    name: 'Dr. Sophia Martinez, Ph.D.',
-    specialty: 'Cosmetic Bioengineering',
-    date: '2025-01-15',
-    time: '09:30',
-    image: require('../../assets/doctor.jpg'),
-  },
-];
-
-const StarRating = ({ rating, onChange }) => {
+const StarRating = ({ rating, onChange, editable = true }) => {
   return (
-    <View style={{ flexDirection: 'row', margin:9,justifyContent:'center', }}>
+    <View style={styles.starContainer}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <TouchableOpacity key={star} onPress={() => onChange(star)}>
+        <TouchableOpacity 
+          key={star} 
+          onPress={() => editable && onChange(star)}
+          disabled={!editable}
+        >
           <Entypo
-            name="star"
-            size={20}
+            name={star <= rating ? "star" : "star-outlined"}
+            size={24}
             color={star <= rating ? '#FFD700' : '#ccc'}
-            style={{ marginHorizontal: 6 }}
+            style={styles.star}
           />
         </TouchableOpacity>
       ))}
@@ -47,154 +34,192 @@ const StarRating = ({ rating, onChange }) => {
   );
 };
 
-export default function AllAppointmentsScreen({navigation}) {
-  const [selectedTab, setSelectedTab] = useState('Upcoming');
+export default function AllAppointmentsScreen({ navigation }) {
+  // Récupération de l'ID patient depuis le contexte
+  const { patient } = usePatient();
+  console.log(patient._id)
+  const patientId = patient?._id;
 
+  // États
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('upcoming');
   const [ratings, setRatings] = useState({});
-  const [hasRated, setHasRated] = useState({});
-  const [isEditingRating, setIsEditingRating] = useState({});
-  const [tempRatings, setTempRatings] = useState({});
+  const [error, setError] = useState(null);
 
-  const isAppointmentComplete = (appointment) => {
-    const now = new Date();
-    const appointmentDateTime = new Date(`${appointment.date}T${appointment.time}:00`);
-    return appointmentDateTime < now;
-  };
-
-  const handleStartRating = (id) => {
-    setIsEditingRating((prev) => ({ ...prev, [id]: true }));
-    setTempRatings((prev) => ({ ...prev, [id]: ratings[id] || 0 }));
-  };
-
-  const handleSaveRating = (id) => {
-    if (tempRatings[id]) {
-      setRatings((prev) => ({ ...prev, [id]: tempRatings[id] }));
-      setHasRated((prev) => ({ ...prev, [id]: true }));
+  // Chargement des données
+  useEffect(() => {
+    if (patientId) {
+      loadAppointments();
     }
-    setIsEditingRating((prev) => ({ ...prev, [id]: false }));
+  }, [patientId]);
+
+  const loadAppointments = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      
+      const response = await fetch(`${API_URL}/api/patient/getAppointments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ patientId })
+      });
+      
+      if (!response.ok) throw new Error('Erreur de chargement');
+      
+      const data = await response.json();
+      setAppointments(data.data || data);
+      
+      // Initialiser les ratings
+      const initialRatings = {};
+      data.forEach(app => app.rating && (initialRatings[app._id] = app.rating));
+      setRatings(initialRatings);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   };
 
-  const renderAppointment = ({ item }) => {
-    const completed = isAppointmentComplete(item);
-    if (selectedTab === 'Complete' && !completed) return null;
-    if (selectedTab === 'Upcoming' && completed) return null;
+  const handleRefresh = () => {
+    setRefreshing(true);
+    loadAppointments();
+  };
 
-    const isEditing = isEditingRating[item.id];
+  const handleRateAppointment = async (id, rating) => {
+    try {
+      await fetch(`${API_URL}/api/patient/rateAppointment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appointmentId: id, rating })
+      });
+      setRatings(prev => ({ ...prev, [id]: rating }));
+    } catch (err) {
+      setError("Échec de la notation");
+    }
+  };
 
-    return (
-      <View style={styles.card}>
-        <View style={styles.cardContent}>
-          <View style={{ flexDirection: 'row' }}>
-            <Image source={item.image} style={styles.avatar} />
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-              <Text style={styles.doctorName}>{item.name}</Text>
-              <Text style={styles.specialty}>{item.specialty}</Text>
-            </View>
-          </View>
+  const filteredAppointments = appointments.filter(app => {
+    const now = new Date();
+    const appDate = new Date(`${app.date}T${app.time}`);
+    return selectedTab === 'completed' ? appDate < now : appDate >= now;
+  });
 
-          {selectedTab === 'Complete' ? (
-            <>
-              {isEditing ? (
-                <>
-                  <StarRating
-                    rating={tempRatings[item.id]}
-                    onChange={(newRating) =>
-                      setTempRatings((prev) => ({ ...prev, [item.id]: newRating }))
-                    }
-                  />
-                  <View style={styles.buttonRow}>
-                    <TouchableOpacity
-                      style={styles.reviewButton}
-                      onPress={() => handleSaveRating(item.id)}
-                    >
-                      <Text style={styles.reviewText}>Save</Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              ) : (
-                <>
-                  {hasRated[item.id] && (
-/*                     <View style={styles.ratingRow}>
-                      <Entypo name="star" size={20} color="#FFD700" />
-                      <Text style={styles.ratingText}>{ratings[item.id]}</Text>
-                    </View> */
-                    <View style={{ flexDirection: 'row', margin: 0,justifyContent:'center' }}>
-                      {[1, 2, 3, 4, 5].map((star) => (
-                          <Entypo
-                          key={star}
-                            name="star"
-                            size={20}
-                            color={star <= ratings[item.id] ? '#FFD700' : '#ccc'}
-                            style={{ marginHorizontal: 2 }}
-                          />
-                      ))}
-                  </View>
-                  )}
-                  <View style={styles.buttonRow}>
-                    <TouchableOpacity
-                      style={styles.reviewButton}
-                      onPress={() => handleStartRating(item.id)}
-                    >
-                      <Text style={styles.reviewText}>Rating</Text>
-                    </TouchableOpacity>
-                  </View>
-                </>
-              )}
-            </>
-          ) : (
-            <View style={{ flexDirection: 'row', marginVertical: 10, alignItems: 'center', justifyContent: 'center' }}>
-              <View style={styles.row}>
-                <FontAwesome5 name="calendar-alt" size={16} color="#5771f9" />
-                <Text style={styles.infoText}>{new Date(item.date).toDateString()}</Text>
-              </View>
-              <View style={styles.row}>
-                <Ionicons name="time-outline" size={16} color="#5771f9" />
-                <Text style={styles.infoText}>{item.time}</Text>
-              </View>
-            </View>
-          )}
+  const renderAppointment = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.doctorInfo}>
+        <Image 
+          source={{ uri: item.doctor?.image || 'https://i.imgur.com/0LKZQYM.png' }} 
+          style={styles.avatar} 
+        />
+        <View style={styles.doctorDetails}>
+          <Text style={styles.doctorName}>Dr {item.doctor?.name || 'Nom inconnu'}</Text>
+          <Text style={styles.specialty}>{item.doctor?.specialty || 'Spécialité inconnue'}</Text>
         </View>
       </View>
+
+      {selectedTab === 'completed' ? (
+        <>
+          <StarRating 
+            rating={ratings[item._id] || 0} 
+            onChange={(rating) => handleRateAppointment(item._id, rating)}
+          />
+          <Text style={styles.ratingText}>
+            {ratings[item._id] ? `Noté ${ratings[item._id]}/5` : "Non noté"}
+          </Text>
+        </>
+      ) : (
+        <View style={styles.appointmentDetails}>
+          <View style={styles.detailRow}>
+            <FontAwesome5 name="calendar-alt" size={16} color="#5771f9" />
+            <Text style={styles.detailText}>
+              {new Date(item.date).toLocaleDateString('fr-FR')}
+            </Text>
+          </View>
+          <View style={styles.detailRow}>
+            <Ionicons name="time-outline" size={16} color="#5771f9" />
+            <Text style={styles.detailText}>{item.time}</Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#5771f9" />
+        <Text style={styles.loadingText}>Chargement...</Text>
+      </View>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity 
+          style={styles.retryButton} 
+          onPress={loadAppointments}
+        >
+          <Text style={styles.retryText}>Réessayer</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={()=>navigation.navigate("DashboardPatient")}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={28} color="#5771f9" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>All Appointments</Text>
-        <View style={{ width: 30 }} />
+        <Text style={styles.headerTitle}>Mes Rendez-vous</Text>
+        <View style={{ width: 28 }} />
       </View>
 
-      {/* Tabs */}
       <View style={styles.tabs}>
         <TouchableOpacity
-          style={[styles.tab, selectedTab === 'Complete' && styles.activeTab]}
-          onPress={() => setSelectedTab('Complete')}
+          style={[styles.tab, selectedTab === 'upcoming' && styles.activeTab]}
+          onPress={() => setSelectedTab('upcoming')}
         >
-          <Text style={[styles.tabText, selectedTab === 'Complete' && styles.activeTabText]}>
-            Complete
+          <Text style={[styles.tabText, selectedTab === 'upcoming' && styles.activeTabText]}>
+            À venir
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.tab, selectedTab === 'Upcoming' && styles.activeTab]}
-          onPress={() => setSelectedTab('Upcoming')}
+          style={[styles.tab, selectedTab === 'completed' && styles.activeTab]}
+          onPress={() => setSelectedTab('completed')}
         >
-          <Text style={[styles.tabText, selectedTab === 'Upcoming' && styles.activeTabText]}>
-            Upcoming
+          <Text style={[styles.tabText, selectedTab === 'completed' && styles.activeTabText]}>
+            Passés
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Appointments List */}
       <FlatList
-        data={appointments}
-        keyExtractor={(item) => item.id}
+        data={filteredAppointments}
+        keyExtractor={(item) => item._id}
         renderItem={renderAppointment}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={['#5771f9']}
+          />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>
+              {selectedTab === 'completed' 
+                ? "Aucun rendez-vous passé" 
+                : "Aucun rendez-vous à venir"}
+            </Text>
+          </View>
+        }
       />
     </View>
   );
