@@ -39,6 +39,7 @@ app.use('/api/problems', problemRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/reporting", reportingRoutes);
 app.use("/api/patient", patientRoutes);
+app.use('/api/conversations', require('./routes/conversationRoutes'));
 
 // 📌 Middleware de gestion des erreurs
 app.use(errorMiddleware);

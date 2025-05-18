@@ -14,8 +14,8 @@ import MenuCard from "../../components/DoctorComponents/MenuCard";
 import ProfileBar from "../../components/DoctorComponents/ProfileBar";
 import NavigationBar from "../../components/DoctorComponents/NavigationBar";
 import { useMedecin } from "../context/MedecinContext";
-import { fetchAppointments } from "../../utils/MedecinAppointement";
-import { fetchPatients } from "../../utils/ListePatients";
+import { fetchAppointments } from "../../utils_Docror/MedecinAppointement";
+import { fetchPatients } from "../../utils_Docror/ListePatients";
 
 const Dashboard = () => {
   const navigation = useNavigation();

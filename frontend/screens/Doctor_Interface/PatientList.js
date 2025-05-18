@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/DoctorComponents/Header";
 import PatientCard from "../../components/DoctorComponents/PatientCard";
 import { useMedecin } from "../context/MedecinContext";
-import * as patientAPI from "../../utils/ListePatients";
+import * as patientAPI from "../../utils_Docror/ListePatients"; // Assurez-vous que le chemin est correct
 
 const PatientList = ({ route }) => {
   const navigation = useNavigation();

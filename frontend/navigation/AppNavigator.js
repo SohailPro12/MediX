@@ -28,11 +28,11 @@ import DoctorProfile from "../screens/DoctorProfile";
   /*Doctor Imports*/
 }
 
-import Chat from "../screens/Doctor_Interface/Chat";
+import Chat from "../screens/Messagerie/Chat";
 import NextRdv from "../screens/Doctor_Interface/NextRdv";
 import AppointmentsList from "../screens/Doctor_Interface/AppointmentsList";
 import PatientSuivi from "../screens/Doctor_Interface/PatientSuivi";
-import Messagerie from "../screens/Doctor_Interface/Messagerie";
+import Messagerie from "../screens/Messagerie/Messagerie";
 import AppointmentCalendar from "../screens/Doctor_Interface/AppointmentCalendar";
 import DashboardDoctor from "../screens/Doctor_Interface/DashboardDoctor";
 import AjouterPa from "../screens/Doctor_Interface/AjouterPa";
@@ -46,8 +46,7 @@ import Ordonnance from "../screens/Doctor_Interface/Ordonnance";
 import OrdonnanceList from "../screens/Doctor_Interface/Ordonnance";
 import AddOrdonnanceScreen from "../screens/Doctor_Interface/AddOrdonnanceScreen";
 
-import MessagerieP from "../screens/Patient_Interface/Messagerie";
-import ChatP from "../screens/Patient_Interface/Chat";
+
 import DashboardPatient from "../screens/Patient_Interface/DashboardPatient";
 import PrendreRdv from "../screens/Patient_Interface/PrendreRdv";
 import SearchDoctor from "../screens/Patient_Interface/SearchDoctor";
@@ -101,7 +100,7 @@ export default function AppNavigator() {
 
           {/*Doctor Screen*/}
           <Stack.Screen name="DashboardDoctor" component={DashboardDoctor} />
-          <Stack.Screen name="Chat" component={Chat} />
+          <Stack.Screen name="ChatScreen" component={Chat} />
           <Stack.Screen name="NextRdv" component={NextRdv} />
           <Stack.Screen name="AppointmentsList" component={AppointmentsList} />
           <Stack.Screen name="PatientSuivi" component={PatientSuivi} />
@@ -130,8 +129,6 @@ export default function AppNavigator() {
 
           {/*Patient Screen*/}
           <Stack.Screen name="DashboardPatient" component={DashboardPatient} />
-          <Stack.Screen name="MessagerieP" component={MessagerieP} />
-          <Stack.Screen name="ChatP" component={ChatP} />
           <Stack.Screen name="PrendreRdv" component={PrendreRdv} />
           <Stack.Screen name="SearchDoctor" component={SearchDoctor} />
           <Stack.Screen name="DoctorInfo" component={DoctorInfo} />
