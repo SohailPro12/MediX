@@ -1,298 +1,313 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image,Modal } from 'react-native';
-import { Ionicons, FontAwesome5, Entypo } from '@expo/vector-icons';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import openPdf from '../Doctor_Interface/openPdf';
-import Fontisto from '@expo/vector-icons/Fontisto';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-//import { useNavigation } from '@react-navigation/native';
+// screens/Patient/MonDossierMedical.jsx
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Image,
+  Modal,
+  ActivityIndicator,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { Ionicons, Fontisto, MaterialCommunityIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
+import openPdf from "../Doctor_Interface/openPdf";
+import { API_URL } from "../../config";
 
+export default function MonDossierMedical() {
+  const nav = useNavigation();
+  const [loading, setLoading] = useState(true);
+  const [dossier, setDossier] = useState(null);
+  const [selected, setSelected] = useState(null);
 
-const Maladies = [
-  {
-    id: '1',
-    name: 'Grippe',
-    doctor: 'Dr. Olivia Turner, M.D',
-    date: '2025-04-12',
-    medicaments: [
-        {
-          id: "1",
-          name: "méd1",
-          endDate: "2025-03-27",
-          periods: ["Matin", "Soir"],
-        },
-        {
-          id: "2",
-          name: "méd2",
-          endDate: "2025-04-27",
-          periods: ["Matin"],
-        },
-      ],
-      analyses: [
-        {
-          id: "1",
-          name: "anal1",
-          resultats: "https://www.africau.edu/images/default/sample.pdf",
-        },
-      ],
-      traitement: "Play Sports...",
-  },
-  {
-    id: '2',
-    name: 'Tuberculose',
-    doctor: 'Dr. Alexander Bennett, Ph.D.',
-    date: '2025-06-20',
-    medicaments: [
-        {
-          id: "3",
-          name: "méd3",
-          endDate: "2025-05-27",
-          periods: ["Matin", "Soir"],
-        },
-        {
-          id: "4",
-          name: "méd3",
-          endDate: "2025-01-27",
-          periods: ["Matin"],
-        },
-      ],
-      analyses: [
-/*         {
-          id: "2",
-          name: "anal2",
-          resultats: "https://www.africau.edu/images/default/sample.pdf",
-        }, */
-      ],
-      traitement: "Eat healthy food...",
+  useEffect(() => {
+    (async () => {
+      try {
+        const token = await AsyncStorage.getItem("authToken");
+        const patientId = await AsyncStorage.getItem("userId");
+        const res = await fetch(
+          `${API_URL}/api/patient/dossiers/${patientId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        if (!res.ok) throw new Error("Impossible de charger le dossier");
+        const data = await res.json();
+        setDossier(data);
+      } catch (e) {
+        Alert.alert("Erreur", e.message);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
 
-  },
-  {
-    id: '3',
-    name: 'VIH/SIDA',
-    doctor: 'Dr. Sophia Martinez, Ph.D.',
-    date: '2025-01-15',
-    medicaments: [
-/*         {
-          id: "5",
-          name: "méd5",
-          endDate: "2025-03-27",
-          periods: ["Matin", "Soir"],
-        },
-        {
-          id: "6",
-          name: "méd6",
-          endDate: "2025-04-27",
-          periods: ["Matin"],
-        }, */
-      ],
-      analyses: [
-        {
-          id: "3",
-          name: "anal3",
-          resultats: "https://www.africau.edu/images/default/sample.pdf",
-        },
-      ],
-      traitement: "",
-  },
-];
-
-export default function MonDossierMedical({navigation}) {
-  //const navigation=useNavigation();
-  const [selectedMaladie,setSelectedMaladie]=useState(null);
-  const renderMaladies=({item})=>{
-    
+  if (loading)
     return (
-      <View style={styles.card}>
-        <View style={styles.cardContent}>
-          <View style={{ flexDirection: 'row' }}>
-            <Image source={require('../../assets/maladie.png')} style={styles.avatar} />
-            <View style={{ flex: 1, justifyContent: 'center' }}>
-                <Text style={styles.maladieName}>{item.name}</Text>
-                <Text style={styles.doctorName}>{item.doctor}</Text>
-                <View style={styles.row}>
-                    <FontAwesome5 name="calendar-alt" size={16} color="#5771f9" />
-                    <Text style={styles.infoTexte}>{new Date(item.date).toDateString()}</Text>
-                 </View>
-            </View>
-          </View> 
-          <TouchableOpacity style={styles.infobutton}>
-            <Text style={styles.infoText} onPress={()=>{setTimeout(()=>{setSelectedMaladie(item);},100);}}>Details</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#5771f9" />
+      </View>
+    );
 
-        
+  if (!dossier || !dossier.ordonnances?.length) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.headerTitle}>Mon Dossier Médical</Text>
+        <Text style={{ textAlign: "center", marginTop: 40 }}>
+          Aucun dossier trouvé.
+        </Text>
       </View>
     );
   }
-  return(
+
+  const renderOrdonnance = ({ item: ord }) => {
+    const doc = ord.MedecinId || {};
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          {doc.Photo ? (
+            <Image source={{ uri: doc.Photo }} style={styles.avatar} />
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: "#007AFF" }]} />
+          )}
+          <View style={{ flex: 1, marginLeft: 12 }}>
+            <Text style={styles.maladieName}>{ord.natureMaladie}</Text>
+            <Text style={styles.doctorName}>
+              Dr. {doc.nom} {doc.prenom}
+            </Text>
+            <View style={styles.row}>
+              <Fontisto name="date" size={14} color="#5771f9" />
+              <Text style={styles.infoText}>
+                {new Date(ord.date).toLocaleDateString()}
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.infoButton}
+            onPress={() => setSelected(ord)}
+          >
+            <Text style={styles.infoButtonText}>Détails</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
+
+  return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={()=> navigation.navigate("DashboardPatient")}>
+        <TouchableOpacity onPress={() => nav.goBack()}>
           <Ionicons name="chevron-back" size={28} color="#5771f9" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Medical File</Text>
-        <View style={{ width: 30 }} />
-     </View>
-    <FlatList
-      data={Maladies}
-      keyExtractor={(item) => item.id}
-      renderItem={renderMaladies}
-      contentContainerStyle={{ paddingBottom: 100 }}
-    />
+        <Text style={styles.headerTitle}>Mon Dossier Médical</Text>
+        <View style={{ width: 28 }} />
+      </View>
 
-    {selectedMaladie !== null && (
-        <Modal visible={true} animationType="slide" transparent={true}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {selectedMaladie && (
-              <>
-                <Text style={styles.modalTitle}>Medicines</Text>
-                {selectedMaladie.medicaments.length>0?(
-                selectedMaladie.medicaments.map((med) => (
-                    <View key={med.id} style={{flexDirection:'row',alignItems:'center'}}>
-                        <Fontisto name="pills" size={44} color="#5771f9" />
-                        <View style={{ marginBottom: '4%', }}>
-                            
-                            <Text style={styles.modalText}> 
-                            <   Text style={styles.modalftext}>Name : </Text>
-                                {med.name}</Text>
-                            <Text style={styles.modalText}> 
-                            <   Text style={styles.modalftext}>End Date : </Text>
-                                {med.endDate}</Text>
-                            <Text style={styles.modalText}> 
-                            <   Text style={styles.modalftext}>Periods : </Text>
-                                {med.periods.join(", ")}</Text>                
-                        </View>
+      <FlatList
+        data={dossier.ordonnances}
+        keyExtractor={(o) => o._id}
+        renderItem={renderOrdonnance}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      />
+
+      {/* Details Modal */}
+      {selected && (
+        <Modal
+          visible
+          transparent
+          animationType="slide"
+          onRequestClose={() => setSelected(null)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <ScrollView>
+                <Text style={styles.modalTitle}>Médicaments</Text>
+                {selected.traitement?.medicaments?.length > 0 ? (
+                  selected.traitement.medicaments.map((m, i) => (
+                    <View key={i} style={styles.detailRow}>
+                      <Fontisto
+                        name="pills"
+                        size={32}
+                        color="#5771f9"
+                        style={{ marginRight: 10 }}
+                      />
+                      <View>
+                        <Text style={styles.detailText}>
+                          <Text style={styles.bold}>Nom: </Text>
+                          {m.nom}
+                        </Text>
+                        <Text style={styles.detailText}>
+                          <Text style={styles.bold}>Dosage: </Text>
+                          {m.dosage}
+                        </Text>
+                        {m.periods?.length > 0 && (
+                          <Text style={styles.detailText}>
+                            <Text style={styles.bold}>Périodes: </Text>
+                            {m.periods.join(", ")}
+                          </Text>
+                        )}
+                      </View>
                     </View>
-
-                ))):(
-                    <Text>No medicines</Text>
+                  ))
+                ) : (
+                  <Text style={styles.noneText}>Pas de médicaments</Text>
                 )}
 
-                <Text style={styles.modalTitle}>Analyses</Text>
-                {selectedMaladie.analyses.length>0 ?
-                (selectedMaladie.analyses.map((ana) => (
-                    <View key={ana.id} style={{flexDirection:'row',alignItems:'center'}}>
-                        <MaterialCommunityIcons name="test-tube" size={44} color="#5771f9"  />
-                        <View  style={{ marginBottom: '4%' }}>
-                            <Text style={styles.modalText}>
-                            <Text style={styles.modalftext}>Name : </Text> {ana.name}</Text>
-                            <View style={{ flexDirection: 'row', justifyContent:'space-between', }}>
-                                <Text style={styles.modalText}>
-                                    <Text style={styles.modalftext}>Resultats : </Text> Check the result here</Text>
-                                <TouchableOpacity onPress={() => openPdf(ana.resultats)}>
-                                    <AntDesign name="filetext1" size={20} color="#5771f9" style={{}}/>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                <Text style={[styles.modalTitle, { marginTop: 20 }]}>
+                  Analyses
+                </Text>
+                {selected.analyses?.length > 0 ? (
+                  selected.analyses.map((a) => (
+                    <View key={a._id} style={styles.detailRow}>
+                      <MaterialCommunityIcons
+                        name="test-tube"
+                        size={32}
+                        color="#5771f9"
+                        style={{ marginRight: 10 }}
+                      />
+                      <View>
+                        <Text style={styles.detailText}>
+                          <Text style={styles.bold}>Nom: </Text>
+                          {a.name}
+                        </Text>
+                        <TouchableOpacity onPress={() => openPdf(a.pdfs?.[0])}>
+                          <Text
+                            style={[styles.detailText, { color: "#5771f9" }]}
+                          >
+                            Voir le PDF
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.noneText}>Pas d’analyses</Text>
+                )}
+
+                <Text style={[styles.modalTitle, { marginTop: 20 }]}>
+                  Traitement
+                </Text>
+                {selected.traitement ? (
+                  <View style={styles.detailRow}>
+                    <Fontisto
+                      name="injection-syringe"
+                      size={32}
+                      color="#5771f9"
+                      style={{ marginRight: 10 }}
+                    />
+                    <View>
+                      <Text style={styles.detailText}>
+                        <Text style={styles.bold}>Début: </Text>
+                        {new Date(
+                          selected.traitement.dateDebut
+                        ).toLocaleDateString()}
+                      </Text>
+                      {selected.traitement.dateFin && (
+                        <Text style={styles.detailText}>
+                          <Text style={styles.bold}>Fin: </Text>
+                          {new Date(
+                            selected.traitement.dateFin
+                          ).toLocaleDateString()}
+                        </Text>
+                      )}
+                      {selected.traitement.medicaments.map((tm, i) => (
+                        <Text key={i} style={styles.detailText}>
+                          <Text style={styles.bold}>Médicament: </Text>
+                          {tm.nom} ({tm.dosage})
+                        </Text>
+                      ))}
+                      {selected.traitement.observation && (
+                        <Text style={styles.detailText}>
+                          <Text style={styles.bold}>Obs.: </Text>
+                          {selected.traitement.observation}
+                        </Text>
+                      )}
+                    </View>
                   </View>
-                ))):(
-                    <Text>No analyses</Text>
+                ) : (
+                  <Text style={styles.noneText}>Pas de traitement</Text>
                 )}
+              </ScrollView>
 
-                <Text style={styles.modalTitle}>Treatment</Text>
-                {selectedMaladie.traitement?.trim()?
-                (<Text style={styles.modalText}>{selectedMaladie.traitement}</Text>)
-                :<Text>No treatment</Text>}
-
-                <TouchableOpacity style={styles.closeButton} onPress={() => setSelectedMaladie(null)}>
-                  <Text style={styles.closeButtonText}>Close</Text>
-                </TouchableOpacity>
-              </>
-            )}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setSelected(null)}
+              >
+                <Text style={styles.closeButtonText}>Fermer</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
-        )}
+        </Modal>
+      )}
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
+  loader: { flex: 1, justifyContent: "center" },
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
     paddingTop: 40,
     paddingHorizontal: 20,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
+  headerTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },
   card: {
-    flexDirection: 'row',
-    backgroundColor: '#E0E4FF',
+    backgroundColor: "#E0E4FF",
+    borderRadius: 16,
+    padding: 12,
+    marginBottom: 12,
+  },
+  cardHeader: { flexDirection: "row", alignItems: "center" },
+  avatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: "#ccc" },
+  maladieName: { fontWeight: "bold", fontSize: 16, color: "#333" },
+  doctorName: { color: "#666", marginTop: 4 },
+  row: { flexDirection: "row", alignItems: "center", marginTop: 6 },
+  infoText: { marginLeft: 6, color: "#666" },
+  infoButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    backgroundColor: "#5771f9",
     borderRadius: 20,
-    padding: 15,
-    marginBottom: 15,
-    alignItems: 'center',
+    marginLeft: "auto",
   },
-  avatar: {
-    width: 80,
-    height: 80,
-    //borderRadius: 20,
-    marginRight: 15,
-  },
-  cardContent: {
+  infoButtonText: { color: "#fff", fontWeight: "600" },
+  modalOverlay: {
     flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
   },
-  maladieName: {
-    fontWeight: 'bold',
-    fontSize: 16,
-    marginBottom: 2,
-    color: '#333',
+  modalContent: {
+    width: "90%",
+    height: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
   },
-  doctorName: {
-    color: '#666',
-    marginBottom: 8,
+  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 12 },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginVertical: 8,
   },
-  infobutton:{
-    backgroundColor: '#5771f9',
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    width:100,
-    justifyContent:'center',
-    alignSelf:'center',
-    marginTop:10
+  detailText: { color: "#444", fontSize: 14 },
+  bold: { fontWeight: "600" },
+  noneText: { color: "#888", fontStyle: "italic" },
+  closeButton: {
+    marginTop: 12,
+    backgroundColor: "#5771f9",
+    paddingVertical: 10,
+    borderRadius: 6,
+    alignItems: "center",
   },
-  infoText:{
-    fontWeight: '600',
-    textAlign:'center',
-    color:'white',
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 16,
-    //marginHorizontal: 0,
-    //justifyContent:'flex-start',
-    //alignSelf:'center',
-    width:160
-  },
-  infoTexte: {
-    marginLeft: 6,
-    color: '#666',
-    fontSize: 14,
-  },
-  modalContainer: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { width: '90%', backgroundColor: '#E0E4FF', padding: 20, borderRadius: 10 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 10 },
-  modalDate: { fontSize: 16, color: "#666", marginBottom: 10 },
-  modalText: { fontSize: 14, color: "#444", marginLeft: '4%' },
-  closeButton: { marginTop: 20, padding: 10, backgroundColor: '#5771f9', borderRadius: 5, alignItems: 'center' },
-  closeButtonText: { color: '#fff', fontWeight: 'bold' },
-  modalftext:{fontSize: 14, color: "black", marginLeft: '4%',fontWeight:'bold'},
-})
+  closeButtonText: { color: "#fff", fontWeight: "bold" },
+});

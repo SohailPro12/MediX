@@ -24,7 +24,7 @@ const router = express.Router();
 // Multer setup (same as your admin)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadPath = './uploads';
+    const uploadPath = './uploads/doctor';
     if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath);
     cb(null, uploadPath);
   },

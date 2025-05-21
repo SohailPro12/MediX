@@ -33,7 +33,7 @@ const PatientProfile = ({ navigation }) => {
     prenom: '',
     nom: '',
     mail: '',
-    image: null,
+    photo: null,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -60,7 +60,7 @@ const PatientProfile = ({ navigation }) => {
         prenom: patientData.prenom || '',
         nom: patientData.nom || '',
         mail: patientData.mail || '',
-        image: patientData.image || null,
+        photo: patientData.photo || null,
       });
     } catch (error) {
       console.error('Erreur:', error);
@@ -93,15 +93,35 @@ const PatientProfile = ({ navigation }) => {
     });
 
     if (!result.canceled) {
-      setFormData({ ...formData, image: result.assets[0].uri });
+      setFormData({ ...formData, photo: result.assets[0].uri });
     }
   };
 
   const uploadImage = async () => {
-    // Implémentez la logique d'upload de l'image ici
-    // Retourne l'URL de l'image uploadée
-    return formData.image;
-  };
+    const token = await AsyncStorage.getItem('authToken');
+    const data = new FormData();
+    data.append('image', {
+      uri: formData.photo,
+      type: 'image/jpeg',
+      name: 'profile.jpg',
+    });
+
+    const res = await fetch(`${API_URL}/api/patient/uploadimage`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'multipart/form-data'
+      },
+      body: data
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || 'Erreur upload image');
+    }
+    const result = await res.json();
+    return result.url;
+  }
 
   const handleSave = async () => {
     setIsLoading(true);
@@ -112,12 +132,12 @@ const PatientProfile = ({ navigation }) => {
       if (!formData.nom.trim()) {
         throw new Error('Le nom est requis');
       }
-      if (formData.mail && !/^\S+@\S+\.\S+$/.test(formData.mail)) {
+      if (formData.mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.mail)) {
         throw new Error('Veuillez entrer un email valide');
       }
 
-      let imageUrl = formData.image;
-      if (formData.image && formData.image.startsWith('file:')) {
+      let imageUrl = formData.photo;
+      if (formData.photo && formData.photo.startsWith('file:')) {
         imageUrl = await uploadImage();
       }
 
@@ -126,8 +146,8 @@ const PatientProfile = ({ navigation }) => {
         nom: formData.nom.trim(),
         mail: formData.mail.trim(),
         telephone: patient.telephone,
-        cin: patient.cin, 
-        image: imageUrl,
+        cin: patient.cin,
+        photo: imageUrl
       };
 
       const token = await AsyncStorage.getItem('authToken');
@@ -146,14 +166,8 @@ const PatientProfile = ({ navigation }) => {
       }
 
       const updatedPatient = await response.json();
-    setPatient({
-      ...patient, // conserve les champs existants
-      prenom: updatedPatient.prenom,
-      nom: updatedPatient.nom,
-      mail: updatedPatient.mail,
-      image: updatedPatient.image
-    });
-      
+      setPatient({ ...patient, ...updatedPatient });
+
       Alert.alert('Succès', 'Profil mis à jour avec succès');
       setIsEdit(false);
     } catch (error) {
@@ -165,24 +179,20 @@ const PatientProfile = ({ navigation }) => {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Déconnexion',
-      'Êtes-vous sûr de vouloir vous déconnecter ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Déconnexion',
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem('authToken');
-              navigation.navigate('CodeSSOScreen');
-            } catch (error) {
-              console.error("Erreur lors de la déconnexion:", error);
-            }
-          },
+    Alert.alert('Déconnexion', 'Êtes-vous sûr de vouloir vous déconnecter ?', [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Déconnexion',
+        onPress: async () => {
+          try {
+            await AsyncStorage.removeItem('authToken');
+            navigation.navigate('CodeSSOScreen');
+          } catch (error) {
+            console.error("Erreur lors de la déconnexion:", error);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   if (!patient) {
@@ -195,21 +205,11 @@ const PatientProfile = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+      <KeyboardAvoidingView style={styles.keyboardView} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView 
+          <ScrollView
             contentContainerStyle={styles.container}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                colors={['#5771f9']}
-                tintColor="#5771f9"
-              />
-            }
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#5771f9']} tintColor="#5771f9" />}
           >
             <View style={styles.header}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -221,14 +221,13 @@ const PatientProfile = ({ navigation }) => {
 
             <View style={styles.profileContainer}>
               <View style={styles.avatarContainer}>
-                <Avatar.Image
-                  size={120}
-                  source={
-                    formData.image
-                      ? { uri: formData.image }
-                      : require('../../assets/Patient.jpeg')
-                  }
-                />
+                {formData.photo ? (
+                  <Avatar.Image size={120} source={{ uri: formData.photo }} />
+                ) : (
+                  <View style={styles.defaultAvatar}>
+                    <Ionicons name="person" size={60} color="white" />
+                  </View>
+                )}
                 {isEdit && (
                   <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
                     <Ionicons name="camera" size={20} color="white" />
@@ -238,47 +237,25 @@ const PatientProfile = ({ navigation }) => {
 
               {isEdit ? (
                 <>
-                  <TextInput
-                    value={formData.prenom}
-                    onChangeText={(text) => setFormData({ ...formData, prenom: text })}
-                    style={styles.textInput}
-                    placeholder="Prénom"
-                  />
-                  <TextInput
-                    value={formData.nom}
-                    onChangeText={(text) => setFormData({ ...formData, nom: text })}
-                    style={styles.textInput}
-                    placeholder="Nom"
-                  />
+                  <TextInput value={formData.prenom} onChangeText={text => setFormData({ ...formData, prenom: text })} style={styles.textInput} placeholder="Prénom" />
+                  <TextInput value={formData.nom} onChangeText={text => setFormData({ ...formData, nom: text })} style={styles.textInput} placeholder="Nom" />
                 </>
               ) : (
-                <Text style={styles.name}>{`${formData.prenom} ${formData.nom}`}</Text>
+                <Text style={styles.name}>{formData.prenom + ' ' + formData.nom}</Text>
               )}
 
               {isEdit ? (
-                <TextInput
-                  keyboardType="email-address"
-                  value={formData.mail}
-                  onChangeText={(text) => setFormData({ ...formData, mail: text })}
-                  style={styles.textInput}
-                  placeholder="Email"
-                />
+                <TextInput keyboardType="email-address" value={formData.mail} onChangeText={text => setFormData({ ...formData, mail: text })} style={styles.textInput} placeholder="Email" />
               ) : (
                 <Text style={styles.email}>{formData.mail || 'Aucun email renseigné'}</Text>
               )}
             </View>
 
             <View style={styles.menu}>
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={isEdit ? handleSave : () => setIsEdit(true)}
-                disabled={isLoading}
-              >
+              <TouchableOpacity style={styles.menuItem} onPress={isEdit ? handleSave : () => setIsEdit(true)} disabled={isLoading}>
                 {isEdit ? (
                   <>
-                    <Text style={styles.menuText}>
-                      {isLoading ? 'Enregistrement...' : 'Enregistrer'}
-                    </Text>
+                    <Text style={styles.menuText}>{isLoading ? 'Enregistrement...' : 'Enregistrer'}</Text>
                     <Feather name="check-square" size={24} color="green" />
                   </>
                 ) : (
@@ -289,12 +266,16 @@ const PatientProfile = ({ navigation }) => {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.menuItem}
-                onPress={() => navigation.navigate('ChangePassword')}
-              >
+              <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ChangePassword')}>
                 <Text style={styles.menuText}>Changer le mot de passe</Text>
                 <FontAwesome name="lock" size={24} color="blue" />
+              </TouchableOpacity>
+
+
+            
+              <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('ReportScreen')}>
+                <Text style={styles.menuText}>Signaler un problème</Text>
+                <MaterialIcons name="report-problem" size={24} color="orange" />
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
@@ -311,96 +292,22 @@ const PatientProfile = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  container: {
-    paddingTop: 40,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  profileContainer: {
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 15,
-  },
-  editIcon: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#5771f9',
-    borderRadius: 20,
-    padding: 6,
-  },
-  name: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginVertical: 5,
-    textAlign: 'center',
-  },
-  email: {
-    fontSize: 16,
-    color: 'gray',
-    marginBottom: 10,
-  },
-  menu: {
-    width: '100%',
-    marginTop: 20,
-    backgroundColor: 'white',
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 18,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    alignItems: 'center',
-  },
-  menuText: {
-    fontSize: 16,
-    color: '#333',
-  },
-  textInput: {
-    width: '80%',
-    fontSize: 16,
-    color: '#555',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
-    marginVertical: 8,
-    backgroundColor: 'white',
-  },
+  safeArea: { flex: 1, backgroundColor: '#F9FAFB' },
+  keyboardView: { flex: 1 },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { paddingTop: 40, paddingHorizontal: 20, paddingBottom: 20 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#333' },
+  profileContainer: { alignItems: 'center', marginVertical: 20 },
+  avatarContainer: { position: 'relative', marginBottom: 15 },
+  defaultAvatar: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#5771f9', alignItems: 'center', justifyContent: 'center', marginBottom: 15 },
+  editIcon: { position: 'absolute', bottom: 0, right: 0, backgroundColor: '#5771f9', borderRadius: 20, padding: 6 },
+  name: { fontSize: 22, fontWeight: 'bold', marginVertical: 5, textAlign: 'center' },
+  email: { fontSize: 16, color: 'gray', marginBottom: 10 },
+  menu: { width: '100%', marginTop: 20, backgroundColor: 'white', borderRadius: 10, paddingHorizontal: 15, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  menuItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 18, borderBottomWidth: 1, borderBottomColor: '#f0f0f0', alignItems: 'center' },
+  menuText: { fontSize: 16, color: '#333' },
+  textInput: { width: '80%', fontSize: 16, color: '#555', borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 12, marginVertical: 8, backgroundColor: 'white' },
 });
 
 export default PatientProfile;

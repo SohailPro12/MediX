@@ -11,8 +11,9 @@ const messageSubSchema = new mongoose.Schema({
   url:         { type: String },      // pour image, file, audio
   originalName:{ type: String },      // pour document
   seen:        { type: Boolean, default: false },
+  seenAt:      { type: Date },
   createdAt:   { type: Date, default: Date.now }
-});
+}, { _id: true });
 
 const conversationSchema = new mongoose.Schema({
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: "Patient", required: true },

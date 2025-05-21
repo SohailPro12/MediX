@@ -8,7 +8,7 @@ import { usePatient } from "../../screens/context/PatientContext";
 
 const ProfileBar = ({ onLogout }) => {
   const navigation = useNavigation();
-  const { patient, setPatient } = usePatient(); // Correct usage of context
+  const { patient, setPatient } = usePatient();
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -17,12 +17,10 @@ const ProfileBar = ({ onLogout }) => {
         if (!token) throw new Error('Token manquant');
 
         const response = await fetch(`${API_URL}/api/patient/profile`, {
-          method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          }
+          },
         });
 
         if (!response.ok) {
@@ -55,18 +53,17 @@ const ProfileBar = ({ onLogout }) => {
       <TouchableOpacity
         style={styles.profileSection}
         onPress={() => navigation.navigate("PatientProfile")}
-        >
-        <Image
-          source={
-            patient?.photo
-              ? { uri: `${API_URL}/uploads/${patient.photo}` }
-              : require("../../assets/image.png")
-          }
-          style={styles.profileImage}
-        />
-      <Text style={styles.username}>
-        {(patient?.nom && patient?.prenom) ? `${patient.nom} ${patient.prenom}` : 'Patient'}
-      </Text>
+      >
+        {patient?.photo ? (
+          <Image source={{ uri: patient.photo }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.defaultAvatar}>
+            <Ionicons name="person" size={26} color="white" />
+          </View>
+        )}
+        <Text style={styles.username}>
+          {(patient?.nom && patient?.prenom) ? `${patient.nom} ${patient.prenom}` : 'Patient'}
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={onLogout || logout}>
@@ -99,6 +96,15 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    marginRight: 10,
+  },
+  defaultAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#5771f9',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 10,
   },
   username: {

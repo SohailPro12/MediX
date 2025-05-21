@@ -40,7 +40,7 @@ import SettingsDScreen from "../screens/Doctor_Interface/SettingsDScreen";
 import DossiersM from "../screens/Doctor_Interface/DossiersM";
 import PatientList from "../screens/Doctor_Interface/PatientList";
 import PrescriptionScreen from "../screens/Doctor_Interface/PrescriptionScreen";
-import ReportScreen from "../screens/Doctor_Interface/ReportScreen";
+import ReportScreen from "../screens/Messagerie/ReportScreen";
 import EditDoctorProfile from "../screens/Doctor_Interface/EditDoctorProfile";
 import Ordonnance from "../screens/Doctor_Interface/Ordonnance";
 import OrdonnanceList from "../screens/Doctor_Interface/Ordonnance";

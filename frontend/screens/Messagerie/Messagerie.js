@@ -70,8 +70,10 @@ console.log("userRole", userRole);
   const lastMsg = item.messages[item.messages.length - 1];
   const unreadCount = item.messages.filter(m => !m.seen && m.receiver.toString() === userId).length;
 
-  const profileImage = otherUser.Photo ? { uri: otherUser.Photo } : null;
-
+  const profileImage = (otherUser.photo || otherUser.Photo) && (otherUser.photo || otherUser.Photo) !== "photo"
+    ? { uri: otherUser.photo || otherUser.Photo }
+    : null;
+console.log("profileimage", profileImage);
   return (
 
     <TouchableOpacity

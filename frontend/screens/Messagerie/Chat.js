@@ -23,7 +23,14 @@ import { API_URL } from "../../config";
 import { useRoute } from "@react-navigation/native";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
-
+const timeAgo = (isoDate) => {
+  const deltaMin = Math.floor(
+    (Date.now() - new Date(isoDate).getTime()) / 60000
+  );
+  if (deltaMin <= 0) return "Vu à l’instant";
+  if (deltaMin === 1) return "Vu il y a 1 minute";
+  return `Vu il y a ${deltaMin} minutes`;
+};
 export default function ChatScreen() {
   const { patientId, medecinId, otherName } = useRoute().params;
   const flatListRef = useRef();
@@ -45,15 +52,26 @@ export default function ChatScreen() {
       const id = await AsyncStorage.getItem("userId");
       setUserId(id);
       try {
-        const res = await fetch(`${API_URL}/api/conversations/${patientId}/${medecinId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(
+          `${API_URL}/api/conversations/${patientId}/${medecinId}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         const convo = await res.json();
         setMessages(convo.messages || []);
         // update photo map
         const map = {};
-        if (convo.patientId) map[convo.patientId._id] = convo.patientId.Photo;
-        if (convo.medecinId) map[convo.medecinId._id] = convo.medecinId.Photo;
+        if (convo.patientId) {
+          map[convo.patientId._id] =
+            convo.patientId.Photo || convo.patientId.photo;
+          console.log("patientId", convo.patientId);
+        }
+        if (convo.medecinId) {
+          map[convo.medecinId._id] =
+            convo.medecinId.Photo || convo.medecinId.photo;
+          console.log("medecinId", convo.medecinId);
+        }
         setUserPhotoMap(map);
       } catch (e) {
         console.error(e);
@@ -72,14 +90,17 @@ export default function ChatScreen() {
     const ext = uri.split(".").pop();
     const filename = `${field}-${Date.now()}.${ext}`;
     form.append(field, { uri, type: mimeType, name: filename });
-    const res = await fetch(`${API_URL}/api/conversations/${patientId}/${medecinId}/message/${field}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-      body: form,
-    });
+    const res = await fetch(
+      `${API_URL}/api/conversations/${patientId}/${medecinId}/message/${field}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+        body: form,
+      }
+    );
     const { newMessage: msg } = await res.json();
     setMessages((m) => [...m, msg]);
     setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
@@ -89,11 +110,15 @@ export default function ChatScreen() {
     const { assets } = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
-    if (assets?.[0]) uploadMedia(assets[0].uri, "image", assets[0].type + "/jpeg");
+    if (assets?.[0])
+      uploadMedia(assets[0].uri, "image", assets[0].type + "/jpeg");
   };
   const pickDocument = async () => {
     const res = await DocumentPicker.getDocumentAsync({
-      type: ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+      type: [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ],
     });
     if (res.assets?.[0]) {
       const asset = res.assets[0];
@@ -104,7 +129,10 @@ export default function ChatScreen() {
   const handleDocumentPress = async (document) => {
     try {
       const localUri = FileSystem.documentDirectory + document.originalName;
-      const downloadRes = await FileSystem.downloadAsync(document.url, localUri);
+      const downloadRes = await FileSystem.downloadAsync(
+        document.url,
+        localUri
+      );
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(downloadRes.uri);
       } else {
@@ -147,14 +175,17 @@ export default function ChatScreen() {
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
     const token = await AsyncStorage.getItem("authToken");
-    const res = await fetch(`${API_URL}/api/conversations/${patientId}/${medecinId}/message/text`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message: newMessage }),
-    });
+    const res = await fetch(
+      `${API_URL}/api/conversations/${patientId}/${medecinId}/message/text`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: newMessage }),
+      }
+    );
     const { newMessage: msg } = await res.json();
     setMessages((m) => [...m, msg]);
     setNewMessage("");
@@ -167,24 +198,38 @@ export default function ChatScreen() {
     setEditText(msg.text || msg.message);
   };
   const applyEdit = async () => {
+    console.log(
+      "Editing message, patientid, medecinid:",
+      editingMsg,
+      patientId,
+      medecinId
+    );
     const token = await AsyncStorage.getItem("authToken");
-    await fetch(`${API_URL}/api/conversations/${patientId}/${medecinId}/message/${editingMsg._id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ text: editText }),
-    });
-    setMessages((ms) => ms.map((m) => (m._id === editingMsg._id ? { ...m, text: editText } : m)));
+    await fetch(
+      `${API_URL}/api/conversations/${patientId}/${medecinId}/message/${editingMsg._id}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text: editText }),
+      }
+    );
+    setMessages((ms) =>
+      ms.map((m) => (m._id === editingMsg._id ? { ...m, text: editText } : m))
+    );
     setEditingMsg(null);
   };
   const deleteMsg = async (msg) => {
     const token = await AsyncStorage.getItem("authToken");
-    await fetch(`${API_URL}/api/conversations/${patientId}/${medecinId}/message/${msg._id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await fetch(
+      `${API_URL}/api/conversations/${patientId}/${medecinId}/message/${msg._id}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     setMessages((ms) => ms.filter((m) => m._id !== msg._id));
     setEditingMsg(null);
   };
@@ -227,27 +272,48 @@ export default function ChatScreen() {
             )}
           </View>
         )}
-        <TouchableOpacity
-          onLongPress={() => isMe && type === "text" && onLongPress(item)}
-          style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
-        >
-          {type === "text" && <Text style={styles.text}>{item.text || item.message}</Text>}
-          {type === "image" && <Image source={{ uri: item.url }} style={styles.image} />}
-          {type === "document" && (
-            <TouchableOpacity onPress={() => handleDocumentPress(item)}>
-              <View style={styles.file}>
-                <MaterialCommunityIcons name="file-document-outline" size={24} />
-                <Text style={styles.filename}>{item.originalName}</Text>
-              </View>
-            </TouchableOpacity>
+        <View>
+          <TouchableOpacity
+            onLongPress={() => isMe && type === "text" && onLongPress(item)}
+            style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
+          >
+            {type === "text" && (
+              <Text style={styles.text}>{item.text || item.message}</Text>
+            )}
+            {type === "image" && (
+              <Image source={{ uri: item.url }} style={styles.image} />
+            )}
+            {type === "document" && (
+              <TouchableOpacity onPress={() => handleDocumentPress(item)}>
+                <View style={styles.file}>
+                  <MaterialCommunityIcons
+                    name="file-document-outline"
+                    size={24}
+                  />
+                  <Text style={styles.filename}>{item.originalName}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            {type === "audio" && (
+              <TouchableOpacity
+                onPress={() => toggleSound(item.url, item._id)}
+                style={styles.audioBtn}
+              >
+                <Ionicons
+                  name={playingId === item._id ? "pause-circle" : "play-circle"}
+                  size={32}
+                  color="#007AFF"
+                />
+                <Text style={styles.audioTime}>
+                  {playingId === item._id ? "playing..." : "play"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </TouchableOpacity>
+          {isMe && item.seen && item.seenAt && (
+            <Text style={styles.seenText}>{timeAgo(item.seenAt)}</Text>
           )}
-          {type === "audio" && (
-            <TouchableOpacity onPress={() => toggleSound(item.url, item._id)} style={styles.audioBtn}>
-              <Ionicons name={playingId === item._id ? "pause-circle" : "play-circle"} size={32} color="#007AFF" />
-              <Text style={styles.audioTime}>{playingId === item._id ? "playing..." : "play"}</Text>
-            </TouchableOpacity>
-          )}
-        </TouchableOpacity>
+        </View>
         {isMe && (
           <View style={styles.avatarWrapper}>
             {avatarUri ? (
@@ -261,7 +327,10 @@ export default function ChatScreen() {
     );
   };
 
-  if (loading) return <ActivityIndicator style={{ flex: 1 }} size="large" color="#75E1E5" />;
+  if (loading)
+    return (
+      <ActivityIndicator style={{ flex: 1 }} size="large" color="#75E1E5" />
+    );
 
   return (
     <View style={styles.container}>
@@ -276,19 +345,38 @@ export default function ChatScreen() {
       <Modal transparent visible={!!editingMsg}>
         <View style={styles.modalBg}>
           <View style={styles.modal}>
-            <TextInput value={editText} onChangeText={setEditText} style={styles.editInput} />
+            <TextInput
+              value={editText}
+              onChangeText={setEditText}
+              style={styles.editInput}
+            />
             <View style={styles.modalBtns}>
-              <TouchableOpacity onPress={() => setEditingMsg(null)}><Text>Cancel</Text></TouchableOpacity>
-              <TouchableOpacity onPress={applyEdit}><Text>Save</Text></TouchableOpacity>
-              <TouchableOpacity onPress={() => deleteMsg(editingMsg)}><Text style={{ color: "red" }}>Delete</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => setEditingMsg(null)}>
+                <Text>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={applyEdit}>
+                <Text>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteMsg(editingMsg)}>
+                <Text style={{ color: "red" }}>Delete</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
       <View style={styles.toolbar}>
-        <TouchableOpacity onPress={pickImage}><Ionicons name="image-outline" size={24} /></TouchableOpacity>
-        <TouchableOpacity onPress={pickDocument}><Ionicons name="file-tray-full-outline" size={24} /></TouchableOpacity>
-        <TouchableOpacity onPress={recording ? stopRecording : startRecording}><Ionicons name={recording ? "stop-circle" : "mic-outline"} size={24} /></TouchableOpacity>
+        <TouchableOpacity onPress={pickImage}>
+          <Ionicons name="image-outline" size={24} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={pickDocument}>
+          <Ionicons name="file-tray-full-outline" size={24} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={recording ? stopRecording : startRecording}>
+          <Ionicons
+            name={recording ? "stop-circle" : "mic-outline"}
+            size={24}
+          />
+        </TouchableOpacity>
       </View>
       <View style={styles.inputBar}>
         <TextInput
@@ -313,7 +401,12 @@ const styles = StyleSheet.create({
   right: { justifyContent: "flex-end" },
   avatarWrapper: { marginRight: 6 },
   avatar: { width: 36, height: 36, borderRadius: 18 },
-  avatarFallback: { width: 36, height: 36, borderRadius: 18, backgroundColor: "#007AFF" },
+  avatarFallback: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#007AFF",
+  },
   bubble: { maxWidth: "75%", padding: 8, borderRadius: 12 },
   otherBubble: { backgroundColor: "#F2F3F5" },
   myBubble: { backgroundColor: "#DCF8C6" },
@@ -324,10 +417,47 @@ const styles = StyleSheet.create({
   audioBtn: { flexDirection: "row", alignItems: "center" },
   audioTime: { marginLeft: 8 },
   toolbar: { flexDirection: "row", justifyContent: "space-around", padding: 8 },
-  inputBar: { flexDirection: "row", padding: 8, borderTopWidth: 1, borderColor: "#ddd" },
-  input: { flex: 1, marginRight: 8, borderWidth: 1, borderColor: "#ccc", borderRadius: 20, paddingHorizontal: 12 },
-  modalBg: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
-  modal: { width: "80%", backgroundColor: "#fff", padding: 16, borderRadius: 8 },
-  editInput: { borderWidth: 1, borderColor: "#ccc", borderRadius: 6, padding: 8 },
-  modalBtns: { flexDirection: "row", justifyContent: "space-around", marginTop: 12 },
+  inputBar: {
+    flexDirection: "row",
+    padding: 8,
+    borderTopWidth: 1,
+    borderColor: "#ddd",
+  },
+  input: {
+    flex: 1,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+  },
+  modalBg: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modal: {
+    width: "80%",
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 8,
+  },
+  editInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    padding: 8,
+  },
+  modalBtns: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 12,
+  },
+  seenText: {
+    fontSize: 10,
+    color: "#666",
+    marginTop: 2,
+    alignSelf: "flex-end", // pour coller à la bulle de droite
+  },
 });

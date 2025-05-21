@@ -52,7 +52,12 @@ exports.addOrdonnance = async (req, res) => {
         PatientId:   patientId,
         dateDebut:   frontTraitement.dateDebut,
         dateFin:     frontTraitement.dateFin,
-        medicaments: frontTraitement.medicaments,
+        medicaments: (frontTraitement.medicaments || []).map(m => ({
+  nom: m.nom,
+  dosage: m.dosage,
+  endDate: m.endDate,
+  periods: m.periods || []
+})),
         observation: frontTraitement.observation,
       });
     }
@@ -63,7 +68,6 @@ exports.addOrdonnance = async (req, res) => {
       MedecinId:    req.user.id,
       natureMaladie,
       date:         new Date(date),
-      medicaments:  Array.isArray(medicaments) ? medicaments : [],
       analyses:     createdAnalyses.map(a => a._id),
       traitement:   createdTraitement ? createdTraitement._id : undefined,
       RendezVousId: appointmentId,

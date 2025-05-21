@@ -9,7 +9,6 @@ exports.getProfilePatient = async (req, res) => {
     if (!patient) {
       return res.status(404).json({ message: "Patient non trouvé" });
     }
-
     res.json(patient);
   } catch (error) {
     console.error("Erreur lors de la récupération du profil patient :", error);

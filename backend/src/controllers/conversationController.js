@@ -10,7 +10,7 @@ exports.getConversations = async (req, res) => {
     const filter   = isMedecin ? { medecinId: userId } : { patientId: userId };
 
     const convos = await Conversation.find(filter)
-      .populate('patientId', 'nom prenom Photo')
+      .populate('patientId', 'nom prenom photo')
       .populate('medecinId', 'nom prenom Photo')
       .lean();
 
@@ -24,18 +24,32 @@ exports.getConversations = async (req, res) => {
 exports.getConversation = async (req, res) => {
   try {
     const { patientId, medecinId } = req.params;
-    const convo = await Conversation.findOne({ patientId, medecinId })
-      .populate('patientId', 'nom prenom Photo')
-      .populate('medecinId', 'nom prenom Photo')
-      .lean();
+    const currentUserId = req.user.id;
 
+    const convo = await Conversation.findOne({ patientId, medecinId })
+      .populate('patientId', 'nom prenom photo')
+      .populate('medecinId', 'nom prenom Photo');
+console.log("convo", convo);
     if (!convo) return res.status(404).json({ message: 'Conversation introuvable' });
+
+    // 1️⃣ Marquer comme vu tous les messages où j’étais le receiver
+    let updated = false;
+    convo.messages.forEach(msg => {
+      if (msg.receiver.toString() === currentUserId && !msg.seen) {
+        msg.seen = true;
+        msg.seenAt = new Date();
+        updated = true;
+      }
+    });
+    if (updated) await convo.save();
+
     res.json(convo);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
+
 
 
 async function _upsertConversation(patientId, medecinId) {
@@ -176,32 +190,37 @@ fs.unlinkSync(file.path);
 
 // ÉDITION ET SUPPRESSION (inchangés)
 exports.deleteMessage = async (req, res) => {
-  const { conversationId, messageId } = req.params;
+  const { patientId, medecinId, messageId } = req.params;
   try {
-    const convo = await Conversation.findById(conversationId);
-    const msg   = convo.messages.id(messageId);
-    if (!msg) return res.status(404).json({ error: 'Message introuvable' });
+    // On cherche la conversation par patientId + medecinId
+    const convo = await Conversation.findOne({ patientId, medecinId });
+    if (!convo) {
+      return res.status(404).json({ error: 'Conversation introuvable' });
+    }
+
+    const msg = convo.messages.id(messageId);
+    if (!msg) {
+      return res.status(404).json({ error: 'Message introuvable' });
+    }
     if (msg.sender.toString() !== req.user.id) {
       return res.status(403).json({ error: 'Non autorisé' });
     }
 
-    // If this was a media message, delete the Cloudinary file
+    // Si c'est un média, on supprime d'abord le fichier Cloudinary
     if (msg.type !== 'text' && msg.url) {
-      // extract public_id from URL, e.g. .../upload/v1234/folder/abc.jpg
-      const parsed = url.parse(msg.url).pathname; // /v1234/folder/abc.jpg
-      // remove leading slash and extension
+      const parsed = url.parse(msg.url).pathname;            // e.g. /v1234/folder/abc.jpg
       const parts = parsed.split('/');
       const versionAndFolder = parts.slice(parts.indexOf('upload') + 1);
-      const publicIdWithExt = versionAndFolder.join('/'); 
-      const publicId = publicIdWithExt.replace(/\.[^/.]+$/, ''); 
+      const publicIdWithExt = versionAndFolder.join('/');
+      const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
 
       await cloudinary.uploader.destroy(publicId, {
-        resource_type: msg.type === 'audio' ? 'video' : msg.type  // video for audio
+        resource_type: msg.type === 'audio' ? 'video' : msg.type  // “video” pour les audios
       });
     }
 
-    // Remove from DB
-    msg.remove();
+    // On enlève le message et on sauve
+    convo.messages.pull({ _id: messageId });
     await convo.save();
     res.json({ deleted: messageId });
   } catch (err) {
@@ -211,26 +230,33 @@ exports.deleteMessage = async (req, res) => {
 };
 
 
+
 exports.editMessage = async (req, res) => {
-  const { conversationId, messageId } = req.params;
-  const { text }                      = req.body;
+  const { patientId, medecinId, messageId } = req.params;
+   const { text } = req.body;
   try {
-    const convo = await Conversation.findById(conversationId);
-    const msg   = convo.messages.id(messageId);
-    if (!msg) return res.status(404).json({ error: 'Message introuvable' });
-    if (msg.sender.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'Non autorisé' });
-    }
-    // only text
-    if (msg.type !== 'text') {
-      return res.status(400).json({ error: 'Seuls les messages texte peuvent être modifiés' });
+    const convo = await Conversation.findOne({ patientId, medecinId });
+    if (!convo) {
+      return res.status(404).json({ error: 'Conversation introuvable' });
     }
 
-    msg.text    = text;
-    await convo.save();
-    res.json({ updated: msg });
+       const msg = convo.messages.id(messageId);
+   if (!msg) {
+     return res.status(404).json({ error: 'Message introuvable' });
+   }
+   if (msg.sender.toString() !== req.user.id) {
+     return res.status(403).json({ error: 'Non autorisé' });
+   }
+   if (msg.type !== 'text') {
+     return res.status(400).json({ error: 'Seuls les messages texte peuvent être modifiés' });
+   }
+
+   msg.text = text;
+   await convo.save();
+   res.json({ updated: msg });
+
   } catch (err) {
-    console.error(err);
+    console.error("Erreur editMessage:", err);
     res.status(500).json({ error: err.message });
   }
 };

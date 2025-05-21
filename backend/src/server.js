@@ -40,6 +40,7 @@ app.use("/api/doctor", doctorRoutes);
 app.use("/api/reporting", reportingRoutes);
 app.use("/api/patient", patientRoutes);
 app.use('/api/conversations', require('./routes/conversationRoutes'));
+app.use('/api/medications', require('./routes/medicationRoutes'));
 
 // 📌 Middleware de gestion des erreurs
 app.use(errorMiddleware);
