@@ -8,51 +8,19 @@ const { EditProfile } = require("../controllers/patient/EditProfile");
 const { getAppointments } = require("../controllers/patient/getAppointement");
 const { rateAppointment } = require("../controllers/patient/rateAppointement");
 const { getAllDoctorsOfPatient } = require("../controllers/patient/docteur");
-const dossierCtrl = require("../controllers/patient/dossierController");
-const {uploadProfilePicture} = require("../controllers/patient/uploadProfilePicture");
-
-
+const { getAllMedecin } = require("../controllers/patient/AllDoctors");
+const { PostAppointment } = require("../controllers/patient/Post_Appointement");
 const router = express.Router();
 // Profile routes
 router.get("/profile", authMiddleware, getProfilePatient );
 router.patch("/EditProfile", authMiddleware, EditProfile);
-router.post("/getAppointments", getAppointments);
+router.get("/getAppointments/:patientId", getAppointments);
 router.post("/rateAppointment", rateAppointment);
-router.get("/getDocteurs", getAllDoctorsOfPatient);
+router.get("/getDocteurs/:patientId", getAllDoctorsOfPatient);
+router.get("/getAllMedecins/:sso", getAllMedecin);
+router.post("/PostAppointment", PostAppointment);
 
 
-
-// GET /api/patient/dossiers/:patientId
-router.get("/dossiers/:patientId", authMiddleware, dossierCtrl.getPatientDossier);
-
-
-
-
-
-
-
-
-
-// Multer config
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = './uploads/patients';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
-const upload = multer({ storage });
-
-// Route: POST /api/patient/uploadimage
-router.post(
-  "/uploadimage",
-  authMiddleware,
-  upload.single("image"),
-  uploadProfilePicture
-);
 
 
 

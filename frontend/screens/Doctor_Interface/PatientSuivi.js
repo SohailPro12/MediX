@@ -5,7 +5,7 @@ import PatientCard from '../../components/DoctorComponents/CurrentPatientCard';
 import Header from '../../components/DoctorComponents/Header';
 import SearchBar from '../../components/DoctorComponents/SearchBar';
 import { useMedecin } from '../context/MedecinContext';
-import { fetchPatients } from "../../utils_Docror/ListePatients"; 
+import { fetchPatients } from "../../utils_Doctor/ListePatients"; 
 
 const PatientListScreen = () => {
   const navigation = useNavigation();

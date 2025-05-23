@@ -5,9 +5,9 @@ import { Calendar } from 'react-native-calendars';
 import CustomAlert from '../../components/DoctorComponents/CustomAlert';
 import Header from '../../components/DoctorComponents/Header';
 import { useMedecin } from './../context/MedecinContext'; 
-import { fetchAppointments } from "../../utils_Docror/MedecinAppointement"; // Assurez-vous que le chemin est correct
-import { confirmerAppointmentRequest } from "../../utils_Docror/confirmerAppoint";
-import { rescheduleAppointmentRequest } from "../../utils_Docror/rescheduleAppo";
+import { fetchAppointments } from "../../utils_Doctor/MedecinAppointement";
+import { confirmerAppointmentRequest } from "../../utils_Doctor/confirmerAppoint";
+import { rescheduleAppointmentRequest } from "../../utils_Doctor/rescheduleAppo";
 import { useNavigation } from '@react-navigation/native';
 
 const AppointmentsList = () => {
