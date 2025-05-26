@@ -45,6 +45,8 @@ import EditDoctorProfile from "../screens/Doctor_Interface/EditDoctorProfile";
 import Ordonnance from "../screens/Doctor_Interface/Ordonnance";
 import OrdonnanceList from "../screens/Doctor_Interface/Ordonnance";
 import AddOrdonnanceScreen from "../screens/Doctor_Interface/AddOrdonnanceScreen";
+import Disponibilites from "../screens/Doctor_Interface/Disponibilites";
+
 
 import MessagerieP from "../screens/Patient_Interface/Messagerie";
 import ChatP from "../screens/Patient_Interface/Chat";
@@ -124,9 +126,10 @@ export default function AppNavigator() {
           />
           <Stack.Screen name="SettingsDScreen" component={SettingsDScreen} />
           <Stack.Screen name="Ordonnance" component={Ordonnance} />
-
           <Stack.Screen name="AddOrdonnanceScreen" component={AddOrdonnanceScreen} />
           <Stack.Screen name="OrdonnanceList" component={OrdonnanceList} />
+         <Stack.Screen name="Disponibilites" component={Disponibilites} />
+
 
           {/*Patient Screen*/}
           <Stack.Screen name="DashboardPatient" component={DashboardPatient} />
