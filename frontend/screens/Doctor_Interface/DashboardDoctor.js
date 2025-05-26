@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   RefreshControl,
   ScrollView,
-  ActivityIndicator,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import StatCard from "../../components/DoctorComponents/StatCard";
@@ -14,8 +13,8 @@ import MenuCard from "../../components/DoctorComponents/MenuCard";
 import ProfileBar from "../../components/DoctorComponents/ProfileBar";
 import NavigationBar from "../../components/DoctorComponents/NavigationBar";
 import { useMedecin } from "../context/MedecinContext";
-import { fetchAppointments } from "../../utils/MedecinAppointement";
-import { fetchPatients } from "../../utils/ListePatients";
+import { fetchAppointments } from "../../utils_Doctor/MedecinAppointement";
+import { fetchPatients } from "../../utils_Doctor/ListePatients";
 
 const Dashboard = () => {
   const navigation = useNavigation();
@@ -89,6 +88,7 @@ const Dashboard = () => {
               color="#33A1FF"
             />
           </TouchableOpacity>
+
         </View>
 
         <View style={styles.menuContainer}>
@@ -108,6 +108,22 @@ const Dashboard = () => {
             <MenuCard icon="file-document-edit" label="Ordonnances" color="#28A745" />
           </TouchableOpacity>
         </View>
+
+         {/* ✅ Section séparée pour la carte Mes Disponibilités */}
+         <View style={styles.bottomCardContainer}>
+          <TouchableOpacity 
+            style={styles.bottomStatButton}
+            onPress={() => navigation.navigate("Disponibilites")}
+            activeOpacity={0.8}
+          >
+            <StatCard
+              icon="clock"
+              label="Mes Disponibilités"
+              value="Configurer"
+              color="#28A745"
+            />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
 
       <NavigationBar />
@@ -124,12 +140,13 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: "row",
+    flexWrap: "wrap", // 🔁 permet d’afficher plus de 2 cards
     justifyContent: "space-between",
     marginBottom: 30,
   },
   statButton: {
-    flex: 1,
-    marginHorizontal: 5,
+    width: "48%", // 📏 important pour 3 cards sur 2 lignes
+    marginBottom: 15,
   },
   menuContainer: {
     flexDirection: "row",
@@ -137,6 +154,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 20,
   },
+  bottomCardContainer: {
+    marginTop: 10,
+    marginBottom: 30,
+    alignItems: "center",
+  },
+  bottomStatButton: {
+    width: "80%",
+  },
+
   menuButton: {
     width: "48%",
     marginBottom: 15,
