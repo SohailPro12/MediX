@@ -95,8 +95,11 @@ export default function AddOrdonnanceScreen() {
   }, [ordonnanceId]);
 
   // — Traitement dynamiques —
-  const addTraitMed = () =>
-    setTraitMedicaments(ms => [...ms, { nom: "", dosage: "" }]);
+ const addTraitMed = () =>
+  setTraitMedicaments(ms => [
+    ...ms,
+    { nom: "", dosage: "", endDate: "", periods: [] }
+  ]);
   const updateTraitMed = (i, field, v) =>
     setTraitMedicaments(ms =>
       ms.map((m, idx) => (idx === i ? { ...m, [field]: v } : m))
@@ -261,25 +264,57 @@ export default function AddOrdonnanceScreen() {
           placeholder="Observation"
           multiline
         />
-        {traitMedicaments.map((m, i) => (
-          <View key={i} style={styles.row}>
-            <TextInput
-              style={[styles.input, styles.half]}
-              placeholder="Nom"
-              value={m.nom}
-              onChangeText={v => updateTraitMed(i, "nom", v)}
-            />
-            <TextInput
-              style={[styles.input, styles.half]}
-              placeholder="Dosage"
-              value={m.dosage}
-              onChangeText={v => updateTraitMed(i, "dosage", v)}
-            />
-            <TouchableOpacity onPress={() => removeTraitMed(i)}>
-              <Text style={styles.removeBtn}>✕</Text>
-            </TouchableOpacity>
-          </View>
-        ))}
+       {traitMedicaments.map((m, i) => (
+  <View key={i} style={{ marginBottom: 8 }}>
+    <View style={styles.row}>
+      <TextInput
+        style={[styles.input, styles.half]}
+        placeholder="Nom"
+        value={m.nom}
+        onChangeText={v => updateTraitMed(i, "nom", v)}
+      />
+      <TextInput
+        style={[styles.input, styles.half]}
+        placeholder="Dosage"
+        value={m.dosage}
+        onChangeText={v => updateTraitMed(i, "dosage", v)}
+      />
+      <TouchableOpacity onPress={() => removeTraitMed(i)}>
+        <Text style={styles.removeBtn}>✕</Text>
+      </TouchableOpacity>
+    </View>
+    <TextInput
+      style={[styles.input, styles.half]}
+      placeholder="Date fin (YYYY-MM-DD)"
+      value={m.endDate}
+      onChangeText={v => updateTraitMed(i, "endDate", v)}
+    />
+    <View style={{ flexDirection: "row", flexWrap: "wrap", marginBottom: 8 }}>
+      {['Matin', 'Midi', 'Après-midi', 'Soir'].map(p => (
+        <TouchableOpacity
+          key={p}
+          onPress={() =>
+            updateTraitMed(i, "periods",
+              m.periods.includes(p)
+                ? m.periods.filter(pr => pr !== p)
+                : [...m.periods, p]
+            )
+          }
+          style={{
+            padding: 6,
+            borderWidth: 1,
+            borderColor: "#ccc",
+            borderRadius: 20,
+            margin: 4,
+            backgroundColor: m.periods.includes(p) ? "#75E1E5" : "white"
+          }}
+        >
+          <Text style={{ fontSize: 12 }}>{p}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  </View>
+))}
         <TouchableOpacity style={styles.addBtn} onPress={addTraitMed}>
           <Text style={styles.addBtnText}>+ Ajouter Médicament</Text>
         </TouchableOpacity>

@@ -1,11 +1,10 @@
 const mongoose = require("mongoose");
 const Appointment = require("../../models/Rendez-vous");
-const Medecin = require("../../models/Medecin");
 const Patient = require("../../models/Patient");
 
 exports.getAllDoctorsOfPatient = async (req, res) => {
   try {
-    const { patientId } = req.query;
+    const { patientId } = req.params;
     if (!patientId) {
       return res.status(400).json({ error: "patientId est requis" });
     }
@@ -13,15 +12,17 @@ exports.getAllDoctorsOfPatient = async (req, res) => {
     // 1. Médecins via le champ `id_medecins`
     const patient = await Patient.findById(patientId).populate(
       "id_medecin",
-      "nom prenom photo cin specialite"
+      "nom prenom Photo specialite formation experience telephone mail description"
     );
-    const medecinsFromField = patient?.id_medecin || [];
+        const medecinsFromField = patient?.id_medecin
+      ? [patient.id_medecin] // transforme en tableau s'il existe
+      : [];
 
     // 2. Médecins via les rendez-vous confirmés
     const appointments = await Appointment.find({
       PatientId: patientId,
       status: "confirmed",
-    }).populate("MedecinId", "nom prenom photo cin specialite");
+    }).populate("MedecinId", "nom prenom photo specialite formation experience telephone mail description");
 
     const medecinsFromAppointments = appointments.map((a) => a.MedecinId);
 

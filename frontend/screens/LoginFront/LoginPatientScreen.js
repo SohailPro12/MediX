@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, KeyboardAvoidingView, Platform, Touchable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Button } from 'react-native-web';
+import { Ionicons } from '@expo/vector-icons';
 import { handleLogin }  from './authentification/HandleLogin.js';
 
 
@@ -10,6 +11,11 @@ import { handleLogin }  from './authentification/HandleLogin.js';
 const LoginPatientScreen = ({ navigation }) => {
     const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
+     const [showPassword, setShowPassword] = useState(false);
+              const handleLoginPress = () => {
+                const trimmedMail = mail.trim(); // Remove whitespace from email
+                handleLogin(navigation ,trimmedMail, password,"patient");
+              };
   return (
     <>
       {/* Header Illustration */}
@@ -26,24 +32,36 @@ const LoginPatientScreen = ({ navigation }) => {
         </View>
       </View>
       <Text style={styles.head}>Welcome Dear User</Text>
-      <View style={styles.inputContainer}>
-         <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#888"
-          value={mail}
-          onChangeText={setMail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#888"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-      </View>
-      <TouchableOpacity style={styles.Button} onPress={() => handleLogin(navigation ,mail, password,"patient")}>
+         <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              placeholder='Email'
+              placeholderTextColor='#888'
+              value={mail}
+              onChangeText={setMail}
+            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                placeholder='Password'
+                placeholderTextColor='#888'
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity
+                style={styles.eyeIcon}
+                onPress={() => setShowPassword(!showPassword)}
+              >
+                <Ionicons
+                  name={showPassword ? 'eye-off' : 'eye'}
+                  size={24}
+                  color='#888'
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+      <TouchableOpacity style={styles.Button} onPress={handleLoginPress}>
              <Text style={styles.textButton}>Se connecter</Text>
             </TouchableOpacity>
       <TouchableOpacity style={styles.Forgot} onPress={() =>navigation.navigate("ForgotScreen", { role: "patient" })}>
@@ -56,21 +74,16 @@ const LoginPatientScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-
-  headerContainer: {
-    //backgroundColor:'blue',
+ headerContainer: {
     marginTop: 80,
-    flexDirection:'row',
-    alignItems:'center',
-    justifyContent:'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  imgContainer:{
-    //backgroundColor:'lightblue',
-    marginRight:20,
+  imgContainer: {
+    marginRight: 20,
   },
-  textContainer:{
-    //backgroundColor:'white',
-  },
+  textContainer: {},
   headerImage: {
     width: 100,
     height: 100,
@@ -87,44 +100,61 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: 'rgb(91, 204, 221)',
     paddingBottom: 8,
-    textAlign:'center',
+    textAlign: 'center',
   },
-  head:{
-    fontSize:23,
-    textAlign:'center',
-    fontWeight:'600',
-    color:'rgb(72, 119, 150)',
-    marginTop:30,
+  head: {
+    fontSize: 23,
+    textAlign: 'center',
+    fontWeight: '600',
+    color: 'rgb(72, 119, 150)',
+    marginTop: 30,
   },
-  inputContainer:{
-    //backgroundColor:'blue',
-    marginTop:50,
+  inputContainer: {
+    marginTop: 50,
   },
-  input:{
-    backgroundColor:'white',
-    width:'80%',
-    height:50,
-    borderRadius:25,
-    borderColor:'rgb(91, 204, 221)',
-    borderWidth:2,
-    paddingHorizontal:20,
-    alignSelf:'center',
-    marginVertical:20,
-    //textAlign:'center',
+  input: {
+    backgroundColor: 'white',
+    width: '80%',
+    height: 50,
+    borderRadius: 25,
+    borderColor: 'rgb(91, 204, 221)',
+    borderWidth: 2,
+    paddingHorizontal: 20,
+    alignSelf: 'center',
+    marginVertical: 20,
   },
-  Button:{
-    backgroundColor:'rgb(91, 204, 221)',
-    marginTop:30,
-    alignSelf:'center',
-    width:"60%",
-    height:40,
-    justifyContent:'center',
-    borderRadius:25,
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    width: '80%',
+    height: 50,
+    borderRadius: 25,
+    borderColor: 'rgb(91, 204, 221)',
+    borderWidth: 2,
+    alignSelf: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 20,
   },
-  textButton:{
-    color:'white',
-    textAlign:'center',
-    fontSize:18,
+  passwordInput: {
+    flex: 1,
+  },
+  eyeIcon: {
+    marginLeft: 10,
+  },
+  Button: {
+    backgroundColor: 'rgb(91, 204, 221)',
+    marginTop: 30,
+    alignSelf: 'center',
+    width: "60%",
+    height: 40,
+    justifyContent: 'center',
+    borderRadius: 25,
+  },
+  textButton: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 18,
   },
   Forgot:{
     alignSelf:'center',
@@ -133,7 +163,6 @@ const styles = StyleSheet.create({
   textForgot:{
     color:'rgb(72, 119, 150)',
   }
-
 });
 
 export default LoginPatientScreen;

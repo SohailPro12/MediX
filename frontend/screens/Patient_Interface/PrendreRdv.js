@@ -1,36 +1,72 @@
-// Importations nécessaires depuis React et React Native
 import React, { useState } from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity, ScrollView, StyleSheet,Modal } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons'; // Importation des icônes
+import { View, Text, Image, TextInput, TouchableOpacity, ScrollView, StyleSheet, Modal } from 'react-native';
+import { FontAwesome } from '@expo/vector-icons';
 import Header from '../../components/PatientComponents/Header';
 import { useRoute } from "@react-navigation/native";
+import { useNavigation } from '@react-navigation/native';
+import { usePatient } from "../../screens/context/PatientContext";
+import { API_URL } from "../../config";
 
-// Définition du composant principal App
- const  PrendreRdv = () => {
-  // États pour stocker la date sélectionnée, le créneau horaire et le motif de consultation
+
+
+const PrendreRdv = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [consultationReason, setConsultationReason] = useState('');
-  const [showAlert, setShowAlert] = useState(false); // État pour gérer l'affichage du modal
+  const [showAlert, setShowAlert] = useState(false);
+  const navigation = useNavigation();
+
+  const { patient } = usePatient();
+  const [nom, setNom] = useState(patient?.nom || '');
+  const [prenom, setPrenom] = useState(patient?.prenom || '');
+  const [cin, setCin] = useState(patient?.cin || '');
+  const [telephone, setTelephone] = useState(patient?.telephone || '');
+  const [mail, setMail] = useState(patient?.mail || '');
+
   const route = useRoute();
   const doctorInfo = route.params;
 
-    // Fonction pour afficher l'alerte
-    const handleConfirm = () => {
-      // Affiche l'alerte une fois que le bouton est cliqué
-      if (selectedTimeSlot) {
-        setShowAlert(true);
-      }
-    };
-
-  // Créneaux horaires disponibles
-  const morningSlots = ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30'];
-  const afternoonSlots = ['14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'];
+    const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
   // Noms des jours de la semaine
-  const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+  const generateAllAvailableSlots = () => {
+  const allSlots = {};
 
-  // Fonction pour générer les jours du calendrier du mois actuel
+  doctorInfo.availability?.forEach((availability) => {
+    const day = availability.jour;
+    console.log(day)
+
+    if (!dayNames.includes(day)) return; // Sécurité
+
+    const [startHour, startMinute] = availability.heureDebut.split(':').map(Number);
+    const [endHour, endMinute] = availability.heureFin.split(':').map(Number);
+
+    const startTime = startHour * 60 + startMinute;
+    const endTime = endHour * 60 + endMinute;
+    const slotDuration = 30;
+
+    const slots = [];
+
+    for (let time = startTime; time < endTime; time += slotDuration) {
+      const hours = Math.floor(time / 60);
+      const minutes = time % 60;
+      const slot = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      slots.push(slot);
+    }
+
+    allSlots[day] = slots;
+  });
+
+  return allSlots;
+};
+
+const availableSlotsByDay = generateAllAvailableSlots();
+const selectedDayName = dayNames[selectedDate.getDay()];
+const availableSlots = availableSlotsByDay[selectedDayName] || [];
+
+console.log(availableSlotsByDay);
+
+  // Fonction pour générer les jours du calendrier
   const generateCalendarDays = () => {
     const today = new Date();
     const currentMonth = selectedDate.getMonth();
@@ -44,18 +80,17 @@ import { useRoute } from "@react-navigation/native";
 
     const calendarDays = [];
 
-    // Ajouter des cellules vides si le mois ne commence pas dimanche
     for (let i = 0; i < firstDayOfWeek; i++) {
       calendarDays.push(null);
     }
 
-    // Générer les jours du mois
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(currentYear, currentMonth, day);
       const isToday = date.toDateString() === today.toDateString();
       const isPast = date < today && !isToday;
       const isSelected = date.toDateString() === selectedDate.toDateString();
-      const isAvailable = !isPast && day % 3 !== 0; // Simule la disponibilité
+      const dayName = dayNames[date.getDay()];
+      const isAvailable = !isPast && doctorInfo.availability?.some(d => d.jour === dayName);
 
       calendarDays.push({ day, date, isToday, isPast, isSelected, isAvailable });
     }
@@ -63,31 +98,22 @@ import { useRoute } from "@react-navigation/native";
     return calendarDays;
   };
 
-  // Vérifie si un créneau horaire est disponible
-  const isSlotAvailable = (slot) => {
-    const slotNumber = parseInt(slot.replace(':', ''));
-    return slotNumber % 100 !== 0; // Exclure les créneaux à pile (ex: 09:00)
-  };
-
-  // Sélection d'une date
+  // Fonctions utilitaires restantes...
   const handleDateSelect = (date) => {
     setSelectedDate(date);
-    setSelectedTimeSlot(null); // Reset du créneau choisi
+    setSelectedTimeSlot(null);
   };
 
-  // Sélection d'un créneau horaire
   const handleTimeSlotSelect = (slot) => {
     setSelectedTimeSlot(slot);
   };
 
-  // Naviguer entre les mois du calendrier
   const navigateMonth = (direction) => {
     const newDate = new Date(selectedDate);
     newDate.setMonth(newDate.getMonth() + direction);
     setSelectedDate(newDate);
   };
 
-  // Formater le mois et l'année affichés
   const formatMonthYear = (date) => {
     const months = [
       'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -96,27 +122,70 @@ import { useRoute } from "@react-navigation/native";
     return `${months[date.getMonth()]} ${date.getFullYear()}`;
   };
 
-  // Affichage de l'interface utilisateur
+const handleConfirm = async () => {
+  if (!selectedTimeSlot) return;
+    const [hours, minutes] = selectedTimeSlot.split(':').map(Number);
+    const fullDateTime = new Date(selectedDate);
+    fullDateTime.setHours(hours);
+    fullDateTime.setMinutes(minutes);
+    fullDateTime.setSeconds(0);
+    fullDateTime.setMilliseconds(0);
+
+  const rendezVousData = {
+    nom,
+    prenom,
+    cin,
+    telephone,
+    mail,
+    motif: consultationReason,
+    date: fullDateTime,
+    MedecinId: doctorInfo._id,
+    PatientId: patient?._id
+  };
+
+  try {
+    const response = await fetch(`${API_URL}/api/patient/PostAppointment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(rendezVousData),
+    });
+    if (response.ok) {
+      setShowAlert(true); // Affiche le modal
+    } else {
+      const errorData = await response.json();
+      alert("Erreur : " + errorData.message);
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Une erreur est survenue. Veuillez réessayer.");
+  }
+};
+
+
   return (
     <View style={styles.container}>
-    <Header param="Planifier Rendez-vous" rja3="SearchDoctor"/>  
-      <ScrollView contentContainerStyle={ {flexGrow: 1}}>
-
+      <Header param="Planifier Rendez-vous" rja3="SearchDoctor"/>
+      <ScrollView contentContainerStyle={{flexGrow: 1}}>
         {/* Carte du médecin */}
         <View style={styles.doctorCard}>
-      <View style={styles.doctorRow}>
-        <Image source={typeof doctorInfo.imageUrl === 'number' ? doctorInfo.imageUrl : { uri: doctorInfo.imageUrl }} style={styles.doctorImage} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.doctorName}>{doctorInfo.name}</Text>
-          <Text style={styles.doctorSpecialty}>{doctorInfo.specialty}</Text>
-          
-          <View style={styles.locationRow}>
-            <FontAwesome name="map-marker" size={16} color="#666" />
-            <Text style={styles.locationText}>{doctorInfo.address}</Text>
+          <View style={styles.doctorRow}>
+            {doctorInfo.imageUrl ? (
+              <Image source={{ uri: doctorInfo.imageUrl }} style={styles.doctorImage} />
+            ) : (
+              <Image source={require('../../assets/doctor.jpg')} style={styles.doctorImage} />
+            )}
+            <View style={{ flex: 1 }}>
+              <Text style={styles.doctorName}>{doctorInfo.name}</Text>
+              <Text style={styles.doctorSpecialty}>{doctorInfo.specialty}</Text>
+              <View style={styles.locationRow}>
+                <FontAwesome name="map-marker" size={16} color="#666" />
+                <Text style={styles.locationText}>{doctorInfo.address}</Text>
+              </View>
+            </View>
           </View>
         </View>
-      </View>
-    </View>
 
         {/* Sélection de date */}
         <View style={styles.section}>
@@ -131,7 +200,6 @@ import { useRoute } from "@react-navigation/native";
             </TouchableOpacity>
           </View>
 
-          {/* Grille du calendrier */}
           <View style={styles.calendarGrid}>
             {dayNames.map((day, idx) => (
               <Text key={idx} style={styles.dayName}>{day}</Text>
@@ -144,7 +212,7 @@ import { useRoute } from "@react-navigation/native";
                       styles.dayButton,
                       day.isSelected && styles.selectedDay,
                       day.isToday && styles.today,
-                      !day.isAvailable && styles.unavailableDay
+                      day.isAvailable && styles.availableDay
                     ]}
                     onPress={() => day.isAvailable && handleDateSelect(day.date)}
                     disabled={!day.isAvailable}
@@ -167,63 +235,75 @@ import { useRoute } from "@react-navigation/native";
         {/* Sélection des horaires */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Horaires disponibles</Text>
-
-          {/* Matin */}
-          <Text style={styles.subTitle}>Matin</Text>
-          <View style={styles.slotGrid}>
-            {morningSlots.map(slot => {
-              const available = isSlotAvailable(slot);
-              return (
+          
+          {availableSlots.length > 0 ? (
+            <View style={styles.slotGrid}>
+              {availableSlots.map(slot => (
                 <TouchableOpacity
                   key={slot}
                   style={[
                     styles.slotButton,
-                    selectedTimeSlot === slot && styles.selectedSlot,
-                    !available && styles.unavailableSlot
+                    selectedTimeSlot === slot && styles.selectedSlot
                   ]}
-                  onPress={() => available && handleTimeSlotSelect(slot)}
-                  disabled={!available}
+                  onPress={() => handleTimeSlotSelect(slot)}
                 >
                   <Text style={[
                     styles.slotText,
-                    selectedTimeSlot === slot && { color: '#fff' },
-                    !available && { color: '#ccc' }
+                    selectedTimeSlot === slot && { color: '#fff' }
                   ]}>
                     {slot}
                   </Text>
                 </TouchableOpacity>
-              );
-            })}
-          </View>
-
-          {/* Après-midi */}
-          <Text style={styles.subTitle}>Après-midi</Text>
-          <View style={styles.slotGrid}>
-            {afternoonSlots.map(slot => {
-              const available = isSlotAvailable(slot);
-              return (
-                <TouchableOpacity
-                  key={slot}
-                  style={[
-                    styles.slotButton,
-                    selectedTimeSlot === slot && styles.selectedSlot,
-                    !available && styles.unavailableSlot
-                  ]}
-                  onPress={() => available && handleTimeSlotSelect(slot)}
-                  disabled={!available}
-                >
-                  <Text style={[
-                    styles.slotText,
-                    selectedTimeSlot === slot && { color: '#fff' },
-                    !available && { color: '#ccc' }
-                  ]}>
-                    {slot}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.noSlotsText}>Aucun créneau disponible ce jour</Text>
+          )}
         </View>
+
+        {/* Information */}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Mes Informations</Text>
+
+        <Text style={styles.label}>Nom</Text>
+        <TextInput
+          style={styles.textInput}
+          value={nom}
+          onChangeText={setNom}
+        />
+
+        <Text style={styles.label}>Prénom</Text>
+        <TextInput
+          style={styles.textInput}
+          value={prenom}
+          onChangeText={setPrenom}
+        />
+
+        <Text style={styles.label}>CIN</Text>
+        <TextInput
+          style={styles.textInput}
+          value={cin}
+          onChangeText={setCin}
+        />
+
+        <Text style={styles.label}>Téléphone</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="phone-pad"
+          value={telephone}
+          onChangeText={setTelephone}
+        />
+
+        <Text style={styles.label}>E-mail</Text>
+        <TextInput
+          style={styles.textInput}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          value={mail}
+          onChangeText={setMail}
+        />
+      </View>
 
         {/* Motif de consultation */}
         <View style={styles.section}>
@@ -243,42 +323,41 @@ import { useRoute } from "@react-navigation/native";
         <TouchableOpacity
           style={[styles.confirmButton, !selectedTimeSlot && { opacity: 0.6 }]}
           disabled={!selectedTimeSlot}
-          onPress={handleConfirm}// Afficher l'alerte à la confirmation
+          onPress={handleConfirm}
         >
           <FontAwesome name="check-circle" size={18} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.confirmText}>Confirmer le rendez-vous</Text>
         </TouchableOpacity>
-
       </ScrollView>
-        {/* Modal d'alerte */}
-        <Modal
-  visible={showAlert}
-  animationType="fade"
-  transparent={true}
-  onRequestClose={() => setShowAlert(false)} // Fermer le modal si on clique en dehors
->
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContainer}>
-      <Text style={styles.modalTitle}>
-        Rendez-vous confirmé
-      </Text>
-      <Text style={styles.modalMessage}>
-        {`Votre rendez-vous avec ${doctorInfo.name} est confirmé pour le ${selectedDate.toLocaleDateString()} à ${selectedTimeSlot}.`}
-      </Text>
-      <TouchableOpacity
-        style={styles.closeButton}
-        onPress={() => setShowAlert(false)}
+
+      {/* Modal d'alerte */}
+      <Modal
+        visible={showAlert}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setShowAlert(false)}
       >
-        <Text style={styles.closeText}>Fermer</Text>
-      </TouchableOpacity>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Rendez-vous confirmé</Text>
+            <Text style={styles.modalMessage}>
+              {`Votre rendez-vous avec ${doctorInfo.name} pour le ${selectedDate.toLocaleDateString()} à ${selectedTimeSlot} est envoyé .`}
+            </Text>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                  setShowAlert(false);
+                  navigation.navigate("DashboardPatient");
+                }}
+               >
+              <Text style={styles.closeText}>Fermer</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
-  </View>
-</Modal>
-
-</View>
   );
-}
-
+};
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB',marginTop:6 },
@@ -316,6 +395,34 @@ const styles = StyleSheet.create({
   modalTitle: {fontSize: 20,fontWeight: 'bold',color: '#2563EB',marginBottom: 10},
   modalMessage: {fontSize: 16,color: '#4B5563',textAlign: 'center',marginBottom: 20},
   closeButton: {backgroundColor: '#2563EB',paddingVertical: 10,paddingHorizontal: 30,borderRadius: 5},
-  closeText: {color: 'white',fontWeight: 'bold'}
+  closeText: {color: 'white',fontWeight: 'bold'},
+   noSlotsText: {
+    color: '#6B7280',
+    textAlign: 'center',
+    marginVertical: 10,
+    fontStyle: 'italic'
+  },
+availableDay: {
+  borderColor: '#10B981',
+  borderWidth: 1.5
+}
+,label: {
+  fontSize: 14,
+  color: '#4B5563',
+  marginBottom: 7,
+  marginTop: 18,
+},
+
+textInput: {
+  borderWidth: 1,
+  borderColor: '#D1D5DB',
+  borderRadius: 8,
+  padding: 10,
+  fontSize: 16,
+  color: '#111827',
+  backgroundColor: '#F9FAFB'
+}
+
+
 });
 export default PrendreRdv;

@@ -17,7 +17,7 @@ const reportingRoutes = require("./routes/reporting");
 const patientRoutes = require("./routes/patient");
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 // 📌 Connexion à MongoDB
 connectDB();
@@ -39,6 +39,8 @@ app.use('/api/problems', problemRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use("/api/reporting", reportingRoutes);
 app.use("/api/patient", patientRoutes);
+app.use('/api/conversations', require('./routes/conversationRoutes'));
+app.use('/api/medications', require('./routes/medicationRoutes'));
 
 // 📌 Middleware de gestion des erreurs
 app.use(errorMiddleware);

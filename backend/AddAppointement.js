@@ -29,12 +29,12 @@ async function main() {
     }
 
     // Création du rendez-vous
-    const appointmentDate = convertToDateWithTime("2/04/2025", 20, 30);
+    const appointmentDate = convertToDateWithTime("2/06/2025", 20, 30);
     console.log('📅 Date du rendez-vous:', appointmentDate);
 
     const appointment = new RendezVous({
-      PatientId: '681df223e2e0a4ccee006c88',
-      MedecinId: '6802e494aab10c2df1cb9c4a',
+      PatientId: '682616069537bbfa491d734a',
+      MedecinId: '68090c01319430ac98cbf56a',
       date: appointmentDate,
       lieu: "Mohammedia",
       observation: "Rendez-vous pour consultation",

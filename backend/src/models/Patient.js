@@ -17,7 +17,7 @@ const PatientSchema = new mongoose.Schema({
   adresse: { type: String},
   role: { type: String, enum: ["patient"], default: "patient" },
   dossierMedicalId: { type: String, ref: 'DossierMedical' },
-  photo: { type: Buffer }
+  photo: { type: String }
 }, { collection: 'patient', timestamps: true });
 
 PatientSchema.pre('save', async function (next) {

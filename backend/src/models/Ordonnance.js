@@ -1,26 +1,17 @@
 const mongoose = require('mongoose');
 
-
 const SchemaOrdonnance = new mongoose.Schema({
   PatientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true },
   MedecinId: { type: mongoose.Schema.Types.ObjectId, ref: 'Medecin', required: true },
   natureMaladie: { type: String, required: true },
   date: { type: Date, required: true },
-  analyses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Analyse' }], // références vers Analyse
-  traitement: { type: mongoose.Schema.Types.ObjectId, ref: 'Traitement' }, // une seule référence vers Traitement
-  medicaments: [
-    {
-      name: { type: String, required: true },
-      endDate: { type: Date, required: true },
-      periods: [{ type: String, enum: ['Matin', 'Midi', 'Après-midi', 'Soir'] }],
-    }
-  ],
-  RendezVousId: { 
-    type: mongoose.Schema.Types.ObjectId, 
+  analyses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Analyse' }],
+  traitement: { type: mongoose.Schema.Types.ObjectId, ref: 'Traitement' },
+  RendezVousId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'RendezVous',
-    required: true 
-  },
+    required: true
+  }
 }, { collection: 'Ordonnances' });
 
-const Ordonnance = mongoose.model('Ordonnance', SchemaOrdonnance);
-module.exports = Ordonnance;
+module.exports = mongoose.model('Ordonnance', SchemaOrdonnance);

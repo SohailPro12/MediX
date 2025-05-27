@@ -5,7 +5,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 
 const navItems = [
   { label: 'Accueil', icon: 'home', route: 'DashboardPatient' },
-  { label: 'Chat', icon: 'message-circle', route: 'Messagerie' },
+  { label: 'Messagerie', icon: 'message-circle', route: 'Messagerie' },
   { label: 'Doctors', icon: 'user-plus', route: 'SearchDoctor' },
   { label: 'Profil', icon: 'user', route: 'PatientProfile' },
 ];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -7,11 +7,47 @@ import {
   FlatList, 
   Image, 
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  Animated,
+  Easing
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from "../../config";
-import { usePatient  } from '../context/PatientContext';
+import { usePatient } from '../context/PatientContext';
+
+const CardAnimation = ({ children, delay }) => {
+  const scaleValue = useRef(new Animated.Value(0.95)).current;
+  const opacityValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(scaleValue, {
+        toValue: 1,
+        duration: 300,
+        delay: delay || 0,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityValue, {
+        toValue: 1,
+        duration: 500,
+        delay: delay || 0,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View
+      style={{
+        transform: [{ scale: scaleValue }],
+        opacity: opacityValue,
+      }}
+    >
+      {children}
+    </Animated.View>
+  );
+};
 
 export default function MyDoctorsList({ navigation }) {
   const { patient } = usePatient();
@@ -24,26 +60,27 @@ export default function MyDoctorsList({ navigation }) {
   const fetchDoctors = async () => {
     try {
       setError(null);
-      const response = await fetch(`${API_URL}/api/patient/getDocteurs?patientId=${patientId}`);
+      setRefreshing(true);
+      const response = await fetch(`${API_URL}/api/patient/getDocteurs/${patientId}`);
       
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status}`);
       }
       
       const data = await response.json();
-      
-      // Formater les données pour avoir une structure cohérente
       const formattedDoctors = data.map(doctor => ({
-        id: doctor._id,
+        _id: `${doctor._id}`,
         name: `Dr. ${doctor.prenom} ${doctor.nom}`,
         specialty: doctor.specialite,
-        cin: doctor.cin,
-        image: doctor.photo ? { uri: doctor.photo } : require('../../assets/doctor.jpg'),
-        about: `Dr. ${doctor.prenom} ${doctor.nom} est spécialisé en ${doctor.specialite}`,
-        formation: "- Diplômé en médecine",
-        experience: `- Spécialiste en ${doctor.specialite}`
+        image: doctor.Photo ? { uri: doctor.Photo } : require('../../assets/image.png'),
+        about: `${doctor.description}`,
+        formation:` ${doctor.formation}`,
+        experience: `${doctor.experience}`,        
+        telephone: `${doctor.telephone}`,   
+        address: `${doctor.adresse}`,             
+        email: `${doctor.mail}`
       }));
-      
+
       setDoctors(formattedDoctors);
     } catch (err) {
       console.error('Erreur:', err);
@@ -61,66 +98,76 @@ export default function MyDoctorsList({ navigation }) {
   }, [patientId]);
 
   const handleRefresh = () => {
-    setRefreshing(true);
     fetchDoctors();
   };
 
-  const renderDoctor = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.cardContent}>
-        <View style={{ flexDirection: 'row' }}>
-          <Image source={item.image} style={styles.avatar} />
-          <View style={{ flex: 1, justifyContent: 'center' }}>
-            <Text style={styles.doctorName}>{item.name}</Text>
-            <Text style={styles.specialty}>{item.specialty}</Text>
+  const renderDoctor = ({ item, index }) => (
+    <CardAnimation delay={index * 50}>
+      <TouchableOpacity 
+        style={styles.card}
+        activeOpacity={0.9}
+        onPress={() => navigation.navigate("DoctorInfo", { doctor: item })}
+      >
+        <View style={styles.cardContent}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Image source={item.image} style={styles.avatar} />
+            <View style={styles.doctorInfo}>
+              <Text style={styles.doctorName}>{item.name}</Text>
+              <Text style={styles.specialty}>{item.specialty}</Text>
+              <Text style={styles.contact}>{item.telephone}</Text>
+
+            </View>
+          </View>
+          <View style={styles.infobutton}>
+            <Text style={styles.infoText}>Info</Text>
           </View>
         </View>
-        <TouchableOpacity 
-          style={styles.infobutton}
-          onPress={() => navigation.navigate("DoctorInfo", { doctor: item })}
-        >
-          <Text style={styles.infoText}>Info</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </TouchableOpacity>
+    </CardAnimation>
   );
 
   if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#5771f9" />
-        <Text>Chargement de vos médecins...</Text>
+        <Text style={styles.loadingText}>Chargement de vos médecins...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity 
-          style={styles.retryButton}
-          onPress={fetchDoctors}
-        >
-          <Text style={styles.retryText}>Réessayer</Text>
-        </TouchableOpacity>
+      <View style={styles.screenContainer}>
+        <View style={styles.errorContainer}>
+          <Ionicons name="md-warning" size={50} color="#ef4444" style={styles.errorIcon} />
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={fetchDoctors}
+          >
+            <Text style={styles.retryText}>Réessayer</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.screenContainer}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Ionicons name="chevron-back" size={28} color="#5771f9" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Mes Médecins</Text>
-        <View style={{ width: 28 }} />
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <FlatList
         data={doctors}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         renderItem={renderDoctor}
         contentContainerStyle={styles.listContent}
         refreshControl={
@@ -128,12 +175,17 @@ export default function MyDoctorsList({ navigation }) {
             refreshing={refreshing}
             onRefresh={handleRefresh}
             colors={['#5771f9']}
+            tintColor="#5771f9"
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
+            <Ionicons name="medkit" size={60} color="#c7d2fe" style={styles.emptyIcon} />
             <Text style={styles.emptyText}>Vous n'avez pas encore de médecins</Text>
-            <TouchableOpacity onPress={fetchDoctors}>
+            <TouchableOpacity 
+              style={styles.refreshButton}
+              onPress={fetchDoctors}
+            >
               <Text style={styles.refreshText}>Actualiser</Text>
             </TouchableOpacity>
           </View>
@@ -144,108 +196,178 @@ export default function MyDoctorsList({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screenContainer: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
-    paddingTop: 40,
-    paddingHorizontal: 20,
+    backgroundColor: '#f8f9ff',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(87, 113, 249, 0.1)',
+  },
+  backButton: {
+    padding: 5,
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#2d3748',
+    letterSpacing: 0.5,
+  },
+  headerRightPlaceholder: {
+    width: 28,
   },
   card: {
-    backgroundColor: '#E0E4FF',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 18,
+    marginHorizontal: 20,
+    shadowColor: '#5771f9',
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 10,
+    elevation: 5,
+    borderWidth: 1,
+    borderColor: 'rgba(163, 8, 21, 0.1)',
   },
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   avatar: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    marginRight: 15,
+    width: 75,
+    height: 75,
+    borderRadius: 40,
+    marginRight: 18,
+    borderWidth: 2,
+    borderColor: '#e0e7ff',
   },
+ 
   doctorName: {
-    fontWeight: '600',
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 4,
+    fontWeight: '700',
+    fontSize: 17,
+    color: '#1e293b',
+    marginBottom: 5,
   },
   specialty: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 4,
+    color: '#64748b',
+    marginBottom: 5,
+    fontWeight: '500',
+  },
+    contact: {
+    fontSize: 14,
+    color: '#647483',
+    marginTop: 2,
+    fontWeight: '500',
   },
   infobutton: {
     backgroundColor: '#5771f9',
-    borderRadius: 20,
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    marginLeft: 'auto',
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 22,
+    shadowColor: '#5771f9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   infoText: {
     color: 'white',
     fontWeight: '600',
+    fontSize: 14,
+    letterSpacing: 0.5,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f8f9ff',
+  },
+  loadingText: {
+    marginTop: 15,
+    color: '#64748b',
+    fontSize: 16,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 30,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    margin: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  errorIcon: {
+    marginBottom: 20,
   },
   errorText: {
-    color: 'red',
+    color: '#ef4444',
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 25,
     textAlign: 'center',
+    lineHeight: 24,
+    fontWeight: '500',
   },
   retryButton: {
     backgroundColor: '#5771f9',
-    padding: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    shadowColor: '#5771f9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
   },
   retryText: {
     color: 'white',
     fontWeight: '600',
+    fontSize: 15,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 50,
+    padding: 30,
+  },
+  emptyIcon: {
+    marginBottom: 20,
+    opacity: 0.5,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#888',
-    marginBottom: 20,
+    fontSize: 17,
+    color: '#475569',
+    marginBottom: 25,
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 24,
+  },
+  refreshButton: {
+    backgroundColor: '#e0e7ff',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
   },
   refreshText: {
     color: '#5771f9',
-    textDecorationLine: 'underline',
+    fontWeight: '600',
+    fontSize: 15,
   },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: 25,
+    paddingTop: 15,
   },
 });

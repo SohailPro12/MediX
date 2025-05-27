@@ -5,10 +5,50 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import SearchBar from '../../components/PatientComponents/SearchBar';
 import Header from '../../components/PatientComponents/Header';
 import BottomNav from '../../components/PatientComponents/BottomNav';
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_URL } from "../../config";
+
+
+
+const fetchMedecinsBySSO = async (sso) => {
+  try {
+    const response = await fetch(`${API_URL}/api/patient/getAllMedecins/${sso}`);
+    if (!response.ok) {
+      throw new Error("Erreur lors de la récupération");
+    }
+    const data = await response.json();
+    return data; // tableau de médecins
+  } catch (error) {
+    console.error("Erreur lors du fetch des médecins:", error);
+    throw error;
+  }
+};
 
 const App = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Tous');
+  const [doctors, setDoctors] = useState([]);
+
+  useEffect(() => {
+    const loadDoctors = async () => {
+      try {
+        
+        const storedSSO = await AsyncStorage.getItem('ssoCode');
+        if (!storedSSO) {
+          console.warn("SSO manquant dans le stockage");
+          return;
+        }
+
+        const data = await fetchMedecinsBySSO(storedSSO);
+        setDoctors(data);
+      } catch (error) {
+        console.error("Erreur lors du chargement des médecins:", error);
+      }
+    };
+
+    loadDoctors();
+  }, []);
 
 
 
@@ -22,31 +62,13 @@ const App = () => {
     { id: 7, name: 'Ophtalmologue', icon: 'eye' },
   ];
 
-  const doctors = [
-    {
-      id: 1,
-      name: 'Dr. Sophie Martin',
-      specialty: 'Généraliste',
-      address: '15 Rue de la Santé, Paris',
-      availability: 'Disponible aujourd\'hui',
-      imageUrl: require('../../assets/doctor.png'),
-    },
-    {
-      id: 2,
-      name: 'Dr. Jean Dupont',
-      specialty: 'Cardiologue',
-      address: '8 Avenue des Médecins, Lyon',
-      availability: 'Disponible demain',
-      imageUrl: require('../../assets/Doctor2.png'),
-    },
-  ];
 
   const filteredDoctors = doctors.filter(doctor => {
     const matchesSearch =
-      doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doctor.specialty.toLowerCase().includes(searchTerm.toLowerCase());
+      doctor.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doctor.specialite.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === 'Tous' || doctor.specialty === selectedCategory;
+      selectedCategory === 'Tous' || doctor.specialite.toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
@@ -106,12 +128,18 @@ const App = () => {
         <View>
           {filteredDoctors.map((doctor) => (
             <DoctorCard
-              key={doctor.id}
-              name={doctor.name}
-              specialty={doctor.specialty}
-              address={doctor.address}
-              availability={doctor.availability}
-              imageUrl={doctor.imageUrl}
+              key={doctor._id}
+              _id={doctor._id}
+              name={`Dr. ${doctor.nom} ${doctor.prenom}`}
+              specialty={doctor.specialite}
+              address={doctor.adresse||""}
+              email={doctor.mail}
+              telephone={doctor.telephone}
+              availability={doctor.disponibilite}
+              image={doctor.Photo}
+              formation={doctor.formation}
+              about={doctor.description}
+              experience={doctor.experience}
             />
           ))}
         </View>

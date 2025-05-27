@@ -32,6 +32,7 @@ export const handleLogin = async (navigation, mail, password, role) => {
         console.log("Données envoyées:", { mail, password, role, sso: ssoCode });
         await AsyncStorage.setItem("authToken", result.token); // Changed from 'token' to 'authToken'
         await AsyncStorage.setItem("role", result.role);
+        await AsyncStorage.setItem("userId", result.userId); 
         console.log("Token enregistré:", result.token);
 
         if (result.role === "admin") {

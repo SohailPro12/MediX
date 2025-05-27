@@ -7,6 +7,7 @@ import SearchBar from '../../components/DoctorComponents/SearchBar';
 import { useMedecin } from '../context/MedecinContext';
 import { fetchPatients } from "../../utils_Doctor/ListePatients"; 
 
+import { fetchPatients } from "../../utils_Doctor/ListePatients"; 
 
 const PatientListScreen = () => {
   const navigation = useNavigation();
