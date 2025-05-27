@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ActivityIndicator, RefreshControl, ScrollView }
 import { useNavigation } from '@react-navigation/native';
 import Header from "../../components/DoctorComponents/Header";
 import { useMedecin } from "../context/MedecinContext"; 
-import { fetchAppointments } from "../../utils/MedecinAppointement";
+import { fetchAppointments } from "../../utils_Doctor/MedecinAppointement";
 
 export default function NextRdv() {
   const navigation = useNavigation();
