@@ -7,12 +7,14 @@ import {
   Modal,
   SafeAreaView,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import Header from "../../components/DoctorComponents/Header";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../config";
 import { useNavigation } from "@react-navigation/native";
 
 const AppointmentCalendar = () => {
+  const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [weekDays, setWeekDays] = useState([]);
   const [weekNumber, setWeekNumber] = useState("");
@@ -21,23 +23,35 @@ const AppointmentCalendar = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const navigation = useNavigation();
-  const timeSlots = ["Matinée", "Midi", "Après-midi", "Soir"];
+  const timeSlots = [
+    t("doctor.calendar.timeSlotLabels.morning"),
+    t("doctor.calendar.timeSlotLabels.noon"),
+    t("doctor.calendar.timeSlotLabels.afternoon"),
+    t("doctor.calendar.timeSlotLabels.evening"),
+  ];
 
   useEffect(() => {
     generateWeek();
   }, [selectedDate]);
-
   const generateWeek = () => {
     const days = [];
     const base = new Date(selectedDate);
-    const firstDay = new Date(
-      base.setDate(base.getDate() - base.getDay() + 1)
-    ); // Lundi
+    const firstDay = new Date(base.setDate(base.getDate() - base.getDay() + 1)); // Lundi
+
+    const dayLabels = [
+      t("doctor.calendar.days.monday"),
+      t("doctor.calendar.days.tuesday"),
+      t("doctor.calendar.days.wednesday"),
+      t("doctor.calendar.days.thursday"),
+      t("doctor.calendar.days.friday"),
+      t("doctor.calendar.days.saturday"),
+      t("doctor.calendar.days.sunday"),
+    ];
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(firstDay);
       date.setDate(firstDay.getDate() + i);
-      const label = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"][i];
+      const label = dayLabels[i];
       days.push({ date, label: `${label} ${date.getDate()}` });
     }
 
@@ -49,7 +63,9 @@ const AppointmentCalendar = () => {
   const getWeekNumber = (date) => {
     const start = new Date(date.getFullYear(), 0, 1);
     const diff =
-      date - start + (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
+      date -
+      start +
+      (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
     return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
   };
   const fetchAppointments = async (start, end) => {
@@ -60,9 +76,9 @@ const AppointmentCalendar = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
-  
+
       console.log("Appointments raw:", data);
-  
+
       const formatted = data.map((item) => {
         const date = new Date(item.date);
         let timeSlot = 0;
@@ -71,33 +87,41 @@ const AppointmentCalendar = () => {
         else if (hour < 14) timeSlot = 1;
         else if (hour < 18) timeSlot = 2;
         else timeSlot = 3;
-  
+
         return {
-          id:            item.id || item._id,     // id pour naviguer
-          title:         item.observation || "RDV",
+          id: item.id || item._id, // id pour naviguer
+          title: item.observation || "RDV",
           date,
           timeSlot,
-          ordonnanceId:  item.ordonnanceId ?? null // <-- bien ici !
+          ordonnanceId: item.ordonnanceId ?? null, // <-- bien ici !
         };
       });
-  
+
       setAppointments(formatted);
     } catch (error) {
       console.error("Erreur fetch RDV:", error);
     }
   };
-  
 
   const navigateWeek = (direction) => {
     const newDate = new Date(selectedDate);
     newDate.setDate(newDate.getDate() + direction * 7);
     setSelectedDate(newDate);
   };
-
   const getMonthYear = () => {
     const months = [
-      "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
-      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
+      t("doctor.calendar.months.january"),
+      t("doctor.calendar.months.february"),
+      t("doctor.calendar.months.march"),
+      t("doctor.calendar.months.april"),
+      t("doctor.calendar.months.may"),
+      t("doctor.calendar.months.june"),
+      t("doctor.calendar.months.july"),
+      t("doctor.calendar.months.august"),
+      t("doctor.calendar.months.september"),
+      t("doctor.calendar.months.october"),
+      t("doctor.calendar.months.november"),
+      t("doctor.calendar.months.december"),
     ];
     return `${months[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
   };
@@ -120,7 +144,11 @@ const AppointmentCalendar = () => {
   };
 
   const goToCreateOrdonnance = () => {
-    console.log("appointmentid and ordonnanceId", selectedAppointment.id, selectedAppointment.ordonnanceId);
+    console.log(
+      "appointmentid and ordonnanceId",
+      selectedAppointment.id,
+      selectedAppointment.ordonnanceId
+    );
     setModalVisible(false);
     navigation.navigate("AddOrdonnanceScreen", {
       appointmentId: selectedAppointment.id,
@@ -131,14 +159,15 @@ const AppointmentCalendar = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header
-        name="Calendrier"
+        name={t("doctor.calendar.title")}
         marginl="13%"
         marginlc="16%"
         screen="DashboardDoctor"
       />
-
       <View style={styles.calendarContainer}>
-        <Text style={styles.title}>Table Rendez‑vous</Text>
+        <Text style={styles.title}>
+          {t("doctor.calendar.appointmentTable")}
+        </Text>
         <View style={styles.monthSelector}>
           <TouchableOpacity onPress={() => navigateWeek(-1)}>
             <Text style={styles.arrowText}>{"<"}</Text>
@@ -149,10 +178,14 @@ const AppointmentCalendar = () => {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.weekText}>Semaine {weekNumber}</Text>
+        <Text style={styles.weekText}>
+          {t("doctor.calendar.week")} {weekNumber}
+        </Text>
         <View style={styles.daysHeader}>
           {weekDays.map((day, i) => (
-            <Text key={i} style={styles.dayText}>{day.label}</Text>
+            <Text key={i} style={styles.dayText}>
+              {day.label}
+            </Text>
           ))}
         </View>
 
@@ -179,12 +212,13 @@ const AppointmentCalendar = () => {
             })}
           </View>
         ))}
-      </View>
-
+      </View>{" "}
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Action sur le RDV</Text>
+            <Text style={styles.modalTitle}>
+              {t("doctor.calendar.modal.title")}
+            </Text>
 
             <TouchableOpacity
               style={styles.modalButton}
@@ -192,8 +226,8 @@ const AppointmentCalendar = () => {
             >
               <Text style={styles.modalButtonText}>
                 {selectedAppointment?.ordonnanceId
-                  ? "Modifier Ordonnance"
-                  : "Ajouter Ordonnance"}
+                  ? t("doctor.calendar.modal.editPrescription")
+                  : t("doctor.calendar.modal.addPrescription")}
               </Text>
             </TouchableOpacity>
 
@@ -201,7 +235,7 @@ const AppointmentCalendar = () => {
               style={[styles.modalButton, { backgroundColor: "grey" }]}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={styles.modalButtonText}>Annuler</Text>
+              <Text style={styles.modalButtonText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -211,7 +245,12 @@ const AppointmentCalendar = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingTop: 45, padding: "3%" },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: 45,
+    padding: "3%",
+  },
   calendarContainer: {
     flex: 1,
     borderWidth: 1,
@@ -234,7 +273,12 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ddd",
   },
   dayText: { flex: 1, textAlign: "center", padding: 5, fontSize: 12 },
-  timeRow: { flexDirection: "row", borderBottomWidth: 1, borderColor: "#eee", height: 80 },
+  timeRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#eee",
+    height: 80,
+  },
   timeSlot: {
     width: 50,
     justifyContent: "center",

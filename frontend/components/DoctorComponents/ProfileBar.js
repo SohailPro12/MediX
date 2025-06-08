@@ -1,34 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, Image, Alert } from "react-native";
-import { FontAwesome5 } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Text,
+  Image,
+  Alert,
+} from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useTranslation } from "react-i18next";
 import { API_URL } from "../../config"; // Assurez-vous que le chemin est correct
 import { useMedecin } from "../../screens/context/MedecinContext"; // Import du hook useMedecin
 
 export default function ProfileBar({ screen }) {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const [doctor, setDoctor] = useState(null);
   const { setMedecin } = useMedecin(); // Utilisation du hook pour accéder à setMedecin
 
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        const token = await AsyncStorage.getItem('authToken');
-        if (!token) throw new Error('Token manquant');
+        const token = await AsyncStorage.getItem("authToken");
+        if (!token) throw new Error(t("doctor.profileBar.errors.missingToken"));
 
         const response = await fetch(`${API_URL}/api/doctor/profile`, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         });
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(`Erreur serveur: ${errorText}`);
+          throw new Error(
+            `${t("doctor.profileBar.errors.serverError")}: ${errorText}`
+          );
         }
 
         const data = await response.json();
@@ -36,7 +47,10 @@ export default function ProfileBar({ screen }) {
         setMedecin(data); // Mise à jour du contexte avec les données du médecin
       } catch (error) {
         console.error("Erreur récupération médecin:", error);
-        Alert.alert("Erreur", "Impossible de charger le profil");
+        Alert.alert(
+          t("doctor.profileBar.errors.errorTitle"),
+          t("doctor.profileBar.errors.loadProfileError")
+        );
       }
     };
 
@@ -45,19 +59,26 @@ export default function ProfileBar({ screen }) {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('authToken');
-      navigation.navigate('CodeSSOScreen'); // Redirige vers l'écran de connexion
+      await AsyncStorage.removeItem("authToken");
+      navigation.navigate("CodeSSOScreen"); // Redirige vers l'écran de connexion
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
     }
-  }
+  };
 
   return (
     <View style={styles.profileBar}>
       {doctor && (
-        <TouchableOpacity style={styles.profileInfo} onPress={() => navigation.navigate(screen)}>
-          <Image 
-            source={doctor.Photo ? { uri: doctor.Photo } : require('../../assets/doctor.png')}
+        <TouchableOpacity
+          style={styles.profileInfo}
+          onPress={() => navigation.navigate(screen)}
+        >
+          <Image
+            source={
+              doctor.Photo
+                ? { uri: doctor.Photo }
+                : require("../../assets/doctor.png")
+            }
             style={styles.profileImage}
           />
           <View style={styles.profileText}>
@@ -71,7 +92,7 @@ export default function ProfileBar({ screen }) {
       </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   profileBar: {

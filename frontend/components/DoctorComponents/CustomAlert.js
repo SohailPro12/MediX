@@ -1,19 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, Animated, Dimensions, TouchableOpacity } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Modal,
+  Animated,
+  Dimensions,
+  TouchableOpacity,
+} from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
-const CustomAlert = ({ 
-  visible, 
-  type, 
-  title, 
-  message, 
-  onConfirm, 
-  onCancel, 
-  confirmText = "Confirmer", 
-  cancelText = "Annuler" 
+const CustomAlert = ({
+  visible,
+  type,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText,
+  cancelText,
 }) => {
+  const { t } = useTranslation();
   const [fadeAnim] = useState(new Animated.Value(0));
-  
+
   useEffect(() => {
     if (visible) {
       Animated.timing(fadeAnim, {
@@ -32,25 +42,25 @@ const CustomAlert = ({
   // Choisir l'icône en fonction du type
   let icon, iconColor;
   switch (type) {
-    case 'success':
-      icon = 'check-circle';
-      iconColor = '#4CAF50';
+    case "success":
+      icon = "check-circle";
+      iconColor = "#4CAF50";
       break;
-    case 'warning':
-      icon = 'exclamation-triangle';
-      iconColor = '#FF9800';
+    case "warning":
+      icon = "exclamation-triangle";
+      iconColor = "#FF9800";
       break;
-    case 'info':
-      icon = 'info-circle';
-      iconColor = '#2196F3';
+    case "info":
+      icon = "info-circle";
+      iconColor = "#2196F3";
       break;
-    case 'question':
-      icon = 'question-circle';
-      iconColor = '#4A90E2';
+    case "question":
+      icon = "question-circle";
+      iconColor = "#4A90E2";
       break;
     default:
-      icon = 'info-circle';
-      iconColor = '#2196F3';
+      icon = "info-circle";
+      iconColor = "#2196F3";
   }
 
   return (
@@ -61,30 +71,46 @@ const CustomAlert = ({
       onRequestClose={onCancel}
     >
       <View style={styles.overlay}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.container,
-            { opacity: fadeAnim, transform: [{ scale: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [0.8, 1] }) }] }
+            {
+              opacity: fadeAnim,
+              transform: [
+                {
+                  scale: fadeAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0.8, 1],
+                  }),
+                },
+              ],
+            },
           ]}
         >
           <View style={styles.iconContainer}>
             <FontAwesome5 name={icon} size={40} color={iconColor} />
           </View>
-          
+
           <Text style={styles.title}>{title}</Text>
-          
+
           <Text style={styles.message}>{message}</Text>
-          
           <View style={styles.buttonContainer}>
             {onCancel && (
               <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                <Text style={styles.cancelButtonText}>{cancelText}</Text>
+                <Text style={styles.cancelButtonText}>
+                  {cancelText || t("doctor.customAlert.cancel")}
+                </Text>
               </TouchableOpacity>
             )}
-            
+
             {onConfirm && (
-              <TouchableOpacity style={styles.confirmButton} onPress={onConfirm}>
-                <Text style={styles.confirmButtonText}>{confirmText}</Text>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={onConfirm}
+              >
+                <Text style={styles.confirmButtonText}>
+                  {confirmText || t("doctor.customAlert.confirm")}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -97,17 +123,17 @@ const CustomAlert = ({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   container: {
-    width: Dimensions.get('window').width * 0.85,
-    backgroundColor: 'white',
+    width: Dimensions.get("window").width * 0.85,
+    backgroundColor: "white",
     borderRadius: 15,
     padding: 20,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
@@ -118,22 +144,22 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    textAlign: 'center',
-    color: '#333',
+    textAlign: "center",
+    color: "#333",
   },
   message: {
     fontSize: 16,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: 20,
-    color: '#666',
+    color: "#666",
     lineHeight: 22,
   },
   buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    width: '100%',
+    flexDirection: "row",
+    justifyContent: "center",
+    width: "100%",
     gap: 15,
   },
   cancelButton: {
@@ -141,29 +167,29 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f2f2f2',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f2f2f2",
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   confirmButton: {
     flex: 1,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#4A90E2',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#4A90E2",
   },
   cancelButtonText: {
-    color: '#555',
-    fontWeight: '600',
+    color: "#555",
+    fontWeight: "600",
     fontSize: 16,
   },
   confirmButtonText: {
-    color: 'white',
-    fontWeight: '600',
+    color: "white",
+    fontWeight: "600",
     fontSize: 16,
   },
 });

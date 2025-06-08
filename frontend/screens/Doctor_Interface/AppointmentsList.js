@@ -1,18 +1,29 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Modal, ActivityIndicator, RefreshControl } from 'react-native';
-import { FontAwesome5 } from '@expo/vector-icons';
-import { Calendar } from 'react-native-calendars';
-import CustomAlert from '../../components/DoctorComponents/CustomAlert';
-import Header from '../../components/DoctorComponents/Header';
-import { useMedecin } from './../context/MedecinContext'; 
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
+import { FontAwesome5 } from "@expo/vector-icons";
+import { Calendar } from "react-native-calendars";
+import { useTranslation } from "react-i18next";
+import CustomAlert from "../../components/DoctorComponents/CustomAlert";
+import Header from "../../components/DoctorComponents/Header";
+import { useMedecin } from "./../context/MedecinContext";
 import { fetchAppointments } from "../../utils_Doctor/MedecinAppointement";
 import { confirmerAppointmentRequest } from "../../utils_Doctor/confirmerAppoint";
 import { rescheduleAppointmentRequest } from "../../utils_Doctor/rescheduleAppo";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation } from "@react-navigation/native";
 
 const AppointmentsList = () => {
   const navigation = useNavigation();
-  const { medecin } = useMedecin(); 
+  const { medecin } = useMedecin();
+  const { t } = useTranslation();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -21,15 +32,28 @@ const AppointmentsList = () => {
 
   const [calendarVisible, setCalendarVisible] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [selectedDate, setSelectedDate] = useState('');
-  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
   const [timeModalVisible, setTimeModalVisible] = useState(false);
 
   const [confirmAlertVisible, setConfirmAlertVisible] = useState(false);
   const [successAlertVisible, setSuccessAlertVisible] = useState(false);
-  const [rescheduleSuccessAlertVisible, setRescheduleSuccessAlertVisible] = useState(false);
+  const [rescheduleSuccessAlertVisible, setRescheduleSuccessAlertVisible] =
+    useState(false);
 
-  const availableTimes = ['08:00', '09:00', '09:30', '10:00', '10:30', '11:00', '14:00', '14:30', '15:00', '16:00', '16:30'];
+  const availableTimes = [
+    "08:00",
+    "09:00",
+    "09:30",
+    "10:00",
+    "10:30",
+    "11:00",
+    "14:00",
+    "14:30",
+    "15:00",
+    "16:00",
+    "16:30",
+  ];
 
   const loadAppointments = useCallback(async () => {
     try {
@@ -38,7 +62,7 @@ const AppointmentsList = () => {
       setAppointments(data);
       setError(null);
     } catch (error) {
-      setError("Erreur de récupération des rendez-vous.");
+      setError(t("common.genericError"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -52,7 +76,7 @@ const AppointmentsList = () => {
 
   // Actualisation lors du focus
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', loadAppointments);
+    const unsubscribe = navigation.addListener("focus", loadAppointments);
     return unsubscribe;
   }, [navigation, loadAppointments]);
 
@@ -71,7 +95,7 @@ const AppointmentsList = () => {
       setTimeout(() => setSuccessAlertVisible(true), 300);
     } catch (error) {
       console.error("Erreur lors de la confirmation:", error);
-      setError("Erreur lors de la confirmation du rendez-vous.");
+      setError(t("common.genericError"));
     } finally {
       setProcessing(false);
     }
@@ -100,13 +124,16 @@ const AppointmentsList = () => {
 
     const dateTimeString = `${selectedDate}T${time}:00`;
     try {
-      await rescheduleAppointmentRequest(selectedAppointment._id, dateTimeString);
+      await rescheduleAppointmentRequest(
+        selectedAppointment._id,
+        dateTimeString
+      );
       await loadAppointments();
       setTimeModalVisible(false);
       setTimeout(() => setRescheduleSuccessAlertVisible(true), 300);
     } catch (error) {
-      console.error('Erreur lors de la replanification:', error);
-      setError('Erreur lors de la replanification.');
+      console.error("Erreur lors de la replanification:", error);
+      setError(t("common.genericError"));
     } finally {
       setProcessing(false);
     }
@@ -119,20 +146,22 @@ const AppointmentsList = () => {
 
     const patient = item.PatientId;
     const appointmentDate = new Date(item.date);
-    const formattedDate = appointmentDate.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    const formattedDate = appointmentDate.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
-    const formattedTime = appointmentDate.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
+    const formattedTime = appointmentDate.toLocaleTimeString("fr-FR", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     return (
       <View style={styles.appointmentCard}>
         <View style={styles.appointmentHeader}>
-          <Text style={styles.patientName}>{patient.nom} {patient.prenom}</Text>
+          <Text style={styles.patientName}>
+            {patient.nom} {patient.prenom}
+          </Text>
         </View>
 
         <View style={styles.appointmentDetails}>
@@ -149,7 +178,12 @@ const AppointmentsList = () => {
           <View style={[styles.detailItem, styles.dateTimeContainer]}>
             <FontAwesome5 name="calendar-alt" size={14} color="#666" />
             <Text style={styles.detailText}>{formattedDate}</Text>
-            <FontAwesome5 name="clock" size={14} color="#666" style={styles.timeIcon} />
+            <FontAwesome5
+              name="clock"
+              size={14}
+              color="#666"
+              style={styles.timeIcon}
+            />
             <Text style={styles.detailText}>{formattedTime}</Text>
           </View>
         </View>
@@ -159,7 +193,7 @@ const AppointmentsList = () => {
             style={[
               styles.acceptButton,
               item.accepted && styles.acceptedButton,
-              processing && styles.disabledButton
+              processing && styles.disabledButton,
             ]}
             onPress={() => handleAccept(item)}
             disabled={processing}
@@ -169,21 +203,25 @@ const AppointmentsList = () => {
             ) : (
               <>
                 <FontAwesome5 name="check" size={12} color="#fff" />
-                <Text style={styles.buttonText}>Accepter</Text>
+                <Text style={styles.buttonText}>
+                  {t("doctor.appointments.confirm")}
+                </Text>
               </>
             )}
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
-              styles.rescheduleButton, 
-              processing && styles.disabledButton
+              styles.rescheduleButton,
+              processing && styles.disabledButton,
             ]}
             onPress={() => handleReschedule(item)}
             disabled={processing}
           >
             <FontAwesome5 name="redo" size={12} color="#4A90E2" />
-            <Text style={[styles.buttonText, { color: '#4A90E2' }]}>Replanifier</Text>
+            <Text style={[styles.buttonText, { color: "#4A90E2" }]}>
+              {t("doctor.appointments.reschedule")}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -192,17 +230,18 @@ const AppointmentsList = () => {
 
   return (
     <View style={styles.container}>
-      <Header name="Mes Rendez-vous" screen="DashboardDoctor" />
-
+      <Header name={t("doctor.appointments.title")} screen="DashboardDoctor" />
       {loading && !refreshing ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#4A90E2" />
-          <Text>Chargement des rendez-vous...</Text>
+          <Text>{t("common.loading")}...</Text>
         </View>
       ) : error ? (
         <Text style={styles.errorText}>{error}</Text>
       ) : appointments.length === 0 ? (
-        <Text style={styles.emptyText}>Aucun rendez-vous à afficher</Text>
+        <Text style={styles.emptyText}>
+          {t("doctor.appointments.noAppointments")}
+        </Text>
       ) : (
         <FlatList
           data={appointments}
@@ -219,38 +258,42 @@ const AppointmentsList = () => {
           }
         />
       )}
-
       {/* Modal Calendrier */}
       <Modal animationType="slide" transparent visible={calendarVisible}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Sélectionnez une nouvelle date</Text>
+            <Text style={styles.modalTitle}>
+              {t("doctor.calendar.selectDate")}
+            </Text>
             <Calendar
               onDayPress={handleDateSelect}
-              markedDates={{ [selectedDate]: { selected: true, selectedColor: '#4A90E2' } }}
-              minDate={new Date().toISOString().split('T')[0]}
-              theme={{ 
-                todayTextColor: '#4A90E2', 
-                arrowColor: '#4A90E2', 
-                selectedDayBackgroundColor: '#4A90E2' 
+              markedDates={{
+                [selectedDate]: { selected: true, selectedColor: "#4A90E2" },
               }}
-            />
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+              minDate={new Date().toISOString().split("T")[0]}
+              theme={{
+                todayTextColor: "#4A90E2",
+                arrowColor: "#4A90E2",
+                selectedDayBackgroundColor: "#4A90E2",
+              }}
+            />{" "}
+            <TouchableOpacity
+              style={styles.cancelButton}
               onPress={() => setCalendarVisible(false)}
               disabled={processing}
             >
-              <Text style={styles.cancelButtonText}>Annuler</Text>
+              <Text style={styles.cancelButtonText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-
       {/* Modal Sélection heure */}
       <Modal animationType="slide" transparent visible={timeModalVisible}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>Sélectionnez une heure</Text>
+            <Text style={styles.modalTitle}>
+              {t("doctor.appointments.time")}
+            </Text>
             {processing ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#4A90E2" />
@@ -259,8 +302,8 @@ const AppointmentsList = () => {
               <FlatList
                 data={availableTimes}
                 renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={styles.timeItem} 
+                  <TouchableOpacity
+                    style={styles.timeItem}
                     onPress={() => handleTimeSelect(item)}
                     disabled={processing}
                   >
@@ -269,194 +312,213 @@ const AppointmentsList = () => {
                 )}
                 keyExtractor={(item) => item}
               />
-            )}
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+            )}{" "}
+            <TouchableOpacity
+              style={styles.cancelButton}
               onPress={() => setTimeModalVisible(false)}
               disabled={processing}
             >
-              <Text style={styles.cancelButtonText}>Annuler</Text>
+              <Text style={styles.cancelButtonText}>{t("common.cancel")}</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-
-      {/* Alertes */}
+      {/* Alertes */}{" "}
       <CustomAlert
         visible={confirmAlertVisible}
         type="question"
-        title="Confirmation du Rendez-vous"
+        title={t("doctor.appointments.confirm")}
         message={
-          selectedAppointment ? 
-            `Êtes-vous sûr d'accepter le rendez-vous avec ${selectedAppointment.PatientId.nom} ${selectedAppointment.PatientId.prenom} le ${new Date(selectedAppointment.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à ${new Date(selectedAppointment.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} ?`
-            : ''
+          selectedAppointment
+            ? `${t("alerts.confirmAppointment")} ${
+                selectedAppointment.PatientId.nom
+              } ${selectedAppointment.PatientId.prenom} ${t(
+                "alerts.on"
+              )} ${new Date(selectedAppointment.date).toLocaleDateString(
+                "fr-FR",
+                { day: "numeric", month: "long", year: "numeric" }
+              )} ${t("alerts.at")} ${new Date(
+                selectedAppointment.date
+              ).toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} ?`
+            : ""
         }
         onConfirm={confirmerAppo}
         onCancel={() => setConfirmAlertVisible(false)}
-        confirmText={processing ? "Traitement..." : "Accepter"}
-        cancelText="Annuler"
+        confirmText={
+          processing ? t("common.loading") : t("doctor.appointments.confirm")
+        }
+        cancelText={t("common.cancel")}
         confirmDisabled={processing}
-      />
-
+      />{" "}
       <CustomAlert
         visible={successAlertVisible}
         type="success"
-        title="Rendez-vous Confirmé"
-        message="Le rendez-vous a été confirmé avec succès !"
+        title={t("alerts.appointmentConfirmed")}
+        message={t("alerts.appointmentConfirmedMessage")}
         onConfirm={() => setSuccessAlertVisible(false)}
-        confirmText="OK"
-      />
-
+        confirmText={t("common.ok")}
+      />{" "}
       <CustomAlert
         visible={rescheduleSuccessAlertVisible}
         type="success"
-        title="Rendez-vous Replanifié"
+        title={t("alerts.appointmentRescheduled")}
         message={
           selectedAppointment && selectedDate
-            ? `Le rendez-vous avec ${selectedAppointment.PatientId.nom} a été replanifié pour le ${new Date(selectedDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} à ${selectedTime}.`
-            : "Le rendez-vous a été replanifié avec succès."
+            ? `${t("alerts.appointmentRescheduledMessage")} ${
+                selectedAppointment.PatientId.nom
+              } ${t("alerts.rescheduledFor")} ${new Date(
+                selectedDate
+              ).toLocaleDateString("fr-FR", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })} ${t("alerts.at")} ${selectedTime}.`
+            : t("alerts.appointmentRescheduledSuccess")
         }
         onConfirm={() => setRescheduleSuccessAlertVisible(false)}
-        confirmText="OK"
+        confirmText={t("common.ok")}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff', padding: 14, paddingTop: 45 },
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyText: { textAlign: 'center', marginTop: 20, color: '#666' },
+  container: { flex: 1, backgroundColor: "#fff", padding: 14, paddingTop: 45 },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  emptyText: { textAlign: "center", marginTop: 20, color: "#666" },
   listContent: { paddingBottom: 20 },
   appointmentCard: {
-    backgroundColor: '#fafbfc', 
-    borderRadius: 10, 
-    padding: 12, 
+    backgroundColor: "#fafbfc",
+    borderRadius: 10,
+    padding: 12,
     marginBottom: 12,
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 1 }, 
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 2, 
-    elevation: 2
+    shadowRadius: 2,
+    elevation: 2,
   },
-  appointmentHeader: { 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
-    alignItems: 'center', 
-    marginBottom: 12 
+  appointmentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
   },
-  patientName: { 
-    fontSize: 16, 
-    fontWeight: 'bold', 
-    color: '#333' 
+  patientName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
   },
-  appointmentDetails: { 
-    marginTop: 8, 
-    marginBottom: 12 
+  appointmentDetails: {
+    marginTop: 8,
+    marginBottom: 12,
   },
-  detailItem: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginBottom: 8 
+  detailItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
   },
-  detailText: { 
-    marginLeft: 8, 
-    fontSize: 14, 
-    color: '#555' 
+  detailText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: "#555",
   },
-  dateTimeContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginTop: 8 
+  dateTimeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
   },
-  timeIcon: { 
-    marginLeft: 10 
+  timeIcon: {
+    marginLeft: 10,
   },
-  buttonContainer: { 
-    flexDirection: 'row', 
-    justifyContent: 'flex-end', 
-    gap: 10 
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 10,
   },
   acceptButton: {
-    flexDirection: 'row', 
-    backgroundColor: '#8bbf8b', 
-    paddingVertical: 6, 
+    flexDirection: "row",
+    backgroundColor: "#8bbf8b",
+    paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 6, 
-    alignItems: 'center', 
-    gap: 6
+    borderRadius: 6,
+    alignItems: "center",
+    gap: 6,
   },
-  acceptedButton: { 
-    backgroundColor: '#2e7d32' 
+  acceptedButton: {
+    backgroundColor: "#2e7d32",
   },
   disabledButton: {
-    opacity: 0.6
+    opacity: 0.6,
   },
   rescheduleButton: {
-    flexDirection: 'row', 
-    borderWidth: 1, 
-    borderColor: '#4A90E2',
-    paddingVertical: 6, 
-    paddingHorizontal: 12, 
-    borderRadius: 6, 
-    alignItems: 'center', 
-    gap: 6
+    flexDirection: "row",
+    borderWidth: 1,
+    borderColor: "#4A90E2",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    alignItems: "center",
+    gap: 6,
   },
-  buttonText: { 
-    fontSize: 13, 
-    fontWeight: '500', 
-    color: '#fff' 
+  buttonText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#fff",
   },
-  centeredView: { 
-    flex: 1, 
-    justifyContent: "center", 
-    alignItems: "center", 
-    backgroundColor: 'rgba(0,0,0,0.5)' 
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
-  modalView: { 
-    width: '90%', 
-    maxHeight: '80%', 
-    backgroundColor: "white", 
-    borderRadius: 20, 
-    padding: 20, 
-    shadowColor: "#000", 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.25, 
-    shadowRadius: 4, 
-    elevation: 5 
+  modalView: {
+    width: "90%",
+    maxHeight: "80%",
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
-  modalTitle: { 
-    fontSize: 18, 
-    fontWeight: "600", 
-    marginBottom: 15, 
-    textAlign: "center" 
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 15,
+    textAlign: "center",
   },
-  cancelButton: { 
-    backgroundColor: "#f2f2f2", 
-    borderRadius: 10, 
-    padding: 10, 
-    elevation: 2, 
-    marginTop: 15 
+  cancelButton: {
+    backgroundColor: "#f2f2f2",
+    borderRadius: 10,
+    padding: 10,
+    elevation: 2,
+    marginTop: 15,
   },
-  cancelButtonText: { 
-    color: "#333", 
-    fontWeight: "bold", 
-    textAlign: "center" 
+  cancelButtonText: {
+    color: "#333",
+    fontWeight: "bold",
+    textAlign: "center",
   },
-  timeItem: { 
-    padding: 15, 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#f0f0f0' 
+  timeItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
   },
-  timeText: { 
-    fontSize: 16, 
-    textAlign: 'center' 
+  timeText: {
+    fontSize: 16,
+    textAlign: "center",
   },
-  errorText: { 
-    color: 'red', 
-    textAlign: 'center', 
-    marginTop: 20 
-  }
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginTop: 20,
+  },
 });
 
 export default AppointmentsList;

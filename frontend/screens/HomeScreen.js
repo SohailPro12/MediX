@@ -1,16 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView, StyleSheet, Platform } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useTranslation } from 'react-i18next';
-import AdminCalendar from '../components/AdminCalendar';
-import DropdownMenu from '../components/DropdownMenu';
-import axios from 'axios';
-import { API_URL } from '../config';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  SafeAreaView,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import AdminCalendar from "../components/AdminCalendar";
+import DropdownMenu from "../components/DropdownMenu";
+import axios from "axios";
+import { API_URL } from "../config";
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [menuVisible, setMenuVisible] = useState(false);
-  const [stats, setStats] = useState({ totalDoctors: 0, totalPatients: 0, appointmentsToday: 0 });
+  const [stats, setStats] = useState({
+    totalDoctors: 0,
+    totalPatients: 0,
+    appointmentsToday: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [newProblems, setNewProblems] = useState(false); // Track if there are new problems
@@ -21,7 +32,7 @@ const HomeScreen = ({ navigation }) => {
         const response = await axios.get(`${API_URL}/api/admin/stats`);
         setStats(response.data);
       } catch (err) {
-        setError('Erreur lors du chargement des statistiques');
+        setError(t("common.genericError"));
       } finally {
         setLoading(false);
       }
@@ -30,35 +41,37 @@ const HomeScreen = ({ navigation }) => {
     const checkNewProblems = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/problems`, {
-          params: { dateSortOrder: 'desc' },
+          params: { dateSortOrder: "desc" },
         });
 
-        if (response.headers['content-type']?.includes('application/json')) {
-          console.log('Data reçu de /api/problems:', response.data);
+        if (response.headers["content-type"]?.includes("application/json")) {
+          console.log("Data reçu de /api/problems:", response.data);
 
           const sevenDaysAgo = new Date();
           sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-          const recentProblems = Array.isArray(response.data) 
-            ? response.data.filter((problem) => new Date(problem.createdAt) > sevenDaysAgo) 
+          const recentProblems = Array.isArray(response.data)
+            ? response.data.filter(
+                (problem) => new Date(problem.createdAt) > sevenDaysAgo
+              )
             : [];
 
           setNewProblems(recentProblems.length > 0);
         } else {
-          console.error('Unexpected response format:', response.data);
+          console.error("Unexpected response format:", response.data);
         }
       } catch (err) {
-        console.error('Erreur lors de la récupération des problèmes:', err);
+        console.error("Erreur lors de la récupération des problèmes:", err);
       }
     };
-    
+
     fetchStats();
     checkNewProblems();
   }, []);
 
   const handleNotificationPress = () => {
     // Navigate to the ProblemesScreen
-    navigation.navigate('ProblemesScreen');
+    navigation.navigate("ProblemesScreen");
     setNewProblems(false); // Once clicked, mark new problems as seen
   };
 
@@ -70,7 +83,7 @@ const HomeScreen = ({ navigation }) => {
           <Ionicons name="menu" size={28} color="black" />
         </TouchableOpacity>
 
-        <Text style={styles.navTitle}>MedIX Admin</Text>
+        <Text style={styles.navTitle}>{t("admin.title")}</Text>
 
         <TouchableOpacity onPress={handleNotificationPress}>
           <View style={styles.notificationContainer}>
@@ -81,33 +94,40 @@ const HomeScreen = ({ navigation }) => {
       </View>
 
       {/* Menu déroulant */}
-      <DropdownMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
+      <DropdownMenu
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+      />
 
       {/* Contenu principal */}
       <View style={styles.container}>
         {loading ? (
-          <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+          <View
+            style={{ alignItems: "center", justifyContent: "center", flex: 1 }}
+          >
             <Ionicons name="hourglass-outline" size={32} color="gray" />
-            <Text style={{ marginTop: 10, color: 'gray' }}>{t('loading')}...</Text>
+            <Text style={{ marginTop: 10, color: "gray" }}>
+              {t("common.loading")}...
+            </Text>
           </View>
         ) : error ? (
           <Text>{error}</Text>
         ) : (
           <>
+            {" "}
             <View style={styles.statsContainer}>
               <View style={styles.statBox}>
                 <Text style={styles.statNumber}>{stats.totalDoctors}</Text>
-                <Text>{t('doctors')}</Text>
+                <Text>{t("admin.stats.totalDoctors")}</Text>
               </View>
               <View style={styles.statBox}>
                 <Text style={styles.statNumber}>{stats.totalPatients}</Text>
-                <Text>{t('patients')}</Text>
+                <Text>{t("admin.stats.totalPatients")}</Text>
               </View>
             </View>
-
             <View style={styles.appointments}>
               <Text style={styles.statNumber}>{stats.appointmentsToday}</Text>
-              <Text>{t('appointments')}</Text>
+              <Text>{t("admin.stats.appointmentsToday")}</Text>
             </View>
           </>
         )}
@@ -122,62 +142,62 @@ const HomeScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: Platform.OS === 'android' ? 25 : 0,
+    backgroundColor: "#fff",
+    paddingTop: Platform.OS === "android" ? 25 : 0,
   },
   navbar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 15,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     elevation: 4,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 3,
   },
   navTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   notificationContainer: {
-    position: 'relative',
+    position: "relative",
   },
   redDot: {
-    position: 'absolute',
+    position: "absolute",
     top: -4,
     right: -4,
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: 'red',
+    backgroundColor: "red",
   },
   container: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     flex: 1,
   },
   statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   statBox: {
-    backgroundColor: '#e0f7fa',
+    backgroundColor: "#e0f7fa",
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
     margin: 5,
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   appointments: {
-    backgroundColor: '#ffecb3',
+    backgroundColor: "#ffecb3",
     padding: 20,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 20,
   },
 });

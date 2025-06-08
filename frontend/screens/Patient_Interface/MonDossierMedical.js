@@ -17,8 +17,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import openPdf from "../Doctor_Interface/openPdf";
 import { API_URL } from "../../config";
+import { useTranslation } from "react-i18next";
 
 export default function MonDossierMedical() {
+  const { t } = useTranslation();
   const nav = useNavigation();
   const [loading, setLoading] = useState(true);
   const [dossier, setDossier] = useState(null);
@@ -33,11 +35,11 @@ export default function MonDossierMedical() {
           `${API_URL}/api/patient/dossiers/${patientId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
-        if (!res.ok) throw new Error("Impossible de charger le dossier");
+        if (!res.ok) throw new Error(t("patient.medicalRecord.loadError"));
         const data = await res.json();
         setDossier(data);
       } catch (e) {
-        Alert.alert("Erreur", e.message);
+        Alert.alert(t("patient.medicalRecord.error"), e.message);
       } finally {
         setLoading(false);
       }
@@ -50,13 +52,14 @@ export default function MonDossierMedical() {
         <ActivityIndicator size="large" color="#5771f9" />
       </View>
     );
-
   if (!dossier || !dossier.ordonnances?.length) {
     return (
       <View style={styles.container}>
-        <Text style={styles.headerTitle}>Mon Dossier Médical</Text>
+        <Text style={styles.headerTitle}>
+          {t("patient.medicalRecord.title")}
+        </Text>
         <Text style={{ textAlign: "center", marginTop: 40 }}>
-          Aucun dossier trouvé.
+          {t("patient.medicalRecord.noRecords")}
         </Text>
       </View>
     );
@@ -83,12 +86,14 @@ export default function MonDossierMedical() {
                 {new Date(ord.date).toLocaleDateString()}
               </Text>
             </View>
-          </View>
+          </View>{" "}
           <TouchableOpacity
             style={styles.infoButton}
             onPress={() => setSelected(ord)}
           >
-            <Text style={styles.infoButtonText}>Détails</Text>
+            <Text style={styles.infoButtonText}>
+              {t("patient.medicalRecord.details")}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -101,7 +106,9 @@ export default function MonDossierMedical() {
         <TouchableOpacity onPress={() => nav.goBack()}>
           <Ionicons name="chevron-back" size={28} color="#5771f9" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Mon Dossier Médical</Text>
+        <Text style={styles.headerTitle}>
+          {t("patient.medicalRecord.title")}
+        </Text>
         <View style={{ width: 28 }} />
       </View>
 
@@ -122,8 +129,11 @@ export default function MonDossierMedical() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
+              {" "}
               <ScrollView>
-                <Text style={styles.modalTitle}>Médicaments</Text>
+                <Text style={styles.modalTitle}>
+                  {t("patient.medicalRecord.medications")}
+                </Text>
                 {selected.traitement?.medicaments?.length > 0 ? (
                   selected.traitement.medicaments.map((m, i) => (
                     <View key={i} style={styles.detailRow}>
@@ -135,16 +145,22 @@ export default function MonDossierMedical() {
                       />
                       <View>
                         <Text style={styles.detailText}>
-                          <Text style={styles.bold}>Nom: </Text>
+                          <Text style={styles.bold}>
+                            {t("patient.medicalRecord.name")}:{" "}
+                          </Text>
                           {m.nom}
                         </Text>
                         <Text style={styles.detailText}>
-                          <Text style={styles.bold}>Dosage: </Text>
+                          <Text style={styles.bold}>
+                            {t("patient.medicalRecord.dosage")}:{" "}
+                          </Text>
                           {m.dosage}
                         </Text>
                         {m.periods?.length > 0 && (
                           <Text style={styles.detailText}>
-                            <Text style={styles.bold}>Périodes: </Text>
+                            <Text style={styles.bold}>
+                              {t("patient.medicalRecord.periods")}:{" "}
+                            </Text>
                             {m.periods.join(", ")}
                           </Text>
                         )}
@@ -230,7 +246,6 @@ export default function MonDossierMedical() {
                   <Text style={styles.noneText}>Pas de traitement</Text>
                 )}
               </ScrollView>
-
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setSelected(null)}

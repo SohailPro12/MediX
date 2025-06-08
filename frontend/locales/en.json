@@ -1,36 +1,741 @@
-{
-  "home": "Home",
-  "search": "Search...",
-  "doctors": "Doctors",
-  "patients": "Patients",
-  "appointments": "Appointments Today",
-  "calendar": "Calendar",
-    "Calendrier des rendez-vous": "calendar of appointments",
-    "Aucun rendez-vous": "No appointments",
-    "Confirmer la suppression": "Confirm deletion",
-    "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible": "Are you sure you want to delete your account? This action is irreversible",
-    "Annuler": "Cancel",
-    "Supprimer": "Delete",
-    "Supprimer le compte": "Delete account",
-    "General": "General",
-    "Liste des médecins": "List of doctors",
-    "Ajouter un médecin": "Add a doctor",
-    "Supprimer un médecin": "Delete a doctor",
-    "Problèmes techniques": "Technical problems",
-
-
-    "cardioloque": "Cardiologist",
-    "dermatologue": "Dermatologist",
-    "endocrinologue": "Endocrinologist",
-    "gastro-entérologue": "Gastroenterologist",
-    "médecin généraliste": "General Practitioner",
-    "hématologue": "Hematologist",
-    "interniste": "Internist",
-    "néphrologue": "Nephrologist",
-    "neurologue": "Neurologist",
-    "oncologue": "Oncologist",
-    "ophtalmologue": "Ophthalmologist",
-    "orthopédiste": "Orthopedist"
-
-  
+{  "common": {
+    "loading": "Loading",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "add": "Add",
+    "edit": "Edit",
+    "save": "Save",
+    "back": "Back",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "email": "Email",
+    "password": "Password",
+    "phone": "Phone",
+    "name": "Name",
+    "firstName": "First Name",
+    "search": "Search",
+    "genericError": "An error occurred. Please try again later."
+  },
+  "navigation": {
+    "home": "Home",
+    "doctors": "Doctors",
+    "patients": "Patients",
+    "appointments": "Appointments",
+    "calendar": "Calendar",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"  },  "admin": {
+    "title": "MedIX Admin",
+    "general": "General",
+    "doctorsList": "List of doctors",
+    "addDoctor": "Add a doctor",
+    "deleteDoctor": "Delete a doctor",
+    "technicalProblems": "Technical problems",
+    "noDoctorsFound": "No doctors found",
+    "stats": {
+      "totalDoctors": "Doctors",
+      "totalPatients": "Patients",
+      "appointmentsToday": "Appointments Today"
+    },
+    "settings": {
+      "language": {
+        "title": "Choose Language",
+        "french": "Français",
+        "english": "English",
+        "arabic": "العربية",
+        "current": "Current Language"
+      }
+    }
+  },  "doctor": {
+    "addTitle": "Add a doctor",
+    "addSubtitle": "Create an account for a doctor",
+    "profileTitle": "Doctor Profile",
+    "about": "About",
+    "formation": "Education",
+    "experience": "Experience",
+    "noDescription": "No description available",
+    "noFormation": "No education available",
+    "noExperience": "No experience available",
+    "dashboard": {
+      "title": "Doctor Dashboard",
+      "welcome": "Welcome",
+      "todayAppointments": "Today's Appointments",
+      "totalPatients": "Total Patients",
+      "nextAppointment": "Next Appointment",
+      "noAppointments": "No appointments today",
+      "viewAll": "View All"
+    },
+    "appointments": {
+      "title": "My Appointments",
+      "todayAppointments": "Today's Appointments",
+      "upcoming": "Upcoming",
+      "past": "Past",
+      "noAppointments": "No appointments",
+      "patientName": "Patient Name",
+      "time": "Time",
+      "status": "Status",
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "cancelled": "Cancelled",
+      "reschedule": "Reschedule",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    },    "patients": {
+      "title": "My Patients",
+      "patientList": "Patient List",
+      "search": "Search patient",
+      "noPatients": "No patients found",
+      "patientInfo": "Patient Information",
+      "medicalHistory": "Medical History",
+      "prescriptions": "Prescriptions",
+      "followUp": "Follow Up",
+      "addTitle": "Add Patient",
+      "addSubtitle": "Create an account for a new patient",
+      "form": {
+        "lastName": "Last Name",
+        "firstName": "First Name",
+        "cin": "ID Number",
+        "email": "Email",
+        "phone": "Phone",
+        "password": "Password",
+        "confirmPassword": "Confirm Password"
+      },
+      "validation": {
+        "allFieldsRequired": "Please fill in all required fields.",
+        "invalidEmail": "Please enter a valid email.",
+        "passwordMismatch": "Passwords do not match.",
+        "confirmData": "Please confirm that the data is correct."
+      },
+      "confirmationText": "Do you confirm that the entered data is correct?",
+      "createAccount": "Create Account",
+      "success": "Patient account created successfully",
+      "doctorNotFound": "Doctor not identified",
+      "ssoNotFound": "SSO code not found",
+      "creationError": "Error creating patient"
+    },
+    "prescriptions": {
+      "title": "Prescriptions",
+      "addPrescription": "Add prescription",
+      "medicationName": "Medication name",
+      "dosage": "Dosage",
+      "frequency": "Frequency",
+      "duration": "Duration",
+      "instructions": "Instructions",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "ordonnances": {
+      "title": "My Prescriptions",
+      "loading": "Loading prescriptions...",
+      "loadError": "Unable to load prescriptions.",
+      "patient": "Patient",
+      "date": "Date",
+      "nature": "Nature",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirmation": {
+        "title": "Delete this prescription?",
+        "message": "This action is irreversible.",
+        "cancel": "Cancel",
+        "delete": "Delete"
+      },
+      "deleteSuccess": "Prescription deleted.",
+      "deleteError": "Unable to delete.",      "details": {
+        "nature": "Nature",
+        "date": "Date",
+        "treatment": "Treatment",
+        "startDate": "Start",
+        "endDate": "End",
+        "observation": "Obs.",
+        "analyses": "Analyses",
+        "laboratory": "Lab",
+        "viewPdf": "View PDF"
+      },
+      "add": {
+        "title": "New Prescription",
+        "editTitle": "Edit Prescription",
+        "patient": "Patient",
+        "date": "Date",
+        "datePlaceholder": "YYYY-MM-DD",
+        "diseaseNature": "Disease Nature",
+        "diseaseNaturePlaceholder": "Ex: Flu, Cold...",
+        "treatment": "Treatment",
+        "startDate": "Start Date",
+        "startDatePlaceholder": "Start YYYY-MM-DD",
+        "endDate": "End Date",
+        "endDatePlaceholder": "End YYYY-MM-DD",
+        "observation": "Observation",
+        "medicationName": "Name",
+        "dosage": "Dosage",
+        "endDateMed": "End Date (YYYY-MM-DD)",
+        "periods": {
+          "morning": "Morning",
+          "noon": "Noon",
+          "afternoon": "Afternoon",
+          "evening": "Evening"
+        },
+        "addMedication": "+ Add Medication",
+        "analyses": "Analyses",
+        "analysisNumber": "Analysis #",
+        "analysisDate": "Date",
+        "laboratory": "Laboratory",
+        "labName": "Name",
+        "labAddress": "Address",
+        "labPhone": "Phone",
+        "labEmail": "Email",
+        "pdfLink": "PDF Link",
+        "addAnalysis": "+ Add Analysis",
+        "removeAnalysis": "✕ Remove Analysis",
+        "submit": "Save Prescription",
+        "update": "Update Prescription",
+        "success": "Success",
+        "created": "Created!",
+        "updated": "Updated!",
+        "error": "Error",
+        "requiredField": "Nature is required"      }
+    },
+    "appointmentCard": {
+      "message": "Message",
+      "reschedule": "Reschedule",
+      "status": {
+        "pending": "Pending",
+        "confirmed": "Confirmed",
+        "completed": "Completed",
+        "cancelled": "Cancelled"      }
+    },    "patientCard": {
+      "fileNumber": "File No",
+      "lastVisit": "Last visit",
+      "firstVisit": "First visit"
+    },"customAlert": {
+      "confirm": "Confirm",
+      "cancel": "Cancel"
+    },    "deleteAlert": {
+      "title": "Delete",
+      "message": "Are you sure you want to delete this patient?",
+      "yes": "Yes",
+      "no": "No"
+    },    "menuMald": {
+      "firstVisit": "No medical record yet, first visit.",
+      "noDiseases": "No diseases recorded",
+      "diseaseNature": "Disease nature"
+    },    "navigation": {
+      "messages": "Messages",
+      "reminders": "Reminders",
+      "profile": "Profile"
+    },    "profileBar": {
+      "errors": {
+        "missingToken": "Missing token",
+        "serverError": "Server error",
+        "errorTitle": "Error",
+        "loadProfileError": "Unable to load profile"
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "loading": "Loading...",
+      "menu": {
+        "patientList": "Patient List",
+        "addPatient": "Add Patient",
+        "reportProblem": "Report Problem",
+        "language": "Language"
+      },
+      "language": {
+        "title": "Choose Language",
+        "french": "Français",
+        "english": "English",
+        "arabic": "العربية",
+        "current": "Current Language"
+      }
+    },
+    "calendar": {
+      "title": "Calendar",
+      "availability": "Availability",
+      "setAvailability": "Set Availability",
+      "selectDate": "Select Date",
+      "timeSlots": "Time Slots",
+      "appointmentTable": "Appointment Table",
+      "week": "Week",
+      "timeSlotLabels": {
+        "morning": "Morning",
+        "noon": "Noon",
+        "afternoon": "Afternoon",
+        "evening": "Evening"
+      },
+      "days": {
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri",
+        "saturday": "Sat",
+        "sunday": "Sun"
+      },
+      "months": {
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December"
+      },
+      "modal": {
+        "title": "Appointment Action",        "addPrescription": "Add Prescription",
+        "editPrescription": "Edit Prescription"
+      },
+      "medicalRecords": {
+        "title": "Medical Records",
+        "loading": "Loading...",
+        "loadError": "Unable to load",
+        "noPrescriptions": "No prescriptions",
+        "rdvDate": "Appointment:",
+        "unavailableDate": "Date unavailable",
+        "edit": "Edit",
+        "delete": "Delete",
+        "deleteConfirmation": {
+          "title": "Confirmation",
+          "message": "Delete this prescription?",
+          "cancel": "Cancel",
+          "delete": "Delete"
+        },
+        "errors": {
+          "deleteError": "Deletion failed"
+        }
+      },
+      "editProfile": {
+        "title": "Your Profile",
+        "loading": "Loading...",
+        "uploadError": "Upload error",
+        "reloadError": "Reload error",
+        "updateError": "Update failed",
+        "successMessage": "Profile updated",
+        "changePhoto": "Change photo",
+        "uploading": "Uploading...",
+        "permission": {
+          "title": "Permission required",
+          "message": "Gallery access denied"
+        },
+        "about": {
+          "title": "About",
+          "placeholder": "Describe your practice",
+          "empty": "No description"
+        },
+        "education": {
+          "title": "Education",
+          "placeholder": "Degree, year...",
+          "add": "+ Add education",
+          "empty": "No education"
+        },
+        "experience": {
+          "title": "Experience",
+          "placeholder": "Position, institution...",
+          "add": "+ Add experience",
+          "empty": "No experience"
+        },
+        "specialist": "Specialist in",
+        "editButton": "Edit Profile"
+      },
+      "nextAppointments": {
+        "title": "Next Appointments",
+        "loading": "Loading...",
+        "error": "Error retrieving appointments",
+        "empty": "No upcoming appointments",
+        "table": {
+          "date": "Date",
+          "time": "Time",
+          "patient": "Patient"
+        }
+      },      "settings": {
+        "title": "Settings",
+        "loading": "Loading...",
+        "menu": {
+          "patientList": "My Patient List",
+          "addPatient": "Add Patient",
+          "reportProblem": "Report Issue"
+        }
+      },
+      "patientList": {
+        "title": "My Patients",
+        "loading": "Loading...",
+        "error": "Error loading patients",
+        "retry": "Retry",
+        "empty": "No patients found"
+      },
+      "prescription": {
+        "title": "Prescription",
+        "diseaseNature": "Disease nature",
+        "diseasePlaceholder": "Disease name",
+        "visitDate": "Visit date:",
+        "selectDate": "Select date",
+        "medications": "Medications",
+        "addMedication": "Add medication",
+        "medicationName": "Medication name",
+        "endDate": "End date (optional):",
+        "periods": "Taking periods:",
+        "morning": "Morning",
+        "noon": "Noon",
+        "evening": "Evening",
+        "analyses": "Analyses",
+        "addAnalysis": "Add analysis",
+        "analysisName": "Analysis name",
+        "addResults": "Add results",
+        "noFile": "No file",
+        "treatment": "Treatment:",
+        "treatmentPlaceholder": "Describe the treatment...",
+        "save": "Save",
+        "documentError": "Document error:"
+      },
+      "patientFollow": {
+        "title": "Followed Patients",
+        "loading": "Loading...",
+        "error": "Error",
+        "retry": "Retry",
+        "searchPlaceholder": "Search for a patient..."
+      }
+    },
+    "profile": {
+      "title": "My Profile",
+      "editProfile": "Edit Profile",
+      "personalInfo": "Personal Information",
+      "professionalInfo": "Professional Information",
+      "settings": "Settings"
+    },
+    "form": {
+      "lastName": "Last Name",
+      "firstName": "First Name",
+      "cin": "CIN",
+      "email": "Email Address",
+      "phone": "Phone",
+      "specialty": "Specialty",
+      "licenseNumber": "Professional ID",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "placeholders": {
+        "lastName": "Doctor's last name",
+        "firstName": "Doctor's first name",
+        "cin": "A12345",
+        "email": "email@example.com",
+        "phone": "+33 6 12 34 56 78",
+        "specialty": "Cardiologist...",
+        "licenseNumber": "123456789",
+        "password": "Password",
+        "confirmPassword": "Confirm password"
+      }
+    },
+    "validation": {
+      "allFieldsRequired": "Please fill in all required fields.",
+      "invalidEmail": "Please enter a valid email.",
+      "passwordMismatch": "Passwords do not match.",
+      "emailExists": "An account with this email already exists."
+    },    "success": {
+      "accountCreated": "Account created successfully",
+      "addingInProgress": "Adding in progress...",
+      "imageUpdated": "Image updated"
+    },
+    "availabilitySchedule": {
+      "title": "Choose your available days & hours",
+      "hoursFor": "Hours for",
+      "from": "From",
+      "to": "To",
+      "timeError": "End time must be after start time.",
+      "selectedDays": "Selected days:",
+      "validateAll": "Validate all availabilities",
+      "successMessage": "Your availabilities have been saved!"
+    }
+  },"problems": {
+    "title": "Reported Problems",
+    "markAsSolved": "✅ Mark as solved",
+    "deleteProblem": "🗑 Delete",    "confirmDelete": "Confirmation",
+    "confirmDeleteMessage": "Delete this problem?",
+    "delete": "Delete",
+    "deleteConfirmation": "Delete this problem?",
+    "markedAsSolved": "Marked as solved",
+    "problemDeleted": "The problem has been deleted",
+    "successSolved": "Marked as solved",
+    "successDeleted": "The problem has been deleted",
+    "errorSolving": "Unable to mark as solved.",
+    "errorDeleting": "Failed to delete.",
+    "filters": {
+      "allRoles": "All Roles",
+      "patient": "Patient",
+      "doctor": "Doctor",
+      "ascending": "Date Ascending",
+      "descending": "Date Descending"
+    },
+    "solved": "✔ Solved",
+    "noProblems": "No reported problems"
+  },
+  "calendar": {
+    "title": "Appointment calendar",
+    "selectDate": "Select a date",
+    "tapToSelect": "Tap to select date",
+    "consultationsFor": "Consultations for",
+    "noConsultations": "No consultations scheduled for this date",
+    "patientId": "Patient ID",
+    "doctorId": "Doctor ID",
+    "time": "Time",
+    "location": "Location",
+    "notes": "Notes",
+    "none": "None"
+  },  "alerts": {
+    "success": "Success",
+    "error": "Error",
+    "deleted": "Deleted",
+    "logoutConfirmation": "Are you sure you want to log out?",
+    "deleteConfirm": "Confirm deletion",
+    "deleteAccount": "Are you sure you want to delete your account? This action is irreversible.",
+    "deleteDoctor": "Are you sure you want to delete this account?",
+    "permissionDenied": "Permission denied",
+    "galleryAccess": "You must accept gallery access.",
+    "deleteAccountButton": "Delete account"
+  },
+  "specialties": {
+    "Cardiologist": "Cardiologist",
+    "Dermatologist": "Dermatologist",
+    "Endocrinologist": "Endocrinologist",
+    "Gastroenterologist": "Gastroenterologist",
+    "General Practitioner": "General Practitioner",
+    "Hematologist": "Hematologist",
+    "Internist": "Internist",
+    "Nephrologist": "Nephrologist",
+    "Neurologist": "Neurologist",
+    "Oncologist": "Oncologist",
+    "Ophthalmologist": "Ophthalmologist",
+    "Orthopedist": "Orthopedist"
+  },
+  "prescriptionScreen": {
+    "title": "Prescription",
+    "diseaseNature": "Disease nature",
+    "diseaseName": "Disease name",
+    "visitDate": "Visit date",
+    "addMedication": "Add medication",
+    "medicationName": "Medication name",
+    "endConsumption": "End of consumption",
+    "notDefined": "Not defined",
+    "takingPeriods": "Taking periods",
+    "periods": {
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },    "treatment": "Treatment",
+    "addAnalysis": "Add analysis",
+    "analysisName": "Analysis name",
+    "addResults": "Add results",
+    "save": "Save data"
+  },  "patient": {
+    "dashboard": {
+      "welcome": "Hello",
+      "searchDoctor": "Search doctor",
+      "bookAppointment": "Book appointment",
+      "myDoctors": "My doctors",
+      "medicalRecord": "My medical record",
+      "myAppointments": "My appointments",
+      "scheduleAppointment": "Schedule appointment"
+    },
+    "profile": {
+      "title": "Profile",
+      "loading": "Loading patient data...",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "noEmail": "No email provided",
+      "saving": "Saving...",
+      "editProfile": "Edit Profile",
+      "changePassword": "Change Password",
+      "reportProblem": "Report Problem",
+      "logout": "Logout"
+    },"navigation": {
+      "home": "Home",
+      "messages": "Messages",
+      "doctors": "Doctors",
+      "profile": "Profile"
+    },
+    "settings": {
+      "language": {
+        "title": "Choose Language",
+        "french": "Français",
+        "english": "English",
+        "arabic": "العربية",
+        "current": "Current Language"
+      }
+    },    "searchDoctor": {
+      "title": "Search Doctor",
+      "categories": {
+        "all": "All",
+        "generalPractitioner": "General Practitioner",
+        "cardiologist": "Cardiologist",
+        "dentist": "Dentist",
+        "pediatrician": "Pediatrician",
+        "dermatologist": "Dermatologist",
+        "ophthalmologist": "Ophthalmologist"
+      },
+      "availableDoctors": "Available Doctors",
+      "noDoctorsFound": "No doctors found."
+    },
+    "bookAppointment": {
+      "title": "Schedule Appointment",
+      "selectDate": "Select a Date",
+      "availableSlots": "Available Time Slots",
+      "noSlotsAvailable": "No slots available for this day",
+      "myInfo": "My Information",
+      "consultationReason": "Reason for Consultation",
+      "reasonPlaceholder": "Briefly describe the reason for your consultation",
+      "confirmAppointment": "Confirm Appointment",
+      "error": "Error: ",
+      "errorOccurred": "An error occurred. Please try again.",
+      "form": {
+        "lastName": "Last Name",
+        "firstName": "First Name",
+        "cin": "ID Number",
+        "phone": "Phone",
+        "email": "Email"
+      },
+      "days": {
+        "sunday": "Sun",
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri",
+        "saturday": "Sat"
+      },
+      "months": {
+        "january": "January",
+        "february": "February",
+        "march": "March",
+        "april": "April",
+        "may": "May",
+        "june": "June",
+        "july": "July",
+        "august": "August",
+        "september": "September",
+        "october": "October",
+        "november": "November",
+        "december": "December"
+      },      "modal": {
+        "title": "Appointment Confirmed",
+        "message": "Your appointment with {{doctorName}} on {{date}} at {{time}} has been sent.",
+        "close": "Close"
+      }
+    },
+    "myDoctors": {
+      "title": "My Doctors",
+      "loading": "Loading your doctors...",
+      "httpError": "HTTP Error",
+      "loadError": "Unable to load doctors",
+      "retry": "Retry",
+      "info": "Info",
+      "noDoctors": "You don't have any doctors yet",
+      "refresh": "Refresh"
+    },
+    "medicalRecord": {
+      "title": "My Medical Record",
+      "loadError": "Unable to load medical record",
+      "error": "Error",
+      "noRecords": "No records found.",
+      "details": "Details",
+      "medications": "Medications",
+      "name": "Name",
+      "dosage": "Dosage",
+      "periods": "Periods"    },
+    "searchBar": {
+      "placeholder": "Search for a doctor or specialty..."
+    },
+    "doctorCard": {
+      "unknownDay": "Unknown day",
+      "details": "Details",
+      "bookAppointment": "Book appointment"
+    },
+    "doctorInfo": {
+      "title": "Doctor Details",
+      "unknownName": "Unknown name",
+      "unknownSpecialty": "Unknown specialty",
+      "notSpecified": "Not specified",
+      "noInfoProvided": "No information provided.",
+      "about": "About",
+      "formation": "Education",
+      "experience": "Experience"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "enterInfo": "Please enter your information",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmNewPassword": "Confirm new password",
+      "updatePassword": "Update password",
+      "processing": "Processing...",
+      "allFieldsRequired": "All fields are required",
+      "passwordsDontMatch": "New passwords do not match",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "changePasswordFailed": "Password change failed",
+      "errorOccurred": "An error occurred while changing password",
+      "success": "Success",
+      "successMessage": "Your password has been changed successfully",
+      "error": "Error",
+      "ok": "OK",
+      "tryAgain": "Try again"
+    },
+    "appointments": {
+      "title": "My Appointments",
+      "upcoming": "Upcoming",
+      "completed": "Past",
+      "loading": "Loading appointments...",
+      "loadError": "Error loading appointments",
+      "retry": "Retry",
+      "unknownDoctor": "Unknown doctor",
+      "unknownSpecialty": "Unknown specialty",
+      "noMotif": "No reason specified",
+      "noLocation": "No location specified",
+      "status": "Status",
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "noDate": "No date specified",
+      "noTime": "No time specified",
+      "rated": "Rated {{rating}}/5",
+      "notRated": "Not rated",
+      "ratingFailed": "Rating failed",
+      "noUpcomingAppointments": "No upcoming appointments",
+      "noPastAppointments": "No past appointments"
+    },
+    "prescription": {
+      "title": "Medical Prescription",
+      "diagnosis": "Diagnosis",
+      "medications": "Medications",
+      "until": "Until",
+      "intake": "Intake",
+      "analyses": "Prescribed Analyses",
+      "treatment": "Treatment",
+      "duration": "Duration",      "days": "days"
+    },
+    "medication": {
+      "weekdays": {
+        "sunday": "Sunday",
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday"
+      },
+      "error": "Error",
+      "loadError": "Unable to load treatments",
+      "noTreatments": "No treatments found.",
+      "permissionsDenied": "Permissions denied",
+      "cannotSchedule": "Unable to schedule.",
+      "dosage": "Dosage",
+      "time": "Time",
+      "duration": "Duration",
+      "reminderActivated": "Reminder activated",
+      "dailyAt": "Daily at {{hour}}h{{minute}}"
+    }
+  }
 }

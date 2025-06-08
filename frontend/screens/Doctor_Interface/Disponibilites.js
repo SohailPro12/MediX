@@ -10,9 +10,11 @@ import {
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useTranslation } from "react-i18next";
 import Header from "../../components/DoctorComponents/Header";
 
 const DisponibiliteScreen = () => {
+  const { t } = useTranslation();
   const [selectedDates, setSelectedDates] = useState({});
   const [hoursByDate, setHoursByDate] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
@@ -55,10 +57,12 @@ const DisponibiliteScreen = () => {
       setModalVisible(true);
     }
   };
-
   const saveTimeForDate = () => {
     if (toTime <= fromTime) {
-      Alert.alert("Erreur", "L'heure de fin doit être après l'heure de début.");
+      Alert.alert(
+        t("common.error"),
+        t("doctor.availabilitySchedule.timeError")
+      );
       return;
     }
 
@@ -95,7 +99,6 @@ const DisponibiliteScreen = () => {
       setShowToPicker(false);
     }
   };
-
   const handleSave = () => {
     const disponibilites = Object.entries(hoursByDate).map(([date, hours]) => ({
       date,
@@ -104,13 +107,16 @@ const DisponibiliteScreen = () => {
     }));
 
     console.log("Disponibilités à envoyer :", disponibilites);
-    Alert.alert("Succès", "Vos disponibilités ont été enregistrées !");
+    Alert.alert(
+      t("common.success"),
+      t("doctor.availabilitySchedule.successMessage")
+    );
   };
 
   return (
     <View style={styles.container}>
       <Header
-        name="Choisis tes jours & heures disponibles"
+        name={t("doctor.availabilitySchedule.title")}
         screen="DashboardDoctor"
       />
 
@@ -132,26 +138,27 @@ const DisponibiliteScreen = () => {
 
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Heures pour {currentDate}</Text>
-
+          <Text style={styles.modalTitle}>
+            {t("doctor.availabilitySchedule.hoursFor")} {currentDate}
+          </Text>
           <TouchableOpacity
             style={styles.timeButton}
             onPress={() => showTimePicker("from")}
           >
             <Text style={styles.timeText}>
-              De : {fromTime.toTimeString().slice(0, 5)}
+              {t("doctor.availabilitySchedule.from")} :{" "}
+              {fromTime.toTimeString().slice(0, 5)}
             </Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.timeButton}
             onPress={() => showTimePicker("to")}
           >
             <Text style={styles.timeText}>
-              À : {toTime.toTimeString().slice(0, 5)}
+              {t("doctor.availabilitySchedule.to")} :{" "}
+              {toTime.toTimeString().slice(0, 5)}
             </Text>
           </TouchableOpacity>
-
           {showFromPicker && (
             <DateTimePicker
               value={fromTime}
@@ -161,7 +168,6 @@ const DisponibiliteScreen = () => {
               onChange={(e, d) => handleTimeChange(e, d, "from")}
             />
           )}
-
           {showToPicker && (
             <DateTimePicker
               value={toTime}
@@ -170,23 +176,23 @@ const DisponibiliteScreen = () => {
               display="default"
               onChange={(e, d) => handleTimeChange(e, d, "to")}
             />
-          )}
-
+          )}{" "}
           <TouchableOpacity style={styles.saveButton} onPress={saveTimeForDate}>
-            <Text style={styles.saveText}>Enregistrer</Text>
+            <Text style={styles.saveText}>{t("common.save")}</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
             style={[styles.saveButton, { backgroundColor: "#dc3545" }]}
             onPress={closeModalWithoutSaving}
           >
-            <Text style={styles.saveText}>Annuler</Text>
+            <Text style={styles.saveText}>{t("common.cancel")}</Text>
           </TouchableOpacity>
         </View>
       </Modal>
 
       <ScrollView style={styles.hoursList}>
-        <Text style={styles.hoursListTitle}>Jours sélectionnés :</Text>
+        <Text style={styles.hoursListTitle}>
+          {t("doctor.availabilitySchedule.selectedDays")}
+        </Text>
         {Object.entries(hoursByDate).map(([date, { from, to }]) => (
           <Text key={date} style={styles.hourItem}>
             {date} : {from} - {to}
@@ -196,7 +202,7 @@ const DisponibiliteScreen = () => {
 
       <TouchableOpacity style={styles.finalSave} onPress={handleSave}>
         <Text style={styles.finalSaveText}>
-          Valider toutes les disponibilités
+          {t("doctor.availabilitySchedule.validateAll")}
         </Text>
       </TouchableOpacity>
     </View>

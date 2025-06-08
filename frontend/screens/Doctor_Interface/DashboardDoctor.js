@@ -8,6 +8,7 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 import StatCard from "../../components/DoctorComponents/StatCard";
 import MenuCard from "../../components/DoctorComponents/MenuCard";
 import ProfileBar from "../../components/DoctorComponents/ProfileBar";
@@ -19,6 +20,7 @@ import { fetchPatients } from "../../utils_Doctor/ListePatients";
 const Dashboard = () => {
   const navigation = useNavigation();
   const { medecin } = useMedecin();
+  const { t } = useTranslation();
 
   const [rdvCount, setRdvCount] = useState(0);
   const [patientCount, setPatientCount] = useState(0);
@@ -68,9 +70,10 @@ const Dashboard = () => {
             onPress={() => navigation.navigate("NextRdv")}
             activeOpacity={0.8}
           >
+            {" "}
             <StatCard
               icon="calendar-alt"
-              label="Prochains RDV"
+              label={t("doctor.dashboard.nextAppointment")}
               value={refreshing ? "…" : rdvCount}
               color="#FF5733"
             />
@@ -81,14 +84,14 @@ const Dashboard = () => {
             onPress={() => navigation.navigate("PatientSuivi")}
             activeOpacity={0.8}
           >
+            {" "}
             <StatCard
               icon="user-friends"
-              label="Patients Suivis"
+              label={t("doctor.dashboard.totalPatients")}
               value={refreshing ? "…" : patientCount}
               color="#33A1FF"
             />
           </TouchableOpacity>
-
         </View>
 
         <View style={styles.menuContainer}>
@@ -97,29 +100,38 @@ const Dashboard = () => {
             onPress={() => navigation.navigate("AppointmentsList")}
             activeOpacity={0.8}
           >
-            <MenuCard icon="calendar-check" label="Mes Rendez‑vous" color="#FF5733" />
+            <MenuCard
+              icon="calendar-check"
+              label={t("doctor.appointments.title")}
+              color="#FF5733"
+            />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.menuButton}
-            onPress={() => navigation.navigate("Ordonnance")}  //a verifier (OrdonnaceList)
+            onPress={() => navigation.navigate("Ordonnance")} //a verifier (OrdonnaceList)
             activeOpacity={0.8}
           >
-            <MenuCard icon="file-document-edit" label="Ordonnances" color="#28A745" />
+            <MenuCard
+              icon="file-document-edit"
+              label={t("doctor.prescriptions.title")}
+              color="#28A745"
+            />
           </TouchableOpacity>
         </View>
 
-         {/* ✅ Section séparée pour la carte Mes Disponibilités */}
-         <View style={styles.bottomCardContainer}>
-          <TouchableOpacity 
+        {/* ✅ Section séparée pour la carte Mes Disponibilités */}
+        <View style={styles.bottomCardContainer}>
+          <TouchableOpacity
             style={styles.bottomStatButton}
             onPress={() => navigation.navigate("Disponibilites")}
             activeOpacity={0.8}
           >
+            {" "}
             <StatCard
               icon="clock"
-              label="Mes Disponibilités"
-              value="Configurer"
+              label={t("doctor.calendar.availability")}
+              value={t("doctor.calendar.setAvailability")}
               color="#28A745"
             />
           </TouchableOpacity>

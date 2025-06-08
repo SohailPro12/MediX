@@ -56,14 +56,10 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.19.13",
     "recyclerlistview": "^4.2.3",
-<<<<<<< HEAD
-    "expo-dev-client": "~5.0.20"
-=======
     "expo-av": "~15.0.2",
     "expo-sharing": "~13.0.1",
     "expo-media-library": "~17.0.6",
     "expo-file-system": "~18.0.12"
->>>>>>> 4c60f0afc96a04fbfb1297f17b7fb3b525302797
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

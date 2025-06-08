@@ -8,31 +8,24 @@ import { handleDeleteAccount } from "../screens/LoginFront/authentification/dele
 const DeleteAccountButton = () => {
   const navigation = useNavigation();
   const { t, i18n } = useTranslation();
-
   const confirmDelete = () => {
-    Alert.alert(
-      t("Confirmer la suppression"),
-      t(
-        "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible."
-      ),
-      [
-        {
-          text: t("Annuler"),
-          onPress: () => console.log("Annuler"),
-          style: "cancel",
-        },
-        {
-          text: t("Supprimer"),
-          onPress: () => handleDeleteAccount(navigation),
-        }, // Correction ici
-      ]
-    );
+    Alert.alert(t("alerts.deleteConfirm"), t("alerts.deleteAccount"), [
+      {
+        text: t("common.cancel"),
+        onPress: () => console.log("Annuler"),
+        style: "cancel",
+      },
+      {
+        text: t("common.delete"),
+        onPress: () => handleDeleteAccount(navigation),
+      }, // Correction ici
+    ]);
   };
 
   return (
     <View style={styles.container}>
       <Button
-        title={t("Supprimer le compte")}
+        title={t("alerts.deleteAccountButton")}
         onPress={confirmDelete}
         color="#ff0000"
       />

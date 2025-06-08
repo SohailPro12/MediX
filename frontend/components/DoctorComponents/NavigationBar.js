@@ -2,21 +2,40 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
 
 const NavigationBar = () => {
+  const { t } = useTranslation();
   return (
-    <View style={styles.container} >
-      <NavItem icon="bell" label="Messages" press="Messagerie"/>
-      <NavItem icon="calendar-alt" label="Rappels" press="AppointmentCalendar" />
-      <NavItem icon="user" label="Profil" press="SettingsDScreen"/>
+    <View style={styles.container}>
+      <NavItem
+        icon="bell"
+        label={t("doctor.navigation.messages")}
+        press="Messagerie"
+      />
+      <NavItem
+        icon="calendar-alt"
+        label={t("doctor.navigation.reminders")}
+        press="AppointmentCalendar"
+      />
+      <NavItem
+        icon="user"
+        label={t("doctor.navigation.profile")}
+        press="SettingsDScreen"
+      />
     </View>
   );
 };
-{/*composant des items*/}
-const NavItem = ({ icon, label,press}) => {
+{
+  /*composant des items*/
+}
+const NavItem = ({ icon, label, press }) => {
   const navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.navItem} onPress={()=>navigation.navigate(press)}>
+    <TouchableOpacity
+      style={styles.navItem}
+      onPress={() => navigation.navigate(press)}
+    >
       <FontAwesome5 name={icon} size={22} />
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>

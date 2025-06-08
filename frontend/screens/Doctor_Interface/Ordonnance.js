@@ -1,5 +1,5 @@
 // screens/Doctor/OrdonnanceList.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,14 +10,16 @@ import {
   ActivityIndicator,
   ScrollView,
   Alert,
-} from 'react-native';
-import { FontAwesome5, AntDesign } from '@expo/vector-icons';
-import Header from '../../components/DoctorComponents/Header';
-import openPdf from './openPdf';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '../../config';
+} from "react-native";
+import { FontAwesome5, AntDesign } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
+import Header from "../../components/DoctorComponents/Header";
+import openPdf from "./openPdf";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../config";
 
 export default function OrdonnanceList({ navigation }) {
+  const { t } = useTranslation();
   const [ordonnances, setOrdonnances] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState(null);
@@ -30,16 +32,16 @@ export default function OrdonnanceList({ navigation }) {
   const fetchOrdonnances = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem("authToken");
       const res = await fetch(`${API_URL}/api/doctor/ordonnances`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Échec du chargement');
+      if (!res.ok) throw new Error(t("doctor.ordonnances.loadError"));
       const data = await res.json();
       setOrdonnances(data);
     } catch (e) {
-      console.error('Erreur chargement ordonnances:', e);
-      Alert.alert('Erreur', 'Impossible de charger les ordonnances.');
+      console.error("Erreur chargement ordonnances:", e);
+      Alert.alert(t("common.error"), t("doctor.ordonnances.loadError"));
     } finally {
       setLoading(false);
     }
@@ -53,16 +55,18 @@ export default function OrdonnanceList({ navigation }) {
     setSelected(null);
     setModalVisible(false);
   };
-
   const confirmDelete = (id) => {
     Alert.alert(
-      'Supprimer cette ordonnance ?',
-      'Cette action est irréversible.',
+      t("doctor.ordonnances.deleteConfirmation.title"),
+      t("doctor.ordonnances.deleteConfirmation.message"),
       [
-        { text: 'Annuler', style: 'cancel' },
         {
-          text: 'Supprimer',
-          style: 'destructive',
+          text: t("doctor.ordonnances.deleteConfirmation.cancel"),
+          style: "cancel",
+        },
+        {
+          text: t("doctor.ordonnances.deleteConfirmation.delete"),
+          style: "destructive",
           onPress: () => handleDelete(id),
         },
       ]
@@ -71,30 +75,33 @@ export default function OrdonnanceList({ navigation }) {
 
   const handleDelete = async (id) => {
     try {
-      const token = await AsyncStorage.getItem('authToken');
+      const token = await AsyncStorage.getItem("authToken");
       const res = await fetch(`${API_URL}/api/doctor/ordonnances/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error('Suppression échouée');
+      if (!res.ok) throw new Error(t("doctor.ordonnances.deleteError"));
       // on rafraîchit la liste
       setOrdonnances((prev) => prev.filter((o) => o._id !== id));
-      Alert.alert('Succès', 'Ordonnance supprimée.');
+      Alert.alert(t("common.success"), t("doctor.ordonnances.deleteSuccess"));
     } catch (e) {
-      console.error('Erreur suppression ordonnance:', e);
-      Alert.alert('Erreur', 'Impossible de supprimer.');
+      console.error("Erreur suppression ordonnance:", e);
+      Alert.alert(t("common.error"), t("doctor.ordonnances.deleteError"));
     }
   };
-
   const renderOrdonnance = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.patientName}>
-        Patient : {item.PatientId.nom} {item.PatientId.prenom}
+        {t("doctor.ordonnances.patient")} : {item.PatientId.nom}{" "}
+        {item.PatientId.prenom}
       </Text>
       <Text style={styles.date}>
-        Date : {new Date(item.date).toLocaleDateString()}
+        {t("doctor.ordonnances.date")} :{" "}
+        {new Date(item.date).toLocaleDateString()}
       </Text>
-      <Text style={styles.cause}>Nature : {item.natureMaladie}</Text>
+      <Text style={styles.cause}>
+        {t("doctor.ordonnances.nature")} : {item.natureMaladie}
+      </Text>
 
       <View style={styles.actionsRow}>
         <TouchableOpacity
@@ -102,19 +109,19 @@ export default function OrdonnanceList({ navigation }) {
           onPress={() => openDetails(item)}
         >
           <FontAwesome5 name="eye" size={16} color="white" />
-          <Text style={styles.detailsText}>Voir</Text>
+          <Text style={styles.detailsText}>{t("doctor.ordonnances.view")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.actionBtn, styles.editBtn]}
           onPress={() =>
-            navigation.navigate('AddOrdonnanceScreen', {
+            navigation.navigate("AddOrdonnanceScreen", {
               ordonnanceId: item._id,
             })
           }
         >
           <AntDesign name="edit" size={16} color="white" />
-          <Text style={styles.detailsText}>Modifier</Text>
+          <Text style={styles.detailsText}>{t("doctor.ordonnances.edit")}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -122,7 +129,9 @@ export default function OrdonnanceList({ navigation }) {
           onPress={() => confirmDelete(item._id)}
         >
           <AntDesign name="delete" size={16} color="white" />
-          <Text style={styles.detailsText}>Supprimer</Text>
+          <Text style={styles.detailsText}>
+            {t("doctor.ordonnances.delete")}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -138,7 +147,7 @@ export default function OrdonnanceList({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Header name="Mes Ordonnances" screen="DashboardDoctor" />
+      <Header name={t("doctor.ordonnances.title")} screen="DashboardDoctor" />
 
       <FlatList
         data={ordonnances}
@@ -152,35 +161,41 @@ export default function OrdonnanceList({ navigation }) {
           <ScrollView style={styles.modalContent}>
             {selected && (
               <>
-                <Text style={styles.modalTitle}>Nature</Text>
-                <Text style={styles.modalText}>
-                  {selected.natureMaladie}
+                <Text style={styles.modalTitle}>
+                  {t("doctor.ordonnances.details.nature")}
                 </Text>
+                <Text style={styles.modalText}>{selected.natureMaladie}</Text>
 
-                <Text style={styles.modalTitle}>Date</Text>
+                <Text style={styles.modalTitle}>
+                  {t("doctor.ordonnances.details.date")}
+                </Text>
                 <Text style={styles.modalText}>
                   {new Date(selected.date).toLocaleString()}
                 </Text>
 
-                <Text style={styles.modalTitle}>Traitement</Text>
+                <Text style={styles.modalTitle}>
+                  {t("doctor.ordonnances.details.treatment")}
+                </Text>
                 {selected.traitement && (
                   <View style={styles.subBlock}>
+                    {" "}
                     <Text style={styles.modalText}>
-                      Début :{' '}
+                      {t("doctor.ordonnances.details.startDate")} :{" "}
                       {new Date(
                         selected.traitement.dateDebut
                       ).toLocaleDateString()}
                     </Text>
                     {selected.traitement.dateFin && (
                       <Text style={styles.modalText}>
-                        Fin :{' '}
+                        {t("doctor.ordonnances.details.endDate")} :{" "}
                         {new Date(
                           selected.traitement.dateFin
                         ).toLocaleDateString()}
                       </Text>
                     )}
                     <Text style={styles.modalText}>
-                      Obs. : {selected.traitement.observation}
+                      {t("doctor.ordonnances.details.observation")} :{" "}
+                      {selected.traitement.observation}
                     </Text>
                     {selected.traitement.medicaments.map((m, j) => (
                       <Text key={j} style={styles.modalText}>
@@ -190,14 +205,19 @@ export default function OrdonnanceList({ navigation }) {
                   </View>
                 )}
 
-                <Text style={styles.modalTitle}>Analyses</Text>
+                <Text style={styles.modalTitle}>
+                  {t("doctor.ordonnances.details.analyses")}
+                </Text>
                 {selected.analyses.map((ana) => (
                   <View key={ana._id} style={styles.subBlock}>
+                    {" "}
                     <Text style={styles.modalText}>
-                      Date : {new Date(ana.date).toLocaleDateString()}
+                      {t("doctor.ordonnances.details.date")} :{" "}
+                      {new Date(ana.date).toLocaleDateString()}
                     </Text>
                     <Text style={styles.modalText}>
-                      Lab : {ana.laboratoire.nom}
+                      {t("doctor.ordonnances.details.laboratory")} :{" "}
+                      {ana.laboratoire.nom}
                     </Text>
                     <Text style={styles.modalText}>
                       Obs. : {ana.observation}
@@ -219,7 +239,7 @@ export default function OrdonnanceList({ navigation }) {
                   style={[styles.detailsButton, { marginTop: 20 }]}
                   onPress={closeDetails}
                 >
-                  <Text style={styles.detailsText}>Fermer</Text>
+                  <Text style={styles.detailsText}>{t("common.close")}</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -231,65 +251,65 @@ export default function OrdonnanceList({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f2f2f2' },
-  loader: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  container: { flex: 1, backgroundColor: "#f2f2f2" },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
   list: { padding: 16 },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     elevation: 3,
   },
-  patientName: { fontSize: 18, fontWeight: '600', color: '#0876d8' },
-  date: { fontSize: 14, color: '#777', marginTop: 4 },
-  cause: { fontSize: 14, color: '#333', marginTop: 4 },
+  patientName: { fontSize: 18, fontWeight: "600", color: "#0876d8" },
+  date: { fontSize: 14, color: "#777", marginTop: 4 },
+  cause: { fontSize: 14, color: "#333", marginTop: 4 },
 
   actionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 12,
   },
   actionBtn: {
-    flexDirection: 'row',
-    backgroundColor: '#75E1E5',
+    flexDirection: "row",
+    backgroundColor: "#75E1E5",
     padding: 8,
     borderRadius: 6,
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginHorizontal: 4,
   },
-  editBtn: { backgroundColor: '#4287f5' },
-  deleteBtn: { backgroundColor: '#e74c3c' },
-  detailsText: { color: 'white', marginLeft: 6, fontSize: 14 },
+  editBtn: { backgroundColor: "#4287f5" },
+  deleteBtn: { backgroundColor: "#e74c3c" },
+  detailsText: { color: "white", marginLeft: 6, fontSize: 14 },
 
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
     padding: 16,
   },
   modalContent: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
-    maxHeight: '90%',
+    maxHeight: "90%",
   },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginTop: 16 },
+  modalTitle: { fontSize: 18, fontWeight: "bold", marginTop: 16 },
   modalText: { fontSize: 16, marginTop: 4 },
   subBlock: { marginLeft: 8, marginTop: 8 },
   pdfRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 4,
   },
   detailsButton: {
-    flexDirection: 'row',
-    backgroundColor: '#75E1E5',
+    flexDirection: "row",
+    backgroundColor: "#75E1E5",
     padding: 10,
     borderRadius: 8,
     marginTop: 10,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
 });

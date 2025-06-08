@@ -1,13 +1,22 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, RefreshControl, ScrollView } from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+} from "react-native";
+import { useTranslation } from "react-i18next";
+import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/DoctorComponents/Header";
-import { useMedecin } from "../context/MedecinContext"; 
+import { useMedecin } from "../context/MedecinContext";
 import { fetchAppointments } from "../../utils_Doctor/MedecinAppointement";
 
 export default function NextRdv() {
+  const { t } = useTranslation();
   const navigation = useNavigation();
-  const { medecin } = useMedecin(); 
+  const { medecin } = useMedecin();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -20,7 +29,7 @@ export default function NextRdv() {
       setAppointments(data);
       setError(null);
     } catch (error) {
-      setError("Erreur de récupération des rendez-vous");
+      setError(t("doctor.nextAppointments.error"));
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -34,17 +43,17 @@ export default function NextRdv() {
 
   // Actualisation lors du focus
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', loadAppointments);
+    const unsubscribe = navigation.addListener("focus", loadAppointments);
     return unsubscribe;
   }, [navigation, loadAppointments]);
 
   // Formatage de la date en français
   const formatFrenchDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      weekday: 'short',
-      day: 'numeric',
-      month: 'short'
+    return date.toLocaleDateString("fr-FR", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
     });
   };
 
@@ -58,8 +67,11 @@ export default function NextRdv() {
 
   return (
     <View style={styles.container}>
-      <Header name="Prochains Rendez-vous" screen="DashboardDoctor" />
-      
+      <Header
+        name={t("doctor.nextAppointments.title")}
+        screen="DashboardDoctor"
+      />
+
       <ScrollView
         refreshControl={
           <RefreshControl
@@ -75,14 +87,22 @@ export default function NextRdv() {
           <Text style={styles.errorText}>{error}</Text>
         ) : appointments.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Aucun rendez-vous à venir</Text>
+            <Text style={styles.emptyText}>
+              {t("doctor.nextAppointments.empty")}
+            </Text>
           </View>
         ) : (
           <View style={styles.table}>
             <View style={styles.tableRowHeader}>
-              <Text style={styles.tableHeader}>Date</Text>
-              <Text style={styles.tableHeader}>Heure</Text>
-              <Text style={styles.tableHeader}>Patient</Text>
+              <Text style={styles.tableHeader}>
+                {t("doctor.nextAppointments.table.date")}
+              </Text>
+              <Text style={styles.tableHeader}>
+                {t("doctor.nextAppointments.table.time")}
+              </Text>
+              <Text style={styles.tableHeader}>
+                {t("doctor.nextAppointments.table.patient")}
+              </Text>
             </View>
             {appointments.map((item) => (
               <View key={item._id} style={styles.tableRow}>
@@ -90,9 +110,9 @@ export default function NextRdv() {
                   {formatFrenchDate(item.date)}
                 </Text>
                 <Text style={styles.tableCell}>
-                  {new Date(item.date).toLocaleTimeString('fr-FR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date(item.date).toLocaleTimeString("fr-FR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </Text>
                 <Text style={styles.tableCell}>
@@ -115,11 +135,11 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   scrollContent: {
-    paddingHorizontal: '3%',
+    paddingHorizontal: "3%",
     paddingBottom: 20,
   },
   table: {
@@ -166,8 +186,8 @@ const styles = StyleSheet.create({
     color: "#999",
   },
   errorText: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginTop: 20,
   },
 });

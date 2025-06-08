@@ -1,34 +1,41 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, FlatList, Text, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import PatientCard from '../../components/DoctorComponents/CurrentPatientCard';
-import Header from '../../components/DoctorComponents/Header';
-import SearchBar from '../../components/DoctorComponents/SearchBar';
-import { useMedecin } from '../context/MedecinContext';
-import { fetchPatients } from "../../utils_Doctor/ListePatients"; 
-
-import { fetchPatients } from "../../utils_Doctor/ListePatients"; 
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  FlatList,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import PatientCard from "../../components/DoctorComponents/CurrentPatientCard";
+import Header from "../../components/DoctorComponents/Header";
+import SearchBar from "../../components/DoctorComponents/SearchBar";
+import { useMedecin } from "../context/MedecinContext";
+import { fetchPatients } from "../../utils_Doctor/ListePatients";
 
 const PatientListScreen = () => {
   const navigation = useNavigation();
   const { medecin } = useMedecin();
+  const { t } = useTranslation();
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  
+  const [searchQuery, setSearchQuery] = useState("");
+
   // Fonction de chargement des patients
-  const fetchPatientData = useCallback(async () => {  
+  const fetchPatientData = useCallback(async () => {
     try {
       setRefreshing(true);
       if (medecin?._id) {
-        const data = await fetchPatients(medecin._id);  
+        const data = await fetchPatients(medecin._id);
         setPatients(data);
         setError(null);
       }
     } catch (err) {
-      setError(err.message);  
+      setError(err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -42,12 +49,12 @@ const PatientListScreen = () => {
 
   // Actualisation lors du focus
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', fetchPatientData);
+    const unsubscribe = navigation.addListener("focus", fetchPatientData);
     return unsubscribe;
   }, [navigation, fetchPatientData]);
 
   // Filtrage des patients selon la recherche
-  const filteredPatients = patients.filter(patient => {
+  const filteredPatients = patients.filter((patient) => {
     const fullName = `${patient.nom} ${patient.prenom}`.toLowerCase();
     return fullName.includes(searchQuery.toLowerCase());
   });
@@ -70,21 +77,20 @@ const PatientListScreen = () => {
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
         <Text style={styles.retryText} onPress={fetchPatientData}>
-          Réessayer
+          {t("doctor.patientSuivi.retry")}
         </Text>
       </View>
     );
   }
-
   return (
     <View style={styles.container}>
-      <Header name="Les patients suivis" screen="DashboardDoctor" />
-      <SearchBar 
-        searchplaceholder="Rechercher un patient..." 
+      <Header name={t("doctor.patientSuivi.title")} screen="DashboardDoctor" />
+      <SearchBar
+        searchplaceholder={t("doctor.patientSuivi.searchPlaceholder")}
         onChangeText={setSearchQuery}
         value={searchQuery}
       />
-      
+
       <FlatList
         data={filteredPatients}
         keyExtractor={(item) => item._id}
@@ -92,7 +98,9 @@ const PatientListScreen = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <Text style={styles.emptyText}>
-            {searchQuery ? 'Aucun patient trouvé' : 'Aucun patient à afficher'}
+            {searchQuery
+              ? t("doctor.patientSuivi.noPatientFound")
+              : t("doctor.patientSuivi.noPatientToDisplay")}
           </Text>
         }
         refreshControl={
@@ -112,38 +120,38 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingTop: 45,
-    paddingHorizontal: '3%',
-    backgroundColor: '#F1F5F9',
+    paddingHorizontal: "3%",
+    backgroundColor: "#F1F5F9",
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   errorText: {
-    color: 'red',
+    color: "red",
     fontSize: 16,
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   retryText: {
-    color: '#00BFFF',
+    color: "#00BFFF",
     fontSize: 16,
-    textDecorationLine: 'underline',
+    textDecorationLine: "underline",
   },
   listContent: {
     paddingBottom: 20,
   },
   emptyText: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 20,
-    color: '#666',
+    color: "#666",
     fontSize: 16,
   },
 });

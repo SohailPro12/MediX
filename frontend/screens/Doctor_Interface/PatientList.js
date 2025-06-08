@@ -1,5 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, FlatList, StyleSheet, ActivityIndicator, Text } from "react-native";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+} from "react-native";
+import { useTranslation } from "react-i18next";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../../components/DoctorComponents/Header";
@@ -19,17 +26,17 @@ const PatientList = ({ route }) => {
     try {
       setRefreshing(true);
       setError(null);
-      
+
       if (!medecin?._id) return;
 
       const [appointmentPatients, doctorPatients] = await Promise.all([
         patientAPI.fetchPatients(medecin._id),
-        patientAPI.fetchPatientMedecin(medecin._id)
+        patientAPI.fetchPatientMedecin(medecin._id),
       ]);
 
       const uniquePatientsMap = new Map();
-      
-      [...appointmentPatients, ...doctorPatients].forEach(patient => {
+
+      [...appointmentPatients, ...doctorPatients].forEach((patient) => {
         if (patient?._id) {
           uniquePatientsMap.set(patient._id.toString(), patient);
         }
@@ -50,7 +57,7 @@ const PatientList = ({ route }) => {
   }, [fetchAllPatientData]);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', fetchAllPatientData);
+    const unsubscribe = navigation.addListener("focus", fetchAllPatientData);
     return unsubscribe;
   }, [navigation, fetchAllPatientData]);
 
@@ -66,8 +73,8 @@ const PatientList = ({ route }) => {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
-        <Button 
-          mode="contained" 
+        <Button
+          mode="contained"
           onPress={fetchAllPatientData}
           style={styles.retryButton}
           labelStyle={styles.buttonLabel}
@@ -81,15 +88,12 @@ const PatientList = ({ route }) => {
   return (
     <View style={styles.container}>
       <Header name="Mes Patients" screen="SettingsDScreen" />
-      
+
       <FlatList
         data={allPatients}
         keyExtractor={(item) => item._id.toString()}
         renderItem={({ item }) => (
-          <PatientCard 
-            patient={item} 
-            isClickable={true}
-          />
+          <PatientCard patient={item} isClickable={true} />
         )}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
@@ -109,27 +113,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     padding: 20,
-    paddingVertical:'12%',
+    paddingVertical: "12%",
   },
   centerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 20,
   },
   errorText: {
-    color: '#FF3B30',
+    color: "#FF3B30",
     fontSize: 16,
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   retryButton: {
-    backgroundColor: '#75E1E5',
-    width: '60%',
+    backgroundColor: "#75E1E5",
+    width: "60%",
   },
   buttonLabel: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
   },
   listContent: {
     paddingBottom: 20,
@@ -137,7 +141,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: '#8E8E93',
+    color: "#8E8E93",
   },
 });
 

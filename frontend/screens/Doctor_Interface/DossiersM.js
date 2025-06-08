@@ -8,15 +8,17 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import { useTranslation } from "react-i18next";
 import Header from "../../components/DoctorComponents/Header";
 import PatientCard from "../../components/DoctorComponents/PatientCard";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../config";
 import openPdf from "./openPdf";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign } from "@expo/vector-icons";
 
 export default function DossiersM() {
+  const { t } = useTranslation();
   const route = useRoute();
   const nav = useNavigation();
   const patient = route.params.patient;
@@ -34,17 +36,16 @@ export default function DossiersM() {
         );
         if (!res.ok) {
           if (res.status === 404) {
-            setOrdonnances([]); // aucun dossier
-          } else {
-            throw new Error("Impossible de charger");
+            setOrdonnances([]); // aucun dossier          } else {
+            throw new Error(t("doctor.medicalRecords.loadError"));
           }
         }
-        
+
         const data = await res.json();
         setOrdonnances(data.ordonnances || data); // si ton endpoint renvoie un objet avec .ordonnances
       } catch (e) {
         console.error(e);
-        Alert.alert("Erreur", e.message);
+        Alert.alert(t("common.error"), e.message);
       } finally {
         setLoading(false);
       }
@@ -53,12 +54,15 @@ export default function DossiersM() {
 
   const handleDelete = (id) => {
     Alert.alert(
-      "Confirmation",
-      "Supprimer cette ordonnance ?",
+      t("doctor.medicalRecords.deleteConfirmation.title"),
+      t("doctor.medicalRecords.deleteConfirmation.message"),
       [
-        { text: "Annuler", style: "cancel" },
         {
-          text: "Supprimer",
+          text: t("doctor.medicalRecords.deleteConfirmation.cancel"),
+          style: "cancel",
+        },
+        {
+          text: t("doctor.medicalRecords.deleteConfirmation.delete"),
           style: "destructive",
           onPress: async () => {
             try {
@@ -70,7 +74,10 @@ export default function DossiersM() {
               setOrdonnances((o) => o.filter((x) => x._id !== id));
             } catch (e) {
               console.error(e);
-              Alert.alert("Erreur", "Suppression impossible");
+              Alert.alert(
+                t("common.error"),
+                t("doctor.medicalRecords.errors.deleteError")
+              );
             }
           },
         },
@@ -79,52 +86,64 @@ export default function DossiersM() {
   };
 
   if (loading) {
-    return <ActivityIndicator style={styles.loader} size="large" color="#75E1E5"/>;
+    return (
+      <ActivityIndicator style={styles.loader} size="large" color="#75E1E5" />
+    );
   }
 
   return (
     <View style={styles.container}>
-      <Header name="Dossier Médical" screen="PatientList" />
+      <Header name={t("doctor.medicalRecords.title")} screen="PatientList" />
       <PatientCard patient={patient} isClickable={false} />
 
-        <FlatList
-          data={ordonnances}
-          keyExtractor={(o) => o._id}
-          contentContainerStyle={{ padding: 16 }}
-          ListEmptyComponent={<Text>Aucune ordonnance</Text>}
-          renderItem={({ item }) => {
-            const rdvDate =
-              typeof item.RendezVousId === "object"
-                ? new Date(item.RendezVousId.date).toLocaleDateString()
-                : "Date non disponible";
-console.log(item.RendezVousId.lieu);
-            return (
-              <View style={styles.card}>
-                <Text style={styles.date}>RDV: {rdvDate}</Text>
-                <Text style={styles.nature}>{item.natureMaladie}</Text>
-                <View style={styles.row}>
-                  <TouchableOpacity
-                    style={styles.btn}
-                    onPress={() =>
-                      nav.navigate("AddOrdonnanceScreen", { ordonnanceId: item._id })
-                    }
-                  >
-                    <AntDesign name="edit" size={16} color="white" />
-                    <Text style={styles.btnText}>Modifier</Text>
-                  </TouchableOpacity>
+      <FlatList
+        data={ordonnances}
+        keyExtractor={(o) => o._id}
+        contentContainerStyle={{ padding: 16 }}
+        ListEmptyComponent={
+          <Text>{t("doctor.medicalRecords.noPrescriptions")}</Text>
+        }
+        renderItem={({ item }) => {
+          const rdvDate =
+            typeof item.RendezVousId === "object"
+              ? new Date(item.RendezVousId.date).toLocaleDateString()
+              : t("doctor.medicalRecords.unavailableDate");
+          console.log(item.RendezVousId.lieu);
+          return (
+            <View style={styles.card}>
+              <Text style={styles.date}>
+                {t("doctor.medicalRecords.rdvDate")} {rdvDate}
+              </Text>
+              <Text style={styles.nature}>{item.natureMaladie}</Text>
+              <View style={styles.row}>
+                <TouchableOpacity
+                  style={styles.btn}
+                  onPress={() =>
+                    nav.navigate("AddOrdonnanceScreen", {
+                      ordonnanceId: item._id,
+                    })
+                  }
+                >
+                  <AntDesign name="edit" size={16} color="white" />
+                  <Text style={styles.btnText}>
+                    {t("doctor.medicalRecords.edit")}
+                  </Text>
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={[styles.btn, { backgroundColor: "crimson" }]}
-                    onPress={() => handleDelete(item._id)}
-                  >
-                    <AntDesign name="delete" size={16} color="white" />
-                    <Text style={styles.btnText}>Supprimer</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity
+                  style={[styles.btn, { backgroundColor: "crimson" }]}
+                  onPress={() => handleDelete(item._id)}
+                >
+                  <AntDesign name="delete" size={16} color="white" />
+                  <Text style={styles.btnText}>
+                    {t("doctor.medicalRecords.delete")}
+                  </Text>
+                </TouchableOpacity>
               </View>
-            );
-          }}
-        />
+            </View>
+          );
+        }}
+      />
     </View>
   );
 }

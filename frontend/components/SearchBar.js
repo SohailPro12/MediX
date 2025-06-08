@@ -1,17 +1,15 @@
 import React from "react";
 import { View, TextInput, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 const SearchBar = () => {
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
-       
-        <TextInput
-          style={styles.input}
-          placeholder="Rechercher"  
-        /> 
+        <TextInput style={styles.input} placeholder={t("common.search")} />
         <Ionicons name="search" size={20} color="gray" />
       </View>
     </View>
@@ -25,13 +23,13 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor:"white",
+    backgroundColor: "white",
     borderRadius: 26,
     paddingHorizontal: 10,
     paddingVertical: 5,
     marginBottom: 10,
   },
-  input: {  
+  input: {
     flex: 1,
     marginLeft: 10,
   },

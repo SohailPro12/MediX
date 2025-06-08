@@ -1,46 +1,55 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Alert } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
-import { API_URL } from '../config';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
+import { useNavigation } from "@react-navigation/native";
+import { useTranslation } from "react-i18next";
+import { API_URL } from "../config";
 
 const ProblemDetailsScreen = ({ route }) => {
   const { user } = route.params;
   const navigation = useNavigation();
+  const { t } = useTranslation();
 
   const markAsSolved = async () => {
     try {
       const res = await fetch(`${API_URL}/api/problems/${user._id}/solve`, {
-        method: 'PATCH',
+        method: "PATCH",
       });
       if (res.ok) {
-        Alert.alert('Succès', 'Marqué comme résolu');
+        Alert.alert(t("alerts.success"), t("problems.markedAsSolved"));
         navigation.goBack();
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Erreur', "Impossible de marquer comme résolu.");
+      Alert.alert(t("alerts.error"), t("common.genericError"));
     }
   };
 
   const deleteProblem = async () => {
-    Alert.alert("Confirmation", "Supprimer ce problème ?", [
-      { text: "Annuler", style: "cancel" },
+    Alert.alert(t("problems.confirmDelete"), t("problems.deleteConfirmation"), [
+      { text: t("common.cancel"), style: "cancel" },
       {
-        text: "Supprimer",
+        text: t("problems.delete"),
         style: "destructive",
         onPress: async () => {
           try {
             const res = await fetch(`${API_URL}/api/problems/${user._id}`, {
-              method: 'DELETE',
+              method: "DELETE",
             });
             if (res.ok) {
-              Alert.alert('Supprimé', 'Le problème a été supprimé');
+              Alert.alert(t("alerts.deleted"), t("problems.problemDeleted"));
               navigation.goBack();
             }
           } catch (error) {
             console.error(error);
-            Alert.alert('Erreur', "Échec de la suppression.");
+            Alert.alert(t("alerts.error"), t("common.genericError"));
           }
         },
       },
@@ -62,12 +71,17 @@ const ProblemDetailsScreen = ({ route }) => {
 
         {!user.solved && (
           <TouchableOpacity style={styles.button} onPress={markAsSolved}>
-            <Text style={styles.buttonText}>✅ Marquer comme résolu</Text>
+            <Text style={styles.buttonText}>
+              ✅ {t("problems.markAsSolved")}
+            </Text>
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={[styles.button, { backgroundColor: '#ff4d4d' }]} onPress={deleteProblem}>
-          <Text style={styles.buttonText}>🗑 Supprimer</Text>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#ff4d4d" }]}
+          onPress={deleteProblem}
+        >
+          <Text style={styles.buttonText}>🗑 {t("problems.delete")}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -77,7 +91,7 @@ const ProblemDetailsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: "#f9f9f9",
     paddingHorizontal: 16,
     paddingTop: 16,
   },
@@ -86,16 +100,16 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
+    fontWeight: "bold",
+    color: "#333",
+    textAlign: "center",
   },
   content: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 16,
     borderRadius: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
@@ -103,26 +117,26 @@ const styles = StyleSheet.create({
   },
   role: {
     fontSize: 16,
-    color: '#888',
-    fontWeight: '500',
+    color: "#888",
+    fontWeight: "500",
     marginBottom: 8,
   },
   message: {
     fontSize: 16,
-    color: '#555',
+    color: "#555",
     lineHeight: 22,
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#1abc9c',
+    backgroundColor: "#1abc9c",
     padding: 14,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
   },
 });
