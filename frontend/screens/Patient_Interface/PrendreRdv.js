@@ -34,7 +34,6 @@ const PrendreRdv = () => {
 
   const route = useRoute();
   const doctorInfo = route.params;
-
   const dayNames = [
     t("patient.bookAppointment.days.sunday"),
     t("patient.bookAppointment.days.monday"),
@@ -45,15 +44,36 @@ const PrendreRdv = () => {
     t("patient.bookAppointment.days.saturday"),
   ];
 
+  // Map backend day names to frontend day names
+  const mapBackendDayToFrontend = (backendDay) => {
+    const dayMapping = {
+      'dimanche': t("patient.bookAppointment.days.sunday"),
+      'lundi': t("patient.bookAppointment.days.monday"),
+      'mardi': t("patient.bookAppointment.days.tuesday"),
+      'mercredi': t("patient.bookAppointment.days.wednesday"),
+      'jeudi': t("patient.bookAppointment.days.thursday"),
+      'vendredi': t("patient.bookAppointment.days.friday"),
+      'samedi': t("patient.bookAppointment.days.saturday"),
+    };
+    return dayMapping[backendDay.toLowerCase()] || backendDay;
+  };
+
   // Noms des jours de la semaine
   const generateAllAvailableSlots = () => {
     const allSlots = {};
+    
+    // Use disponibilite (backend field) or availability (frontend field)
+    const availability = doctorInfo.disponibilite || doctorInfo.availability || [];
 
-    doctorInfo.availability?.forEach((availability) => {
-      const day = availability.jour;
-      console.log(day);
+    availability.forEach((availability) => {
+      const backendDay = availability.jour;
+      const frontendDay = mapBackendDayToFrontend(backendDay);
+      console.log(`Backend day: ${backendDay}, Frontend day: ${frontendDay}`);
 
-      if (!dayNames.includes(day)) return; // Sécurité
+      if (!dayNames.includes(frontendDay)) {
+        console.warn(`Day ${frontendDay} not found in dayNames`);
+        return; // Sécurité
+      }
 
       const [startHour, startMinute] = availability.heureDebut
         .split(":")
@@ -75,7 +95,7 @@ const PrendreRdv = () => {
         slots.push(slot);
       }
 
-      allSlots[day] = slots;
+      allSlots[frontendDay] = slots;
     });
 
     return allSlots;
@@ -109,10 +129,10 @@ const PrendreRdv = () => {
       const date = new Date(currentYear, currentMonth, day);
       const isToday = date.toDateString() === today.toDateString();
       const isPast = date < today && !isToday;
-      const isSelected = date.toDateString() === selectedDate.toDateString();
-      const dayName = dayNames[date.getDay()];
+      const isSelected = date.toDateString() === selectedDate.toDateString();      const dayName = dayNames[date.getDay()];
+      const availability = doctorInfo.disponibilite || doctorInfo.availability || [];
       const isAvailable =
-        !isPast && doctorInfo.availability?.some((d) => d.jour === dayName);
+        !isPast && availability.some((d) => mapBackendDayToFrontend(d.jour) === dayName);
 
       calendarDays.push({
         day,
@@ -192,11 +212,11 @@ const PrendreRdv = () => {
       if (response.ok) {
         setShowAlert(true); // Affiche le modal    } else {
         const errorData = await response.json();
-        alert(t("patient.bookAppointment.error") + errorData.message);
+        alert(t("patient.bookAppointment.errors.booking") + errorData.message);
       }
     } catch (error) {
       console.error(error);
-      alert(t("patient.bookAppointment.errorOccurred"));
+      alert(t("patient.bookAppointment.errors.occurred"));
     }
   };
 
@@ -206,10 +226,9 @@ const PrendreRdv = () => {
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         {/* Carte du médecin */}
         <View style={styles.doctorCard}>
-          <View style={styles.doctorRow}>
-            {doctorInfo.imageUrl ? (
+          <View style={styles.doctorRow}>            {doctorInfo.image || doctorInfo.Photo ? (
               <Image
-                source={{ uri: doctorInfo.imageUrl }}
+                source={{ uri: doctorInfo.image || doctorInfo.Photo }}
                 style={styles.doctorImage}
               />
             ) : (
@@ -219,15 +238,21 @@ const PrendreRdv = () => {
               />
             )}
             <View style={{ flex: 1 }}>
-              <Text style={styles.doctorName}>{doctorInfo.name}</Text>
-              <Text style={styles.doctorSpecialty}>{doctorInfo.specialty}</Text>
+              <Text style={styles.doctorName}>
+                {doctorInfo.name || `Dr. ${doctorInfo.nom || ""} ${doctorInfo.prenom || ""}`.trim()}
+              </Text>
+              <Text style={styles.doctorSpecialty}>
+                {doctorInfo.specialty || doctorInfo.specialite}
+              </Text>
               <View style={styles.locationRow}>
                 <FontAwesome name="map-marker" size={16} color="#666" />
-                <Text style={styles.locationText}>{doctorInfo.address}</Text>
+                <Text style={styles.locationText}>
+                  {doctorInfo.address || doctorInfo.adresse}
+                </Text>
               </View>
             </View>
           </View>
-        </View>{" "}
+        </View>
         {/* Sélection de date */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -283,7 +308,7 @@ const PrendreRdv = () => {
               </View>
             ))}
           </View>
-        </View>{" "}
+        </View>
         {/* Sélection des horaires */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -310,7 +335,7 @@ const PrendreRdv = () => {
                     {slot}
                   </Text>
                 </TouchableOpacity>
-              ))}{" "}
+              ))}
             </View>
           ) : (
             <Text style={styles.noSlotsText}>
@@ -330,7 +355,7 @@ const PrendreRdv = () => {
             style={styles.textInput}
             value={nom}
             onChangeText={setNom}
-          />{" "}
+          />
           <Text style={styles.label}>
             {t("patient.bookAppointment.form.firstName")}
           </Text>
@@ -366,7 +391,7 @@ const PrendreRdv = () => {
             value={mail}
             onChangeText={setMail}
           />
-        </View>{" "}
+        </View>
         {/* Motif de consultation */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
@@ -407,7 +432,6 @@ const PrendreRdv = () => {
         transparent={true}
         onRequestClose={() => setShowAlert(false)}
       >
-        {" "}
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>
@@ -419,7 +443,7 @@ const PrendreRdv = () => {
                 date: selectedDate.toLocaleDateString(),
                 time: selectedTimeSlot,
               })}
-            </Text>{" "}
+            </Text>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => {

@@ -2,6 +2,7 @@ const Conversation = require('../models/Conversation');
 const fs           = require('fs');
 const path         = require('path');
 const cloudinary   = require('../config/cloudinary');
+const url = require('url');
 
 exports.getConversations = async (req, res) => {
   try {
@@ -123,13 +124,19 @@ exports.sendMessageDocument = async (req, res) => {
 
   // Upload with filename preservation
   const folder = `medix/conversations/${patientId}_${medecinId}/docs`;
+  
+  // Extract filename without extension and extension separately
+  const originalName = file.originalname;
+  const nameWithoutExt = path.parse(originalName).name;
+  const extension = path.parse(originalName).ext;
+  
   const result = await cloudinary.uploader.upload(file.path, {
     folder,
     resource_type: 'raw',
+    public_id: nameWithoutExt, // Use original name as public_id
     use_filename: true,          // Preserve filename
     unique_filename: false,      // Don't add unique identifiers
-    overwrite: false,            // Prevent overwrites
-    content_disposition: `attachment; filename="${path.parse(file.originalname).name}"` // Force download
+    overwrite: false,            // Prevent overwrites - will add suffix if duplicate
   });
 
   fs.unlinkSync(file.path);
@@ -208,15 +215,27 @@ exports.deleteMessage = async (req, res) => {
 
     // Si c'est un média, on supprime d'abord le fichier Cloudinary
     if (msg.type !== 'text' && msg.url) {
-      const parsed = url.parse(msg.url).pathname;            // e.g. /v1234/folder/abc.jpg
-      const parts = parsed.split('/');
-      const versionAndFolder = parts.slice(parts.indexOf('upload') + 1);
-      const publicIdWithExt = versionAndFolder.join('/');
-      const publicId = publicIdWithExt.replace(/\.[^/.]+$/, '');
+      const parsedUrl = url.parse(msg.url);
+      const pathname = parsedUrl.pathname; 
+      const uploadIndex = pathname.indexOf('/upload/');
+      if (uploadIndex >= 0) {
+        let publicIdWithVersion = pathname.substring(uploadIndex + 8);
+        publicIdWithVersion = publicIdWithVersion.replace(/^v[0-9]+\//, '');
+        const publicId = publicIdWithVersion.replace(/\.[^/.]+$/, '');
 
-      await cloudinary.uploader.destroy(publicId, {
-        resource_type: msg.type === 'audio' ? 'video' : msg.type  // “video” pour les audios
-      });
+            let resourceType = 'image';
+            if (msg.type === 'audio') {
+              resourceType = 'video';
+            } else if (msg.type === 'document') {
+              resourceType = 'raw';
+            } else {
+              resourceType = msg.type;
+          }
+
+          await cloudinary.uploader.destroy(publicId, {
+            resource_type: resourceType,
+          });
+      }
     }
 
     // On enlève le message et on sauve

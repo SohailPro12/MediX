@@ -57,7 +57,7 @@ export default function CardRdv({ item }) {
             <Text style={styles.patientName}>{item.patientName}</Text>
             <Text style={styles.appointmentType}>{item.type}</Text>
           </View>
-        </View>{" "}
+        </View>
         <View
           style={[
             styles.statusIndicator,
@@ -84,7 +84,6 @@ export default function CardRdv({ item }) {
       </View>
 
       <View style={styles.actionButtons}>
-        {" "}
         <TouchableOpacity
           style={[styles.actionButton, styles.messageButton]}
           onPress={() => console.log(`Message à ${item.patientName}`)}

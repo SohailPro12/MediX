@@ -212,7 +212,7 @@ const AppointmentCalendar = () => {
             })}
           </View>
         ))}
-      </View>{" "}
+      </View>
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>

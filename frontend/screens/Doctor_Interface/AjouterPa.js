@@ -160,7 +160,7 @@ const AjouterPa = () => {
           }}
           style={styles.input}
         />
-      ))}{" "}
+      ))}
       <View style={styles.checkboxContainer}>
         <Checkbox
           status={checked ? "checked" : "unchecked"}

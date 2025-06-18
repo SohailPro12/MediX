@@ -113,7 +113,7 @@ const App = () => {
       <Header param={t("patient.searchDoctor.title")} rja3="DashboardPatient" />
       <ScrollView style={styles.container}>
         {/* Search Bar */}
-    
+
         {/* Categories */}
         <View style={styles.categoriesContainer}>
           {categories.map((category) => {
@@ -150,7 +150,7 @@ const App = () => {
               </TouchableOpacity>
             );
           })}
-        </View>{" "}
+        </View>
         {/* Doctors List */}
         <Text style={styles.sectionTitle}>
           {t("patient.searchDoctor.availableDoctors")}

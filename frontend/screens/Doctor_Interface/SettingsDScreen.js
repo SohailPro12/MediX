@@ -86,7 +86,7 @@ const SettingsDScreen = ({ navigation }) => {
             />
           ))}
         </View>
-      </View>{" "}
+      </View>
       <View style={styles.menu}>
         <TouchableOpacity
           style={styles.menuItem}

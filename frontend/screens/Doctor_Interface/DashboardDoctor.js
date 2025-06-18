@@ -70,7 +70,7 @@ const Dashboard = () => {
             onPress={() => navigation.navigate("NextRdv")}
             activeOpacity={0.8}
           >
-            {" "}
+            
             <StatCard
               icon="calendar-alt"
               label={t("doctor.dashboard.nextAppointment")}
@@ -84,7 +84,7 @@ const Dashboard = () => {
             onPress={() => navigation.navigate("PatientSuivi")}
             activeOpacity={0.8}
           >
-            {" "}
+            
             <StatCard
               icon="user-friends"
               label={t("doctor.dashboard.totalPatients")}
@@ -127,7 +127,7 @@ const Dashboard = () => {
             onPress={() => navigation.navigate("Disponibilites")}
             activeOpacity={0.8}
           >
-            {" "}
+            
             <StatCard
               icon="clock"
               label={t("doctor.calendar.availability")}

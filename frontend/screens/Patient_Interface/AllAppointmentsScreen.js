@@ -102,11 +102,15 @@ export default function AllAppointmentsScreen({ navigation }) {
       setError(t("patient.appointments.ratingFailed"));
     }
   };
-
   const filteredAppointments = appointments.filter((app) => {
     if (!app.date || !app.time) return false;
 
-    const appointmentDate = new Date(app.date);
+    // Parse the French date format (DD/MM/YYYY) and time (HH:MM)
+    const [day, month, year] = app.date.split('/').map(Number);
+    const [hours, minutes] = app.time.split(':').map(Number);
+    
+    // Create a proper Date object
+    const appointmentDate = new Date(year, month - 1, day, hours, minutes);
     const now = new Date();
 
     if (selectedTab === "upcoming") {
@@ -120,20 +124,22 @@ export default function AllAppointmentsScreen({ navigation }) {
     const isCompleted = selectedTab === "completed";
 
     return (
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
+      <View style={styles.card}>        <View style={styles.cardHeader}>
           <View style={styles.doctorInfo}>
             <Image
-              source={item.doctor?.image || require("../../assets/doctor.png")}
+              source={
+                item.Image 
+                  ? { uri: item.Image } 
+                  : require("../../assets/doctor.png")
+              }
               style={styles.doctorImage}
             />
             <View style={styles.doctorDetails}>
               <Text style={styles.doctorName}>
-                {item.doctor?.name || t("patient.appointments.unknownDoctor")}
+                {item.name || t("patient.appointments.unknownDoctor")}
               </Text>
               <Text style={styles.doctorSpecialty}>
-                {item.doctor?.specialty ||
-                  t("patient.appointments.unknownSpecialty")}
+                {item.specialty || t("patient.appointments.unknownSpecialty")}
               </Text>
             </View>
           </View>
@@ -169,7 +175,7 @@ export default function AllAppointmentsScreen({ navigation }) {
             </View>
             {!isCompleted && (
               <Text style={styles.statusText}>
-                {t("patient.appointments.status")}:{" "}
+                {t("patient.appointments.status")}:
                 {item.status === "confirmed"
                   ? t("patient.appointments.confirmed")
                   : t("patient.appointments.pending")}

@@ -86,7 +86,7 @@ export default function MonDossierMedical() {
                 {new Date(ord.date).toLocaleDateString()}
               </Text>
             </View>
-          </View>{" "}
+          </View>
           <TouchableOpacity
             style={styles.infoButton}
             onPress={() => setSelected(ord)}
@@ -129,7 +129,6 @@ export default function MonDossierMedical() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              {" "}
               <ScrollView>
                 <Text style={styles.modalTitle}>
                   {t("patient.medicalRecord.medications")}
@@ -146,20 +145,20 @@ export default function MonDossierMedical() {
                       <View>
                         <Text style={styles.detailText}>
                           <Text style={styles.bold}>
-                            {t("patient.medicalRecord.name")}:{" "}
+                            {t("patient.medicalRecord.name")}:
                           </Text>
                           {m.nom}
                         </Text>
                         <Text style={styles.detailText}>
                           <Text style={styles.bold}>
-                            {t("patient.medicalRecord.dosage")}:{" "}
+                            {t("patient.medicalRecord.dosage")}:
                           </Text>
                           {m.dosage}
                         </Text>
                         {m.periods?.length > 0 && (
                           <Text style={styles.detailText}>
                             <Text style={styles.bold}>
-                              {t("patient.medicalRecord.periods")}:{" "}
+                              {t("patient.medicalRecord.periods")}:
                             </Text>
                             {m.periods.join(", ")}
                           </Text>

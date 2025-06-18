@@ -10,7 +10,6 @@ const PatientItem = ({ patient }) => {
   const [modalVisible, setModalVisible] = useState(false);
   return (
     <Card style={styles.card}>
-      {" "}
       <Card.Title
         title={`${patient.nom} ${patient.prenom}`}
         subtitle={`${t("doctor.patientCard.fileNumber")}: ${

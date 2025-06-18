@@ -41,7 +41,8 @@ useEffect(() => {
       });
       if (!res.ok) throw new Error("Échec chargement");
       const data = await res.json();
-
+      
+      console.log("Données des conversations:", data); // Ajoutez ceci
       setConversations(data);
     } catch (err) {
       console.error(err);
@@ -64,16 +65,51 @@ useEffect(() => {
   }
 
 const renderItem = ({ item }) => {
-  const isDoctor = userRole === 'medecin';
-console.log("userRole", userRole);
-  const otherUser = isDoctor ? item.patientId : item.medecinId;
-  const lastMsg = item.messages[item.messages.length - 1];
-  const unreadCount = item.messages.filter(m => !m.seen && m.receiver.toString() === userId).length;
+  console.log("Item complet:", item);
 
-  const profileImage = (otherUser.photo || otherUser.Photo) && (otherUser.photo || otherUser.Photo) !== "photo"
+  const isDoctor = userRole === 'medecin';
+  const otherUser = isDoctor ? item.patientId : item.medecinId;
+  
+  const messages = Array.isArray(item.messages) ? item.messages : [];
+  const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+  
+  // Fonction pour déterminer le texte à afficher selon le type de message
+  const getMessagePreview = (msg) => {
+    if (!msg) return "Aucun message";
+    
+    // Si c'est un message texte normal
+    if (msg.message || msg.content || msg.text) {
+      return msg.message || msg.content || msg.text;
+    }
+    
+    // Si c'est une image
+    if (msg.imageUrl || msg.type === 'image') {
+      return "📷 Photo";
+    }
+    
+    // Si c'est un document
+    if (msg.documentUrl || msg.type === 'document') {
+      return "📄 Document";
+    }
+    
+    // Si c'est un audio
+    if (msg.audioUrl || msg.type === 'audio') {
+      return "🎤 Message vocal";
+    }
+    
+    // Cas par défaut
+    return "Aucun message";
+  };
+
+  const messagePreview = getMessagePreview(lastMsg);
+  const unreadCount = messages.filter(m => 
+    m && !m.seen && m.receiver?.toString() === userId
+  ).length;
+
+  const profileImage = (otherUser.photo || otherUser.Photo) && 
+                      (otherUser.photo || otherUser.Photo) !== "photo"
     ? { uri: otherUser.photo || otherUser.Photo }
     : null;
-console.log("profileimage", profileImage);
   return (
 
     <TouchableOpacity
@@ -95,7 +131,7 @@ console.log("profileimage", profileImage);
       <View style={styles.textContainer}>
         <Text style={styles.name}>{otherUser.nom} {otherUser.prenom}</Text>
         <Text style={styles.message} numberOfLines={1}>
-          {lastMsg?.message || "Aucun message"}
+          {messagePreview}
         </Text>
       </View>
 
@@ -110,7 +146,11 @@ console.log("profileimage", profileImage);
 
   return (
     <View style={styles.container}>
-      <Header name="Messagerie" screen="DashboardDoctor" />
+      {userRole === 'medecin' ? (
+        <Header name="Messagerie" screen="DashboardDoctor" />
+      ) : (
+        <Header name="Messagerie" screen="DashboardPatient" />
+      )}
       <SearchBar searchplacehoder="Rechercher..." />
       <FlatList
         data={conversations}

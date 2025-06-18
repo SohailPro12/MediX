@@ -42,15 +42,14 @@ const OrdonnanceView = ({ ordonnance, onClose }) => {
                 <View style={styles.detailRow}>
                   <FontAwesome5 name="calendar-alt" size={14} color="#64748b" />
                   <Text style={styles.detailText}>
-                    {t("patient.prescription.until")}{" "}
+                    {t("patient.prescription.until")}
                     {new Date(med.endDate).toLocaleDateString("fr-FR")}
                   </Text>
                 </View>
                 <View style={styles.detailRow}>
                   <FontAwesome5 name="clock" size={14} color="#64748b" />
                   <Text style={styles.detailText}>
-                    {t("patient.prescription.intake")}:{" "}
-                    {med.periods?.join(", ")}
+                    {t("patient.prescription.intake")}:{med.periods?.join(", ")}
                   </Text>
                 </View>
               </View>
@@ -82,8 +81,8 @@ const OrdonnanceView = ({ ordonnance, onClose }) => {
             <Text style={styles.text}>{ordonnance.traitement.description}</Text>
             {ordonnance.traitement.duration && (
               <Text style={styles.duration}>
-                {t("patient.prescription.duration")}:{" "}
-                {ordonnance.traitement.duration}{" "}
+                {t("patient.prescription.duration")}:
+                {ordonnance.traitement.duration}
                 {t("patient.prescription.days")}
               </Text>
             )}

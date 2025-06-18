@@ -26,9 +26,76 @@
     "patients": "Patients",
     "appointments": "Rendez-vous",
     "calendar": "Calendrier",
-    "profile": "Profil",
-    "settings": "Paramètres",
-    "logout": "Déconnexion"  },  "admin": {
+    "profile": "Profil",    "settings": "Paramètres",
+    "logout": "Déconnexion"
+  },
+  "alerts": {
+    "deleteAccountButton": "Supprimer le compte",
+    "permissionDenied": "Permission refusée",
+    "galleryAccess": "Accès à la galerie requis"
+  },  "problems": {
+    "title": "Problèmes techniques",
+    "filters": {
+      "allRoles": "Tous les rôles",
+      "descending": "Décroissant",
+      "ascending": "Croissant",
+      "patient": "Patient",
+      "doctor": "Doctor"
+    }
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "availability": "Disponibilité",
+    "setAvailability": "Définir la disponibilité",
+    "tapToSelect": "Appuyez pour sélectionner",
+    "selectDate": "Sélectionner une date",
+    "timeSlots": "Créneaux horaires",
+    "appointmentTable": "Tableau des rendez-vous",
+    "week": "Semaine",
+    "patientId": "ID Patient",
+    "doctorId": "ID Médecin",
+    "time": "Heure",
+    "location": "Lieu",
+    "notes": "Notes",
+    "none": "Aucune",
+    "consultationsFor": "Consultations pour",
+    "noConsultations": "Aucune consultation trouvée",
+    "timeSlotLabels": {
+      "morning": "Matin",
+      "noon": "Midi",
+      "afternoon": "Après-midi",
+      "evening": "Soir"
+    },
+    "days": {
+      "monday": "Lun",
+      "tuesday": "Mar",
+      "wednesday": "Mer",
+      "thursday": "Jeu",
+      "friday": "Ven",
+      "saturday": "Sam",
+      "sunday": "Dim"
+    },
+    "months": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    },
+    "modal": {
+      "title": "Action sur le rendez-vous",
+      "addPrescription": "Ajouter une ordonnance",
+      "editPrescription": "Modifier l'ordonnance"
+    }
+  },
+  "admin": {
     "title": "MedIX Admin",
     "general": "Général",
     "doctorsList": "Liste des médecins",
@@ -60,6 +127,84 @@
     "noDescription": "Aucune description disponible",
     "noFormation": "Aucune formation disponible",
     "noExperience": "Aucune expérience disponible",
+    "form": {
+      "lastName": "Nom",
+      "firstName": "Prénom",
+      "cin": "CIN",
+      "email": "Email",
+      "phone": "Téléphone",
+      "specialty": "Spécialité",
+      "licenseNumber": "Numéro de licence",
+      "password": "Mot de passe",
+      "placeholders": {
+        "lastName": "Entrez le nom de famille",
+        "firstName": "Entrez le prénom",
+        "cin": "Entrez le numéro CIN",
+        "email": "Entrez l'adresse email",
+        "phone": "Entrez le numéro de téléphone",
+        "specialty": "Entrez la spécialité médicale",
+        "licenseNumber": "Entrez le numéro de licence",
+        "password": "Entrez le mot de passe",
+        "confirmPassword": "Confirmez le mot de passe"
+      }
+    },
+    "validation": {
+      "allFieldsRequired": "Veuillez remplir tous les champs obligatoires",
+      "invalidEmail": "Veuillez entrer une adresse email valide",
+      "passwordMismatch": "Les mots de passe ne correspondent pas",
+      "emailExists": "Un médecin avec cette adresse email existe déjà"
+    },    "success": {
+      "accountCreated": "Compte médecin créé avec succès",
+      "addingInProgress": "Ajout en cours..."
+    },
+    "editProfile": {
+      "title": "Modifier le profil",
+      "specialist": "Spécialiste",
+      "uploading": "Téléchargement...",
+      "changePhoto": "Changer la photo",
+      "editButton": "Modifier le profil",
+      "successMessage": "Profil mis à jour avec succès",
+      "updateError": "Erreur lors de la mise à jour du profil",
+      "reloadError": "Erreur lors du rechargement des données",
+      "permission": {
+        "title": "Permission requise",
+        "message": "L'accès à la galerie est nécessaire pour sélectionner une photo"
+      },
+      "about": {
+        "title": "À propos",
+        "placeholder": "Décrivez votre parcours professionnel...",
+        "empty": "Aucune description disponible"
+      },
+      "education": {
+        "title": "Formation",
+        "placeholder": "Ajoutez votre formation...",
+        "add": "Ajouter une formation",
+        "empty": "Aucune formation ajoutée"
+      },
+      "experience": {
+        "title": "Expérience",
+        "placeholder": "Ajoutez votre expérience...",
+        "add": "Ajouter une expérience",        "empty": "Aucune expérience ajoutée"
+      }
+    },
+    "medicalRecords": {
+      "title": "Dossiers médicaux",
+      "loadError": "Erreur lors du chargement des dossiers médicaux",
+      "noPrescriptions": "Aucune ordonnance trouvée",
+      "unavailableDate": "Date non disponible",
+      "rdvDate": "Date du rendez-vous :",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleteConfirmation": {
+        "title": "Confirmer la suppression",
+        "message": "Êtes-vous sûr de vouloir supprimer ce dossier médical ?",
+        "cancel": "Annuler",
+        "delete": "Supprimer"
+      },
+      "errors": {
+        "deleteError": "Erreur lors de la suppression du dossier médical"
+      }
+    },
     "dashboard": {
       "title": "Tableau de bord médecin",
       "welcome": "Bienvenue",
@@ -207,18 +352,22 @@
         "addPatient": "Ajouter un patient",
         "reportProblem": "Signaler un problème",
         "language": "Langue"
-      },
-      "language": {
+      },      "language": {
         "title": "Choisir la langue",
         "french": "Français",
         "english": "English",
         "arabic": "العربية",
-        "current": "Langue actuelle"      }
-    },
-    "calendar": {
+        "current": "Langue actuelle"
+      }
+    },    "navigation": {
+      "messages": "Messages",
+      "reminders": "Rappels",
+      "profile": "Profil"
+    },    "calendar": {
       "title": "Calendrier",
       "availability": "Disponibilité",
       "setAvailability": "Définir la disponibilité",
+      "tapToSelect": "Appuyez pour sélectionner",
       "selectDate": "Sélectionner une date",
       "timeSlots": "Créneaux horaires",
       "appointmentTable": "Tableau des rendez-vous",
@@ -229,14 +378,13 @@
         "afternoon": "Après-midi",
         "evening": "Soir"
       },
-      "days": {
-        "monday": "Lun",
-        "tuesday": "Mar",
-        "wednesday": "Mer",
-        "thursday": "Jeu",
-        "friday": "Ven",
-        "saturday": "Sam",
-        "sunday": "Dim"
+      "days": {        "monday": "Lundi",
+        "tuesday": "Mardi",
+        "wednesday": "Mercredi",
+        "thursday": "Jeudi",
+        "friday": "Vendredi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche"
       },
       "months": {
         "january": "Janvier",
@@ -251,17 +399,7 @@
         "october": "Octobre",
         "november": "Novembre",
         "december": "Décembre"
-      },
-      "modal": {
-        "title": "Action sur le rendez-vous",
-        "addPrescription": "Ajouter une ordonnance",
-        "editPrescription": "Modifier l'ordonnance"
       }
-    },
-    "navigation": {
-      "messages": "Messages",
-      "reminders": "Rappels",
-      "profile": "Profil"
     },
     "availabilitySchedule": {
       "title": "Choisir vos jours et heures disponibles",
@@ -337,20 +475,23 @@
       },
       "availableDoctors": "Médecins disponibles",
       "noDoctorsFound": "Aucun médecin trouvé pour cette spécialité"
-    },
-    "bookAppointment": {
+    },    "bookAppointment": {
       "title": "Prendre rendez-vous",
       "selectDate": "Sélectionner une date",
       "selectTime": "Sélectionner l'heure",
       "availableSlots": "Créneaux disponibles",
+      "noSlotsAvailable": "Aucun créneau disponible pour cette date",
       "appointmentDetails": "Détails du rendez-vous",
       "reason": "Motif de consultation",
       "reasonPlaceholder": "Décrivez brièvement votre motif de consultation",
+      "consultationReason": "Motif de consultation",
       "location": "Lieu",
       "locationPlaceholder": "Adresse du rendez-vous",
       "description": "Description (optionnel)",
       "descriptionPlaceholder": "Informations supplémentaires",
       "bookAppointment": "Réserver le rendez-vous",
+      "confirmAppointment": "Confirmer le rendez-vous",
+      "myInfo": "Mes informations",
       "days": {
         "monday": "Lundi",
         "tuesday": "Mardi",
@@ -379,21 +520,37 @@
         "message": "Votre rendez-vous a été réservé avec succès !",
         "appointmentWith": "Rendez-vous avec",
         "on": "le",
-        "at": "à",
-        "ok": "OK"
+        "at": "à",        "ok": "OK"
+      },      "form": {
+        "lastName": "Nom",
+        "firstName": "Prénom", 
+        "cin": "CIN",
+        "phone": "Téléphone",
+        "email": "Email"
       },
-      "error": {
+      "modal": {
+        "title": "Rendez-vous confirmé",
+        "message": "Votre rendez-vous avec {{doctorName}} le {{date}} à {{time}} a été confirmé avec succès !",
+        "close": "Fermer"
+      },
+      "errors": {
         "title": "Erreur",
         "fillAllFields": "Veuillez remplir tous les champs obligatoires",
-        "tryAgain": "Réessayer"
+        "tryAgain": "Réessayer",
+        "booking": "Erreur lors de la réservation : ",
+        "occurred": "Une erreur est survenue lors de la réservation du rendez-vous"
       }
-    },
-    "myDoctors": {
+    },    "myDoctors": {
       "title": "Mes médecins",
       "loading": "Chargement...",
       "error": "Erreur lors du chargement des médecins",
       "noDoctors": "Aucun médecin dans votre liste",
-      "doctorInfo": "Informations du médecin"
+      "doctorInfo": "Informations du médecin",      "info": "Détails",
+      "message": "Message",
+      "loadError": "Erreur lors du chargement",
+      "httpError": "Erreur HTTP",
+      "retry": "Réessayer",
+      "refresh": "Actualiser"
     },
     "medicalRecord": {
       "title": "Mon dossier médical",
@@ -494,8 +651,7 @@
       "dosage": "Dosage",
       "time": "Heure",
       "duration": "Durée",
-      "reminderActivated": "Rappel activé",
-      "dailyAt": "Chaque jour à {{hour}}h{{minute}}"
+      "reminderActivated": "Rappel activé",      "dailyAt": "Chaque jour à {{hour}}h{{minute}}"
     }
   }
 }

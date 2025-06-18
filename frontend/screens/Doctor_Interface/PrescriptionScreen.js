@@ -168,7 +168,7 @@ const PrescriptionScreen = () => {
             onChangeText={setnature}
             placeholder={t("doctor.prescriptionScreen.diseaseName")}
             style={styles.input}
-          />{" "}
+          />
           <Text>{t("doctor.prescriptionScreen.visitDate")}</Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
@@ -186,7 +186,7 @@ const PrescriptionScreen = () => {
                 if (selectedDate) setVisitDate(selectedDate);
               }}
             />
-          )}{" "}
+          )}
           {/* Médicament */}
           <Text style={styles.sectionTitle}>
             {t("doctor.prescriptionScreen.addMedication")}
@@ -218,7 +218,7 @@ const PrescriptionScreen = () => {
                 if (selectedDate) setNewMedEndDate(selectedDate);
               }}
             />
-          )}{" "}
+          )}
           <Text>{t("doctor.prescriptionScreen.takingPeriods")}</Text>
           <View style={styles.periodsContainer}>
             {[
@@ -250,7 +250,7 @@ const PrescriptionScreen = () => {
                 <Text style={styles.periodText}>{period.label}</Text>
               </TouchableOpacity>
             ))}
-          </View>{" "}
+          </View>
           <Button
             mode="contained"
             onPress={addMedication}
@@ -286,7 +286,7 @@ const PrescriptionScreen = () => {
                 }`}</Text>
               </View>
             )}
-          />{" "}
+          />
           {/* Analyses */}
           <Text style={styles.sectionTitle}>
             {t("doctor.prescriptionScreen.addAnalysis")}
@@ -330,7 +330,7 @@ const PrescriptionScreen = () => {
                 )}
               </View>
             )}
-          />{" "}
+          />
           {/* Traitement */}
           <Text style={styles.sectionTitle}>
             {t("doctor.prescriptionScreen.treatment")}

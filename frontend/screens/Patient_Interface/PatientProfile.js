@@ -261,7 +261,6 @@ const PatientProfile = ({ navigation }) => {
               />
             }
           >
-            {" "}
             <View style={styles.header}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Ionicons name="chevron-back" size={28} color="#5771f9" />
@@ -327,7 +326,7 @@ const PatientProfile = ({ navigation }) => {
                   {formData.mail || t("patient.profile.noEmail")}
                 </Text>
               )}
-            </View>{" "}
+            </View>
             <View style={styles.menu}>
               <TouchableOpacity
                 style={styles.menuItem}

@@ -16,17 +16,18 @@ export default function DoctorInfo({ navigation }) {
   const route = useRoute();
   const passedDoctor = route.params?.doctor;
   console.log("hadchi", passedDoctor);
-  const {
-    name = t("patient.doctorInfo.unknownName"),
-    specialty = t("patient.doctorInfo.unknownSpecialty"),
-    email = t("patient.doctorInfo.notSpecified"),
-    telephone = t("patient.doctorInfo.notSpecified"),
-    address = "",
-    about = t("patient.doctorInfo.noInfoProvided"),
-    image = "",
-    formation,
-    experience,
-  } = passedDoctor || {};
+  
+  // Map backend fields to frontend expected fields
+  const name = passedDoctor?.name || `Dr. ${passedDoctor?.nom || ""} ${passedDoctor?.prenom || ""}`.trim() || t("patient.doctorInfo.unknownName");
+  const specialty = passedDoctor?.specialty || passedDoctor?.specialite || t("patient.doctorInfo.unknownSpecialty");
+  const email = passedDoctor?.email || passedDoctor?.mail || t("patient.doctorInfo.notSpecified");
+  const telephone = passedDoctor?.telephone || t("patient.doctorInfo.notSpecified");
+  const address = passedDoctor?.address || passedDoctor?.adresse || "";
+  const about = passedDoctor?.about || passedDoctor?.description || t("patient.doctorInfo.noInfoProvided");
+  const image = passedDoctor?.image || passedDoctor?.Photo || "";
+  const formation = passedDoctor?.formation || [];
+  const experience = passedDoctor?.experience || [];
+  
   const safeFormation =
     typeof formation === "string"
       ? formation.split(",")
@@ -56,9 +57,12 @@ export default function DoctorInfo({ navigation }) {
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Card style={styles.card}>
-          <Card.Content>
-            <View style={styles.profileHeader}>
-              <Avatar.Image size={120} source={image} style={styles.avatar} />
+          <Card.Content>            <View style={styles.profileHeader}>
+              <Avatar.Image 
+                size={120} 
+                source={image ? { uri: image } : require("../../assets/doctor.jpg")} 
+                style={styles.avatar} 
+              />
               <View style={styles.info}>
                 <Text style={styles.name}>{name}</Text>
                 <Text style={styles.specialty}>{specialty}</Text>

@@ -145,7 +145,7 @@ const AddDoctor = () => {
         onPress={() => navigation.goBack()}
       >
         <Ionicons name="arrow-back" size={28} color="#333" />
-      </TouchableOpacity>{" "}
+      </TouchableOpacity>
       <Text style={styles.title}>{t("doctor.addTitle")}</Text>
       <Text style={styles.subtitle}>{t("doctor.addSubtitle")}</Text>
       <TouchableOpacity
@@ -157,7 +157,7 @@ const AddDoctor = () => {
         ) : (
           <Ionicons name="camera" size={32} color="#aaa" />
         )}
-      </TouchableOpacity>{" "}
+      </TouchableOpacity>
       <Text style={styles.label}>{t("doctor.form.lastName")}</Text>
       <TextInput
         style={styles.input}

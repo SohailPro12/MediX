@@ -146,7 +146,7 @@ const DisponibiliteScreen = () => {
             onPress={() => showTimePicker("from")}
           >
             <Text style={styles.timeText}>
-              {t("doctor.availabilitySchedule.from")} :{" "}
+              {t("doctor.availabilitySchedule.from")} :
               {fromTime.toTimeString().slice(0, 5)}
             </Text>
           </TouchableOpacity>
@@ -155,7 +155,7 @@ const DisponibiliteScreen = () => {
             onPress={() => showTimePicker("to")}
           >
             <Text style={styles.timeText}>
-              {t("doctor.availabilitySchedule.to")} :{" "}
+              {t("doctor.availabilitySchedule.to")} :
               {toTime.toTimeString().slice(0, 5)}
             </Text>
           </TouchableOpacity>
@@ -176,7 +176,7 @@ const DisponibiliteScreen = () => {
               display="default"
               onChange={(e, d) => handleTimeChange(e, d, "to")}
             />
-          )}{" "}
+          )}
           <TouchableOpacity style={styles.saveButton} onPress={saveTimeForDate}>
             <Text style={styles.saveText}>{t("common.save")}</Text>
           </TouchableOpacity>

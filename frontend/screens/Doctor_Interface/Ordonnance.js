@@ -92,11 +92,11 @@ export default function OrdonnanceList({ navigation }) {
   const renderOrdonnance = ({ item }) => (
     <View style={styles.card}>
       <Text style={styles.patientName}>
-        {t("doctor.ordonnances.patient")} : {item.PatientId.nom}{" "}
+        {t("doctor.ordonnances.patient")} : {item.PatientId.nom}
         {item.PatientId.prenom}
       </Text>
       <Text style={styles.date}>
-        {t("doctor.ordonnances.date")} :{" "}
+        {t("doctor.ordonnances.date")} :
         {new Date(item.date).toLocaleDateString()}
       </Text>
       <Text style={styles.cause}>
@@ -178,23 +178,22 @@ export default function OrdonnanceList({ navigation }) {
                 </Text>
                 {selected.traitement && (
                   <View style={styles.subBlock}>
-                    {" "}
                     <Text style={styles.modalText}>
-                      {t("doctor.ordonnances.details.startDate")} :{" "}
+                      {t("doctor.ordonnances.details.startDate")} :
                       {new Date(
                         selected.traitement.dateDebut
                       ).toLocaleDateString()}
                     </Text>
                     {selected.traitement.dateFin && (
                       <Text style={styles.modalText}>
-                        {t("doctor.ordonnances.details.endDate")} :{" "}
+                        {t("doctor.ordonnances.details.endDate")} :
                         {new Date(
                           selected.traitement.dateFin
                         ).toLocaleDateString()}
                       </Text>
                     )}
                     <Text style={styles.modalText}>
-                      {t("doctor.ordonnances.details.observation")} :{" "}
+                      {t("doctor.ordonnances.details.observation")} :
                       {selected.traitement.observation}
                     </Text>
                     {selected.traitement.medicaments.map((m, j) => (
@@ -210,13 +209,12 @@ export default function OrdonnanceList({ navigation }) {
                 </Text>
                 {selected.analyses.map((ana) => (
                   <View key={ana._id} style={styles.subBlock}>
-                    {" "}
                     <Text style={styles.modalText}>
-                      {t("doctor.ordonnances.details.date")} :{" "}
+                      {t("doctor.ordonnances.details.date")} :
                       {new Date(ana.date).toLocaleDateString()}
                     </Text>
                     <Text style={styles.modalText}>
-                      {t("doctor.ordonnances.details.laboratory")} :{" "}
+                      {t("doctor.ordonnances.details.laboratory")} :
                       {ana.laboratoire.nom}
                     </Text>
                     <Text style={styles.modalText}>

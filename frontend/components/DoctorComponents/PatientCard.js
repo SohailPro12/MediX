@@ -25,7 +25,7 @@ const PatientCard = ({ patient, isClickable = true }) => {
             {patient.nom} {patient.prenom}
           </Text>
         </TouchableOpacity>
-        <Text style={styles.role}>{patient.telephone}</Text>{" "}
+        <Text style={styles.role}>{patient.telephone}</Text>
         <Text style={styles.lastVisit}>
           {patient.lastConfirmedAppointment
             ? `${t("doctor.patientCard.lastVisit")}: ${

@@ -70,8 +70,8 @@ const DoctorProfile = ({ route }) => {
             />
             <View style={styles.info}>
               <Text style={styles.name}>
-                Dr. {doctor.nom} {doctor.prenom}{" "}
-              </Text>{" "}
+                Dr. {doctor.nom} {doctor.prenom}
+              </Text>
               <Text style={styles.specialty}>
                 {t(`specialties.${doctor.specialite}`) || doctor.specialite}
               </Text>

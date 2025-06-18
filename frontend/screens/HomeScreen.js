@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import AdminCalendar from "../components/AdminCalendar";
 import DropdownMenu from "../components/DropdownMenu";
 import axios from "axios";
 import { API_URL } from "../config";
+import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -24,60 +25,72 @@ const HomeScreen = ({ navigation }) => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newProblems, setNewProblems] = useState(false); // Track if there are new problems
+  const [newProblems, setNewProblems] = useState(false);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/admin/stats`);
-        setStats(response.data);
-      } catch (err) {
-        setError(t("common.genericError"));
-      } finally {
-        setLoading(false);
-      }
-    };
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-    const checkNewProblems = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/api/problems`, {
-          params: { dateSortOrder: "desc" },
-        });
-
-        if (response.headers["content-type"]?.includes("application/json")) {
-          console.log("Data reçu de /api/problems:", response.data);
-
-          const sevenDaysAgo = new Date();
-          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-          const recentProblems = Array.isArray(response.data)
-            ? response.data.filter(
-                (problem) => new Date(problem.createdAt) > sevenDaysAgo
-              )
-            : [];
-
-          setNewProblems(recentProblems.length > 0);
-        } else {
-          console.error("Unexpected response format:", response.data);
+      const fetchStats = async () => {
+        try {
+          setLoading(true);
+          const response = await axios.get(`${API_URL}/api/admin/stats`);
+          if (isActive) {
+            setStats(response.data);
+            setError(null);
+          }
+        } catch (err) {
+          if (isActive) {
+            setError(t("common.genericError"));
+          }
+        } finally {
+          if (isActive) {
+            setLoading(false);
+          }
         }
-      } catch (err) {
-        console.error("Erreur lors de la récupération des problèmes:", err);
-      }
-    };
+      };
 
-    fetchStats();
-    checkNewProblems();
-  }, []);
+      const checkNewProblems = async () => {
+        try {
+          const response = await axios.get(`${API_URL}/api/problems`, {
+            params: { dateSortOrder: "desc" },
+          });
+
+          if (response.headers["content-type"]?.includes("application/json")) {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+            const recentProblems = Array.isArray(response.data)
+              ? response.data.filter(
+                  (problem) => new Date(problem.createdAt) > sevenDaysAgo
+                )
+              : [];
+
+            if (isActive) {
+              setNewProblems(recentProblems.length > 0);
+            }
+          }
+        } catch (err) {
+          console.error("Erreur lors de la récupération des problèmes:", err);
+        }
+      };
+
+      fetchStats();
+      checkNewProblems();
+
+      return () => {
+        isActive = false;
+      };
+    }, [t])
+  );
 
   const handleNotificationPress = () => {
-    // Navigate to the ProblemesScreen
     navigation.navigate("ProblemesScreen");
-    setNewProblems(false); // Once clicked, mark new problems as seen
+    setNewProblems(false);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Navbar */}
       <View style={styles.navbar}>
         <TouchableOpacity onPress={() => setMenuVisible(true)}>
           <Ionicons name="menu" size={28} color="black" />
@@ -93,28 +106,18 @@ const HomeScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Menu déroulant */}
-      <DropdownMenu
-        visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
-      />
+      <DropdownMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
 
-      {/* Contenu principal */}
       <View style={styles.container}>
         {loading ? (
-          <View
-            style={{ alignItems: "center", justifyContent: "center", flex: 1 }}
-          >
+          <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
             <Ionicons name="hourglass-outline" size={32} color="gray" />
-            <Text style={{ marginTop: 10, color: "gray" }}>
-              {t("common.loading")}...
-            </Text>
+            <Text style={{ marginTop: 10, color: "gray" }}>{t("common.loading")}...</Text>
           </View>
         ) : error ? (
           <Text>{error}</Text>
         ) : (
           <>
-            {" "}
             <View style={styles.statsContainer}>
               <View style={styles.statBox}>
                 <Text style={styles.statNumber}>{stats.totalDoctors}</Text>
@@ -132,7 +135,6 @@ const HomeScreen = ({ navigation }) => {
           </>
         )}
 
-        {/* Calendrier */}
         <AdminCalendar />
       </View>
     </SafeAreaView>

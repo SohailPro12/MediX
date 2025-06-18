@@ -10,14 +10,24 @@ function DoctorCard(med) {
   const navigation = useNavigation();
   const { t } = useTranslation();
   console.log(med);
+  
+  // Map backend day names to frontend day names
+  const mapBackendDayToFrontend = (backendDay) => {
+    const dayMapping = {
+      'dimanche': t("patient.bookAppointment.days.sunday"),
+      'lundi': t("patient.bookAppointment.days.monday"),
+      'mardi': t("patient.bookAppointment.days.tuesday"),
+      'mercredi': t("patient.bookAppointment.days.wednesday"),
+      'jeudi': t("patient.bookAppointment.days.thursday"),
+      'vendredi': t("patient.bookAppointment.days.friday"),
+      'samedi': t("patient.bookAppointment.days.saturday"),
+    };
+    return dayMapping[backendDay.toLowerCase()] || backendDay;
+  };
+  
   const handlePress = () => {
     navigation.navigate("PrendreRdv", {
-      _id,
-      name,
-      specialty,
-      address,
-      availability,
-      image,
+      ...med, // Pass the entire med object with original field names
     });
   };
 
@@ -35,25 +45,23 @@ function DoctorCard(med) {
         <View style={styles.doctorDetails}>
           <Text style={styles.doctorName}>{name}</Text>
           <Text style={styles.doctorSpecialty}>{specialty}</Text>
-          <Text style={styles.doctorAddress}>{address}</Text>
-          <Text style={styles.doctorAvailability}>
-            {availability.map((item, index) => {
-              const jour = item.jour ?? t("patient.doctorCard.unknownDay");
+          <Text style={styles.doctorAddress}>{address}</Text>          <Text style={styles.doctorAvailability}>
+            {(availability || med.disponibilite || []).map((item, index) => {
+              const jour = mapBackendDayToFrontend(item.jour) ?? t("patient.doctorCard.unknownDay");
               const debut = item.heureDebut ?? "??:??";
               const fin = item.heureFin ?? "??:??";
               return `${jour} : ${debut} - ${fin}${
-                index < availability.length - 1 ? "\n" : ""
+                index < (availability || med.disponibilite || []).length - 1 ? "\n" : ""
               }`;
             })}
           </Text>
         </View>
       </View>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
+      <View style={styles.buttonContainer}>        <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() =>
-            navigation.navigate("DoctorInfo", { doctor: { ...med } })
+            navigation.navigate("DoctorInfo", { doctor: med })
           }
         >
           <Ionicons
@@ -62,7 +70,6 @@ function DoctorCard(med) {
             color="#3498db"
           />
           <Text style={styles.secondaryButtonText}>
-            {" "}
             {t("patient.doctorCard.details")}
           </Text>
         </TouchableOpacity>

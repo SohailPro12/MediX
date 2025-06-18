@@ -276,7 +276,7 @@ const AppointmentsList = () => {
                 arrowColor: "#4A90E2",
                 selectedDayBackgroundColor: "#4A90E2",
               }}
-            />{" "}
+            />
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setCalendarVisible(false)}
@@ -312,7 +312,7 @@ const AppointmentsList = () => {
                 )}
                 keyExtractor={(item) => item}
               />
-            )}{" "}
+            )}
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setTimeModalVisible(false)}
@@ -323,7 +323,7 @@ const AppointmentsList = () => {
           </View>
         </View>
       </Modal>
-      {/* Alertes */}{" "}
+      {/* Alertes */}
       <CustomAlert
         visible={confirmAlertVisible}
         type="question"
@@ -352,7 +352,7 @@ const AppointmentsList = () => {
         }
         cancelText={t("common.cancel")}
         confirmDisabled={processing}
-      />{" "}
+      />
       <CustomAlert
         visible={successAlertVisible}
         type="success"
@@ -360,7 +360,7 @@ const AppointmentsList = () => {
         message={t("alerts.appointmentConfirmedMessage")}
         onConfirm={() => setSuccessAlertVisible(false)}
         confirmText={t("common.ok")}
-      />{" "}
+      />
       <CustomAlert
         visible={rescheduleSuccessAlertVisible}
         type="success"

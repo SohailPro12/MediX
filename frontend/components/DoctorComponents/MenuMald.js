@@ -29,7 +29,6 @@ const MenuMald = ({ patient, setSelectedMaladie }) => {
 
   return (
     <View style={styles.menu}>
-      {" "}
       {maladies.length === 0 ? (
         <Text style={styles.noMaladies}>
           {isFirstVisit
@@ -48,7 +47,6 @@ const MenuMald = ({ patient, setSelectedMaladie }) => {
               style={styles.menuItem}
               onPress={() => handlePress(maladie)}
             >
-              {" "}
               <View style={styles.info}>
                 <Text style={styles.name}>
                   {t("doctor.menuMald.diseaseNature")}

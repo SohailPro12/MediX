@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const Medecin = require("../../models/Patient");
 const sendEmail = require("../../utils/sendEmail");
 const Patient = require("../../models/Patient");
+const DossierMedical = require("../../models/Dossier_medical");
 
 exports.addPatient = async (req, res) => {
   console.log("Données reçues:", req.body);
@@ -47,13 +48,36 @@ exports.addPatient = async (req, res) => {
       <a href="${deepLink}">Vérifier l'email</a>
       <p>${deepLink}</p>
       <p>Si vous n'avez pas fait cette demande, ignorez cet email.</p>
-    `;
-
-    // Envoi de l'email
+    `;    // Envoi de l'email
     await sendEmail(data.mail, "Création du compte", emailContent);
-
-    // Sauvegarde du médecin
+    
+    // Sauvegarde du patient
     await newPatient.save();
+    console.log(`✅ Patient ${data.nom} sauvegardé avec l'ID: ${newPatient._id}`);
+    
+    // Création du dossier médical vide pour le nouveau patient
+    try {      const newDossierMedical = new DossierMedical({
+        numero: `DM-${newPatient._id.toString().slice(-8)}`, // Numéro unique basé sur l'ID patient
+        PatientId: newPatient._id,
+        dateCreation: new Date(),
+        dateModification: new Date(),
+        analyses: [],
+        traitemant: [], // Note: keeping the same spelling as in the model
+        ordonnances: []
+      });
+      
+      await newDossierMedical.save();
+      console.log(`✅ Dossier médical créé avec l'ID: ${newDossierMedical._id}`);
+      
+      // Mise à jour du patient avec l'ID du dossier médical
+      newPatient.dossierMedicalId = newDossierMedical._id.toString();
+      await newPatient.save();
+      
+      console.log(`✅ Dossier médical créé pour le patient ${data.nom} avec le numéro: ${newDossierMedical.numero}`);
+    } catch (dossierError) {
+      console.error("❌ Erreur lors de la création du dossier médical:", dossierError);
+      // Le patient a été créé mais pas son dossier médical - on peut continuer
+    }
     
     res.status(201).json({ message: "Compte Patient créé avec succès. Veuillez vérifier votre email." });
   } catch (error) {

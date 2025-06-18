@@ -24,7 +24,6 @@ import { useRoute } from "@react-navigation/native";
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
-
 const timeAgo = (isoDate) => {
   const date = new Date(isoDate);
   const now = new Date();
@@ -76,6 +75,7 @@ const timeAgo = (isoDate) => {
     minute: '2-digit'
   })}`;
 };
+
 export default function ChatScreen() {
   const { patientId, medecinId, otherName } = useRoute().params;
   const flatListRef = useRef();
@@ -106,25 +106,24 @@ export default function ChatScreen() {
       try {
         const res = await fetch(
           `${API_URL}/api/conversations/${patientId}/${medecinId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
-        const convo = await res.json();
-        setMessages(convo.messages || []);
-        // update photo map
-        const map = {};
-        if (convo.patientId) {
-          map[convo.patientId._id] =
-            convo.patientId.Photo || convo.patientId.photo;
-          console.log("patientId", convo.patientId);
+        const data = await res.json();
+        setMessages(data.messages || []);
+
+        // Créer une map des photos des utilisateurs
+        const photoMap = {};
+        if (data.patientId?.photo) {
+          photoMap[data.patientId._id] = data.patientId.photo;
         }
-        if (convo.medecinId) {
-          map[convo.medecinId._id] =
-            convo.medecinId.Photo || convo.medecinId.photo;
-          console.log("medecinId", convo.medecinId);
+        if (data.medecinId?.Photo) {
+          photoMap[data.medecinId._id] = data.medecinId.Photo;
         }
-        setUserPhotoMap(map);
+        setUserPhotoMap(photoMap);
+
+        setTimeout(() => {
+          flatListRef.current?.scrollToEnd({ animated: true });
+        }, 300);
       } catch (e) {
         console.error(e);
       }
@@ -139,10 +138,8 @@ export default function ChatScreen() {
   const uploadMedia = async (uri, field, mimeType, originalName) => {
     const token = await AsyncStorage.getItem("authToken");
     const form = new FormData();
-    
-    // Use original filename if provided, otherwise create a filename with timestamp
-    const filename = originalName || `${field}-${Date.now()}.${uri.split(".").pop()}`;
-    
+    const ext = uri.split(".").pop();
+    const filename = `${field}-${Date.now()}.${ext}`;
     form.append(field, { uri, type: mimeType, name: filename });
     const res = await fetch(
       `${API_URL}/api/conversations/${patientId}/${medecinId}/message/${field}`,
@@ -164,12 +161,10 @@ export default function ChatScreen() {
     const { assets } = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
     });
-    if (assets?.[0]) {
-      // Use the original filename if available, otherwise create a default name
-      const originalName = assets[0].fileName || `image-${Date.now()}.jpg`;
-      uploadMedia(assets[0].uri, "image", assets[0].type + "/jpeg", originalName);
-    }
+    if (assets?.[0])
+      uploadMedia(assets[0].uri, "image", assets[0].type + "/jpeg");
   };
+
   const pickDocument = async () => {
     const res = await DocumentPicker.getDocumentAsync({
       type: [
@@ -183,6 +178,20 @@ export default function ChatScreen() {
     }
   };
 
+  const openPdf = async (pdfUrl) => {
+    try {
+      const supported = await Linking.canOpenURL(pdfUrl);
+      if (supported) {
+        await Linking.openURL(pdfUrl);
+      } else {
+        Alert.alert("Erreur", "Impossible d'ouvrir ce fichier");
+      }
+    } catch (error) {
+      console.error("Erreur d'ouverture:", error);
+      Alert.alert("Erreur", "Impossible d'ouvrir ce fichier");
+    }
+  };
+
   const handleDocumentPress = async (document) => {
     try {
       const localUri = FileSystem.documentDirectory + document.originalName;
@@ -193,7 +202,7 @@ export default function ChatScreen() {
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(downloadRes.uri);
       } else {
-        Alert.alert("Unsupported", "Sharing is not available on this device.");
+        Alert.alert("Info", "Document téléchargé dans les fichiers locaux");
       }
     } catch (error) {
       console.error("Document open failed:", error);
@@ -226,10 +235,7 @@ export default function ChatScreen() {
     await rec.stopAndUnloadAsync();
     const uri = rec.getURI();
     setRecording(false);
-    
-    // Create a meaningful filename for the audio recording
-    const audioFileName = `vocal-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.m4a`;
-    uploadMedia(uri, "audio", "audio/m4a", audioFileName);
+    uploadMedia(uri, "audio", "audio/m4a");
   };
 
   const sendMessage = async () => {
@@ -257,6 +263,7 @@ export default function ChatScreen() {
     setEditingMsg(msg);
     setEditText(msg.text || msg.message);
   };
+
   const applyEdit = async () => {
     console.log(
       "Editing message, patientid, medecinid:",
@@ -281,6 +288,7 @@ export default function ChatScreen() {
     );
     setEditingMsg(null);
   };
+
   const deleteMsg = async (msg) => {
     const token = await AsyncStorage.getItem("authToken");
     await fetch(
@@ -298,7 +306,7 @@ export default function ChatScreen() {
   const toggleSound = async (url, id) => {
     try {
       if (playingId === id && soundObj) {
-        await soundObj.stopAsync();
+        await soundObj.pauseAsync();
         setPlayingId(null);
         return;
       }
@@ -306,7 +314,10 @@ export default function ChatScreen() {
       const { sound } = await Audio.Sound.createAsync({ uri: url });
       setSoundObj(sound);
       sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.didJustFinish) setPlayingId(null);
+        if (status.didJustFinish) {
+          setPlayingId(null);
+          sound.unloadAsync();
+        }
       });
       await sound.playAsync();
       setPlayingId(id);
@@ -334,23 +345,23 @@ export default function ChatScreen() {
     );
   };
 
-const handleDeleteDocument = (docMsg) => {
-  Alert.alert(
-    "Supprimer le document",
-    "Voulez-vous vraiment supprimer ce fichier ?",
-    [
-      {
-        text: "Annuler",
-        style: "cancel"
-      },
-      { 
-        text: "Supprimer", 
-        onPress: () => deleteMsg(docMsg),
-        style: "destructive"
-      }
-    ]
-  );
-};
+  const handleDeleteDocument = (docMsg) => {
+    Alert.alert(
+      "Supprimer le document",
+      "Voulez-vous vraiment supprimer ce fichier ?",
+      [
+        {
+          text: "Annuler",
+          style: "cancel"
+        },
+        { 
+          text: "Supprimer", 
+          onPress: () => deleteMsg(docMsg),
+          style: "destructive"
+        }
+      ]
+    );
+  };
 
   const renderItem = ({ item }) => {
     const isMe = item.sender === userId;
@@ -385,37 +396,37 @@ const handleDeleteDocument = (docMsg) => {
                     isOwner: isMe
                   });
                   setImageModalVisible(true);
-            }}
+                }}
               >
                 <Image source={{ uri: item.url }} style={styles.image} />
               </TouchableOpacity>
             )}
-          {type === "document" && (
-            <View style={styles.documentContainer}>
-              <TouchableOpacity 
-                onPress={() => handleDocumentPress(item)}
-                style={styles.documentBtn}
-              >
-                <View style={styles.file}>
-                  <MaterialCommunityIcons 
-                    name="file-document-outline" 
-                    size={24} 
-                    color="#007AFF" 
-                  />
-                  <Text style={styles.filename}>{item.originalName}</Text>
-                </View>
-              </TouchableOpacity>
-
-              {isMe && (
+            {type === "document" && (
+              <View style={styles.documentContainer}>
                 <TouchableOpacity 
-                  onPress={() => handleDeleteDocument(item)}
-                  style={styles.deleteDocButton}
+                  onPress={() => openPdf(item.url)}
+                  style={styles.documentBtn}
                 >
-                  <Ionicons name="trash-outline" size={20} color="red" />
+                  <View style={styles.file}>
+                    <MaterialCommunityIcons 
+                      name="file-document-outline" 
+                      size={24} 
+                      color="#007AFF" 
+                    />
+                    <Text style={styles.filename}>{item.originalName}</Text>
+                  </View>
                 </TouchableOpacity>
-              )}
-            </View>
-          )}
+
+                {isMe && (
+                  <TouchableOpacity 
+                    onPress={() => handleDeleteDocument(item)}
+                    style={styles.deleteDocButton}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="red" />
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
 
             {type === "audio" && (
               <View style={styles.audioContainer}>
@@ -500,47 +511,47 @@ const handleDeleteDocument = (docMsg) => {
         </View>
       </Modal>
 
-    {/* Modal pour l'image en plein écran */}
-    <Modal transparent visible={imageModalVisible} animationType="fade">
-      <View style={styles.imageModalContainer}>
-        <TouchableOpacity 
-          style={styles.imageModalCloseButton}
-          onPress={() => setImageModalVisible(false)}
-        >
-          <Ionicons name="close" size={30} color="white" />
-        </TouchableOpacity>
-        
-        <Image 
-          source={{ uri: selectedImage.url }} 
-          style={styles.fullImage} 
-          resizeMode="contain"
-        />
-        
-        {selectedImage.url && selectedImage.isOwner && (
-          <View style={styles.imageOptions}>
+      {/* Modal pour l'image en plein écran */}
+      <Modal transparent visible={imageModalVisible} animationType="fade">
+        <View style={styles.imageModalContainer}>
           <TouchableOpacity 
-            style={[styles.imageOptionButton, {backgroundColor: 'red'}]}
-              onPress={() => {
-              // Trouve le message correspondant à l'image
-              const messageToDelete = messages.find(msg => msg.url === selectedImage.url);
-              if (messageToDelete) {
-                deleteMsg(messageToDelete); // Utilise votre fonction existante
-                setImageModalVisible(false);
-              }
-            }}
+            style={styles.imageModalCloseButton}
+            onPress={() => setImageModalVisible(false)}
           >
-            <Text style={styles.imageOptionText}>Delete</Text>
+            <Ionicons name="close" size={30} color="white" />
           </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.imageOptionButton}
-              onPress={() => setImageModalVisible(false)}
-            >
-              <Text style={styles.imageOptionText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-    </Modal>
+          
+          <Image 
+            source={{ uri: selectedImage.url }} 
+            style={styles.fullImage} 
+            resizeMode="contain"
+          />
+          
+          {selectedImage.url && selectedImage.isOwner && (
+            <View style={styles.imageOptions}>
+              <TouchableOpacity 
+                style={[styles.imageOptionButton, {backgroundColor: 'red'}]}
+                onPress={() => {
+                  // Trouve le message correspondant à l'image
+                  const messageToDelete = messages.find(msg => msg.url === selectedImage.url);
+                  if (messageToDelete) {
+                    deleteMsg(messageToDelete); // Utilise votre fonction existante
+                    setImageModalVisible(false);
+                  }
+                }}
+              >
+                <Text style={styles.imageOptionText}>Delete</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.imageOptionButton}
+                onPress={() => setImageModalVisible(false)}
+              >
+                <Text style={styles.imageOptionText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Modal>
 
       <View style={styles.toolbar}>
         <TouchableOpacity onPress={pickImage}>
@@ -574,7 +585,7 @@ const handleDeleteDocument = (docMsg) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff', padding: 6, paddingTop: 45 },
- row: { 
+  row: { 
     flexDirection: "row", 
     marginVertical: 6, 
     alignItems: "flex-end",
@@ -685,14 +696,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     marginTop: 12,
   },
-/*   seenText: {
-    fontSize: 10,
-    color: "#666",
-    marginTop: 2,
-    alignSelf: "flex-end", // pour coller à la bulle de droite
-  }, */
-
-    imageModalContainer: {
+  imageModalContainer: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.9)',
     justifyContent: 'center',
@@ -722,7 +726,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
-    audioContainer: {
+  audioContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -741,5 +745,17 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 10
   },
-
+  documentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%'
+  },
+  documentBtn: {
+    flex: 1
+  },
+  deleteDocButton: {
+    padding: 8,
+    marginLeft: 10
+  },
 });

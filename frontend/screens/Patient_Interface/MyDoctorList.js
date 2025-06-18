@@ -72,20 +72,26 @@ export default function MyDoctorsList({ navigation }) {
         );
       }
 
-      const data = await response.json();
-      const formattedDoctors = data.map((doctor) => ({
+      const data = await response.json();      const formattedDoctors = data.map((doctor) => ({
         _id: `${doctor._id}`,
         name: `Dr. ${doctor.prenom} ${doctor.nom}`,
         specialty: doctor.specialite,
-        image: doctor.Photo
-          ? { uri: doctor.Photo }
-          : require("../../assets/image.png"),
-        about: `${doctor.description}`,
-        formation: ` ${doctor.formation}`,
-        experience: `${doctor.experience}`,
+        image: doctor.Photo && typeof doctor.Photo === 'string' ? doctor.Photo : null,
+        about: `${doctor.description || ''}`,
+        formation: doctor.formation || [],
+        experience: doctor.experience || [],
         telephone: `${doctor.telephone}`,
-        address: `${doctor.adresse}`,
+        address: `${doctor.adresse || ''}`,
         email: `${doctor.mail}`,
+        // Add original doctor data for compatibility
+        nom: doctor.nom,
+        prenom: doctor.prenom,
+        specialite: doctor.specialite,
+        Photo: doctor.Photo && typeof doctor.Photo === 'string' ? doctor.Photo : null,
+        description: doctor.description,
+        adresse: doctor.adresse,
+        mail: doctor.mail,
+        disponibilite: doctor.disponibilite || [],
       }));
 
       setDoctors(formattedDoctors);
@@ -107,28 +113,72 @@ export default function MyDoctorsList({ navigation }) {
   const handleRefresh = () => {
     fetchDoctors();
   };
-
   const renderDoctor = ({ item, index }) => (
-    <CardAnimation delay={index * 50}>
-      <TouchableOpacity
-        style={styles.card}
-        activeOpacity={0.9}
-        onPress={() => navigation.navigate("DoctorInfo", { doctor: item })}
-      >
+    <CardAnimation delay={index * 50}>      <View style={styles.card}>
         <View style={styles.cardContent}>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Image source={item.image} style={styles.avatar} />
-            <View style={styles.doctorInfo}>
-              <Text style={styles.doctorName}>{item.name}</Text>
-              <Text style={styles.specialty}>{item.specialty}</Text>
-              <Text style={styles.contact}>{item.telephone}</Text>
+          <TouchableOpacity
+            style={styles.doctorInfoSection}
+            activeOpacity={0.9}
+            onPress={() => {
+              console.log('Navigating to DoctorInfo with:', {
+                ...item,
+                imageCheck: {
+                  original: item.image,
+                  type: typeof item.image,
+                  isString: typeof item.image === 'string',
+                  length: item.image ? item.image.length : 0
+                }
+              });
+              navigation.navigate("DoctorInfo", { doctor: item });
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Image 
+                source={
+                  item.image && typeof item.image === 'string' && item.image.trim() !== '' 
+                    ? { uri: item.image } 
+                    : require("../../assets/doctor.jpg")
+                } 
+                style={styles.avatar} 
+                onError={(error) => {
+                  console.log('Image loading error:', error);
+                }}
+              />
+              <View style={styles.doctorInfo}>
+                <Text style={styles.doctorName}>{item.name}</Text>
+                <Text style={styles.specialty}>{item.specialty}</Text>
+                <Text style={styles.contact}>{item.telephone}</Text>
+              </View>
             </View>
-          </View>{" "}
-          <View style={styles.infobutton}>
-            <Text style={styles.infoText}>{t("patient.myDoctors.info")}</Text>
+          </TouchableOpacity>
+          
+          <View style={styles.actionButtons}>            <TouchableOpacity 
+              style={styles.messageButton}
+              onPress={() => {
+                console.log('Navigating to messaging with doctor:', item.name);
+                navigation.navigate("ChatScreen", { 
+                  patientId: patientId,
+                  medecinId: item._id,
+                  otherName: item.name
+                });
+              }}
+            >
+              <Ionicons name="chatbubble-outline" size={18} color="#fff" />
+              <Text style={styles.messageText}>{t("patient.myDoctors.message")}</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.infobutton}
+              onPress={() => {
+                navigation.navigate("DoctorInfo", { doctor: item });
+              }}
+            >
+              <Ionicons name="information-circle-outline" size={18} color="#fff" />
+              <Text style={styles.infoText}>{t("patient.myDoctors.info")}</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     </CardAnimation>
   );
 
@@ -153,7 +203,6 @@ export default function MyDoctorsList({ navigation }) {
           />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.retryButton} onPress={fetchDoctors}>
-            {" "}
             <Text style={styles.retryText}>{t("patient.myDoctors.retry")}</Text>
           </TouchableOpacity>
         </View>
@@ -253,11 +302,18 @@ const styles = StyleSheet.create({
     elevation: 5,
     borderWidth: 1,
     borderColor: "rgba(163, 8, 21, 0.1)",
+  },  cardContent: {
+    flexDirection: "column",
   },
-  cardContent: {
+  doctorInfoSection: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 15,
+  },
+  actionButtons: {
+    flexDirection: "row",
     justifyContent: "space-between",
+    gap: 10,
   },
   avatar: {
     width: 75,
@@ -266,6 +322,9 @@ const styles = StyleSheet.create({
     marginRight: 18,
     borderWidth: 2,
     borderColor: "#e0e7ff",
+  },
+  doctorInfo: {
+    flex: 1,
   },
 
   doctorName: {
@@ -286,11 +345,39 @@ const styles = StyleSheet.create({
     marginTop: 2,
     fontWeight: "500",
   },
+  messageButton: {
+    backgroundColor: "#10b981",
+    borderRadius: 25,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 5,
+    shadowColor: "#10b981",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  messageText: {
+    color: "white",
+    fontWeight: "600",
+    fontSize: 14,
+    letterSpacing: 0.5,
+    marginLeft: 5,
+  },
   infobutton: {
     backgroundColor: "#5771f9",
     borderRadius: 25,
     paddingVertical: 10,
-    paddingHorizontal: 22,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    marginLeft: 5,
     shadowColor: "#5771f9",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -302,6 +389,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 14,
     letterSpacing: 0.5,
+    marginLeft: 5,
   },
   loadingContainer: {
     flex: 1,
