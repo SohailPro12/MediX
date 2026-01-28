@@ -72,17 +72,23 @@ npm install
 ```env
 MONGODB_URI=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret_key
-PORT=3000
+PORT=4000
+CLOUDINARY_URL=your_cloudinary_url
 EMAIL_USER=your_email@example.com
 EMAIL_PASS=your_email_password
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
 ```
 
 4. Start the backend server:
 ```bash
-npm start
+node src/server.js
+# Or use nodemon for development
+nodemon src/server.js
 ```
 
-The backend will run on `http://localhost:3000`
+The backend will run on `http://localhost:4000` (or the port specified in your .env file)
 
 ### Frontend Setup
 
@@ -98,7 +104,7 @@ npm install
 
 3. Create a `config.js` file in the `frontend` directory:
 ```javascript
-export const API_URL = 'http://localhost:3000'; // Update with your backend URL
+export const API_URL = 'http://localhost:4000'; // Update with your backend URL
 ```
 
 4. Start the Expo development server:
@@ -168,22 +174,26 @@ MediX/
 
 The backend provides RESTful APIs for:
 - Authentication (`/api/auth`)
-- User management (`/api/users`)
-- Appointments (`/api/appointments`)
-- Prescriptions (`/api/prescriptions`)
-- Medical records (`/api/records`)
-- Notifications (`/api/notifications`)
+- Admin operations (`/api/admin`)
+- Doctor operations (`/api/doctor`)
+- Patient operations (`/api/patient`)
+- Problem reporting (`/api/problems`)
+- Reporting and analytics (`/api/reporting`)
+- Conversations/Messaging (`/api/conversations`)
+- Medications (`/api/medications`)
 
-For detailed API documentation, refer to the sequence diagrams in `sequence_diagrams.md`
+For detailed API documentation and sequence diagrams, refer to `sequence_diagrams.md`
 
 ## 🧪 Testing
 
+Currently, the project is in active development. Test infrastructure can be added by configuring test scripts in the package.json files:
+
 ```bash
-# Backend tests
+# Backend - Configure tests in backend/package.json
 cd backend
 npm test
 
-# Frontend tests
+# Frontend - Configure tests in frontend/package.json
 cd frontend
 npm test
 ```
@@ -198,7 +208,7 @@ npm test
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is open source and available for educational and commercial use.
 
 ## 👥 Authors
 
